@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+    <title>短信平台系统登录</title>
+
+    <script type="text/javascript" src="/Scripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="/Scripts/bootstrap.js"></script>
+    <link href="/Content/bootstrap.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/vue.js"></script>
+    <script>
+        $(function () {
+            window.vm = new Vue({
+                el: '#app-1',
+                data: {
+                    userNameErrorMessage: '',
+                    userPasswordErrorMessage: '',
+                }
+            });
+        }
+        );
+
+
+    </script>
+</head>
+
+<body>
+    <div id="app-1" class="container-fluid">
+
+
+        <form id="form1" runat="server">
+
+            <div class="row" style="margin: 200px 0px">
+
+                <div class="col col-sm-push-4 col-sm-4">
+                    <h1 class="text-center" style="font-weight: bold; margin: 40px 0px">商业大学短信平台</h1>
+                    <div class="form-group">
+                        <label class="control-label" for="username">用户名</label>
+                        <input type="text" id="username" name="txt_UserName" class="form-control" value="" />
+                    </div>
+
+                    <div v-if="userNameErrorMessage" id="UserNameErrorPanel" class="alert alert-danger alert-dismissible fade in" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <strong>{{userNameErrorMessage}}</strong>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="control-label" for="password">密码</label>
+                        <input type="password" id="password" name="txt_Password" class="form-control" value="" />
+                    </div>
+
+                    <div v-if="userPasswordErrorMessage" class="alert alert-danger alert-dismissible fade in" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <strong>{{userPasswordErrorMessage}}</strong>
+                    </div>
+
+
+
+                    <div class="form-group">
+                        <button type="button" id="login" value="" onclick="submitOnClick(event)" class="form-control btn btn-primary">登 录</button>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="button" onclick="test(event)" id="register" value="" class="form-control btn btn-primary">申请账号</button>
+                    </div>
+
+<!--                    <asp:Button CssClass="hide" ID="btn_Login" ClientIDMode="Static" OnClick="" runat="server" />-->
+                </div>
+            </div>
+        </form>
+    </div>
+    <script type="text/javascript">
+        function submitOnClick() {
+            $.ajax({
+                method: 'get',
+                url: '/api/login/login',
+                data: { userName: $('#username').val(), password: $('#password').val() },
+                xhrFields: { withCredentials: true },
+                success: function(data) {
+                    console.log(data);
+                }
+            });
+        }
+
+        function test() {
+            $.ajax({
+                method: 'get',
+                url: '/api/login/getuserinfo',
+//                data: { userName: $('#username').val(), password: $('#password').val() },
+                xhrFields: { withCredentials: true },
+                success: function (data, status, xhr) {
+                    console.log(status);
+                    console.log(xhr);
+                    console.log(data);
+                }
+            });
+        }
+
+    </script>
+</body>
+
+</html>

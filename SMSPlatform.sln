@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMSPlatform", "SMSPlatform\SMSPlatform.csproj", "{F48FA579-1739-4859-B696-E4F795323080}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlHelper", "SqlHelper\SqlHelper.csproj", "{270FD68F-E741-4CE7-A3E6-0CDDA518DD84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GSMMODEM", "..\..\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\GSMMODEM.csproj", "{FB9F3FF1-0B65-4FF7-AFBA-4DC918FCDDE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logger", "Logger\Logger.csproj", "{D957992B-913D-4338-9215-3A51FAA30117}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F48FA579-1739-4859-B696-E4F795323080}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F48FA579-1739-4859-B696-E4F795323080}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F48FA579-1739-4859-B696-E4F795323080}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F48FA579-1739-4859-B696-E4F795323080}.Release|Any CPU.Build.0 = Release|Any CPU
+		{270FD68F-E741-4CE7-A3E6-0CDDA518DD84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{270FD68F-E741-4CE7-A3E6-0CDDA518DD84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{270FD68F-E741-4CE7-A3E6-0CDDA518DD84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{270FD68F-E741-4CE7-A3E6-0CDDA518DD84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB9F3FF1-0B65-4FF7-AFBA-4DC918FCDDE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB9F3FF1-0B65-4FF7-AFBA-4DC918FCDDE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB9F3FF1-0B65-4FF7-AFBA-4DC918FCDDE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB9F3FF1-0B65-4FF7-AFBA-4DC918FCDDE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D957992B-913D-4338-9215-3A51FAA30117}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D957992B-913D-4338-9215-3A51FAA30117}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D957992B-913D-4338-9215-3A51FAA30117}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D957992B-913D-4338-9215-3A51FAA30117}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9A375359-9DD9-409D-A818-2625F6C3A8AD}
+	EndGlobalSection
+EndGlobal

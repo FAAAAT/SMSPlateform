@@ -1,0 +1,8 @@
+F:\Projects\商大短信平台\SMSPlatform\Logger\bin\Debug\Logger.dll
+F:\Projects\商大短信平台\SMSPlatform\Logger\bin\Debug\Logger.pdb
+F:\Projects\商大短信平台\SMSPlatform\Logger\bin\Debug\log4net.dll
+F:\Projects\商大短信平台\SMSPlatform\Logger\bin\Debug\log4net.xml
+F:\Projects\商大短信平台\SMSPlatform\Logger\obj\Debug\Logger.csprojResolveAssemblyReference.cache
+F:\Projects\商大短信平台\SMSPlatform\Logger\obj\Debug\Logger.csproj.CoreCompileInputs.cache
+F:\Projects\商大短信平台\SMSPlatform\Logger\obj\Debug\Logger.dll
+F:\Projects\商大短信平台\SMSPlatform\Logger\obj\Debug\Logger.pdb
