@@ -151,7 +151,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\GSMMODEM1.0.1.25-branches-gsmmodem1.0 %282%29\src\GSMMODEM\GSMMODEM.csproj">
+    <ProjectReference Include="..\GSMMODEM\GSMMODEM.csproj">
       <Project>{fb9f3ff1-0b65-4ff7-afba-4dc918fcdde4}</Project>
       <Name>GSMMODEM</Name>
     </ProjectReference>

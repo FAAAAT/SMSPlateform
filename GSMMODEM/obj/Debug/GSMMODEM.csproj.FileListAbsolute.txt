@@ -1,0 +1,38 @@
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\GSMMODEM.dll
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\GSMMODEM.pdb
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\obj\Debug\GSMMODEM.csproj.CoreCompileInputs.cache
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\obj\Debug\GSMMODEM.dll
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\obj\Debug\GSMMODEM.pdb
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\obj\Debug\GSMMODEM.csprojResolveAssemblyReference.cache
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\Common.Logging.Core.dll
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\Common.Logging.dll
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\Quartz.dll
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\Common.Logging.pdb
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\Common.Logging.xml
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\Common.Logging.Core.pdb
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\Common.Logging.Core.xml
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\Quartz.pdb
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\Quartz.xml
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\Logger.dll
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\log4net.dll
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\Logger.pdb
+F:\Projects\GSMMODEM1.0.1.25-branches-gsmmodem1.0 (2)\src\GSMMODEM\bin\Debug\log4net.xml
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\GSMMODEM.dll
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\GSMMODEM.pdb
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\Common.Logging.Core.dll
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\Common.Logging.dll
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\Logger.dll
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\Quartz.dll
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\log4net.dll
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\Logger.pdb
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\Common.Logging.pdb
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\Common.Logging.xml
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\Common.Logging.Core.pdb
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\Common.Logging.Core.xml
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\Quartz.pdb
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\Quartz.xml
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\bin\Debug\log4net.xml
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\obj\Debug\GSMMODEM.csprojResolveAssemblyReference.cache
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\obj\Debug\GSMMODEM.csproj.CoreCompileInputs.cache
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\obj\Debug\GSMMODEM.dll
+F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\obj\Debug\GSMMODEM.pdb
