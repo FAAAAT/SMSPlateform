@@ -44,10 +44,10 @@ namespace SMSPlatform.Models
             set { dataPool["Status"] = value; }
         }
 
-        public int ToContractorID
+        public int TocontactorID
         {
-            get { return (int)dataPool["ToContractorID"]; }
-            set { dataPool["ToContractorID"] = value; }
+            get { return (int)dataPool["TocontactorID"]; }
+            set { dataPool["TocontactorID"] = value; }
         }
 
         public DateTime CreateTime

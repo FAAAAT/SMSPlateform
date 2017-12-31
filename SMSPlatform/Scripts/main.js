@@ -7,7 +7,11 @@
 //        target: '_blank'
     };
     window.notifyOptions = {
-        delay:2000
+        delay: 2000,
+        z_index: 199999,
+        allow_dismiss: false,
+
+
     };
     $.extend({
         notifySuccess: function(title, msg) {

@@ -36,3 +36,13 @@ F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\obj\Debug\GSMMODEM.csprojRes
 F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\obj\Debug\GSMMODEM.csproj.CoreCompileInputs.cache
 F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\obj\Debug\GSMMODEM.dll
 F:\Projects\商大短信平台\SMSPlatform\GSMMODEM\obj\Debug\GSMMODEM.pdb
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\GSMMODEM.dll
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\GSMMODEM.pdb
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\Logger.dll
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\log4net.dll
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\Logger.pdb
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\log4net.xml
+C:\projects\SMSPlateform\GSMMODEM\obj\Debug\GSMMODEM.csprojResolveAssemblyReference.cache
+C:\projects\SMSPlateform\GSMMODEM\obj\Debug\GSMMODEM.csproj.CoreCompileInputs.cache
+C:\projects\SMSPlateform\GSMMODEM\obj\Debug\GSMMODEM.dll
+C:\projects\SMSPlateform\GSMMODEM\obj\Debug\GSMMODEM.pdb

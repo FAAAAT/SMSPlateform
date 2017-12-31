@@ -21,9 +21,9 @@ namespace SMSPlatform.Services
 
         public IEnumerable<TagModel> GetTags(string tagName)
         {
-            var where = string.IsNullOrWhiteSpace(tagName)?"":$"where TagName like '%{tagName}%'";
+            var where = string.IsNullOrWhiteSpace(tagName) ? "" : $"where TagName like '%{tagName}%'";
             var datas = helper.SelectDataTable($"select * from Tag {where}").Select();
-            return datas.Select(x => (TagModel) new TagModel().SetData(x));
+            return datas.Select(x => (TagModel)new TagModel().SetData(x));
         }
 
         public void AddTag(TagModel model)
@@ -36,11 +36,11 @@ namespace SMSPlatform.Services
             {
                 throw new Exception("TagName 不能添加已存在的标签名称");
             }
-            Dictionary<string,object> values = new Dictionary<string, object>();
+            Dictionary<string, object> values = new Dictionary<string, object>();
             model.GetValues(values);
             values.Remove("ID");
 
-            model.ID = (int)helper.Insert("Tag",values,"OUTPUT inserted.ID");
+            model.ID = (int)helper.Insert("Tag", values, "OUTPUT inserted.ID");
         }
 
         public void UpdateTag(TagModel model)
@@ -56,7 +56,7 @@ namespace SMSPlatform.Services
             Dictionary<string, object> values = new Dictionary<string, object>();
             model.GetValues(values);
             values.Remove("ID");
-            helper.Update("Tag", values, " ID = " + model.ID,new List<SqlParameter>());
+            helper.Update("Tag", values, " ID = " + model.ID, new List<SqlParameter>());
 
         }
 
@@ -65,7 +65,7 @@ namespace SMSPlatform.Services
             var conn = helper.GetOpendSqlConnection();
             var tran = conn.BeginTransaction();
             helper.SetTransaction(tran);
-            
+
             try
             {
                 helper.Delete("TagContactor", "TagID=" + model.ID);
@@ -81,10 +81,39 @@ namespace SMSPlatform.Services
             finally
             {
                 helper.ClearTransaction();
-                    
+
             }
         }
 
-        
+        public IEnumerable<TagModel> GetTagsBycontactorID(string id)
+        {
+            var tagIds = helper.SelectDataTable($"select * from Tagcontactor where contactorID = {id}").Select().Select(x => (int)x["TagID"]);
+            var tags = helper.SelectDataTable($"select * from Tag where ID in ({string.Join(",", tagIds)})").Select().Select(x=>(TagModel)new TagModel().SetData(x));
+            return tags;
+        }
+
+        public Select2Model GetSelect2ModelsBycontactorID(string id)
+        {
+
+            var tagIds = helper.SelectDataTable($"select * from Tagcontactor where contactorID = {id}").Select().Select(x => (int)x["TagID"]);
+            //TODO:Searh .ToDictinoary how to work out
+            var tags = this.GetTags("").Select(x=>new Select2Item(){id=x.ID,text = x.TagName}).ToDictionary(x => x.id, x => x);
+
+            foreach (var tagId in tagIds)
+            {
+                if (tags.ContainsKey(tagId))
+                {
+                    tags[tagId].selected = true;
+                }
+
+            }
+
+            return new Select2Model() {results = tags.Values};
+
+
+        }
+
+
+
     }
 }

@@ -67,7 +67,7 @@
     <None Include="Properties\AssemblyInfo.tpl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\商大短信平台\SMSPlatform\Logger\Logger.csproj">
+    <ProjectReference Include="..\Logger\Logger.csproj">
       <Project>{d957992b-913d-4338-9215-3a51faa30117}</Project>
       <Name>Logger</Name>
     </ProjectReference>

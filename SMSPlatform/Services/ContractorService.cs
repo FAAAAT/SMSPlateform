@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace SMSPlatform.Services
 {
-    public class ContractorService
+    public class contactorService
     {
-
+        
     }
 }
