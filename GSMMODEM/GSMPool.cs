@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Logger;
@@ -9,7 +11,7 @@ using Quartz.Impl;
 
 namespace GSMMODEM
 {
-    public class GSMPool : IDisposable
+    public class GSMPool : IEnumerable<GsmModem>,IDisposable
     {
         public static int BandRate = 115200;
         private Dictionary<string, GsmModem> pool = new Dictionary<string, GsmModem>();
@@ -43,6 +45,11 @@ namespace GSMMODEM
             }
         }
 
+        public Dictionary<string, string> PhoneComDic
+        {
+            get { return pool.Values.ToDictionary(x => x.ComPort, x => x.PhoneNumber); }
+        }
+
         public void Dispose()
         {
             if (scheduler != null && !scheduler.IsShutdown)
@@ -56,6 +63,15 @@ namespace GSMMODEM
 
         }
 
+        public IEnumerator<GsmModem> GetEnumerator()
+        {
+            return pool.Values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
     }
 
     public static class GSMModemExtension

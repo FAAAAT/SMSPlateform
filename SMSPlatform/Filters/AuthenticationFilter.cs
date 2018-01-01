@@ -70,7 +70,7 @@ namespace SMSPlatform.Filters
         public Task AuthenticateAsync(HttpAuthenticationContext context, CancellationToken cancellationToken)
         {
             var authAttrs = context.ActionContext.ActionDescriptor.GetCustomAttributes<LymiAuthorizeAttribute>();
-
+            var str = context.Request.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             var authModel = context.Request.Headers.GetCookies(AuthenticationServiceExtensions.HeaderName).SingleOrDefault()?.GetAuthenticationCookieModel(AuthenticationServiceExtensions.HeaderName);
             if (authModel != null)
             {

@@ -43,5 +43,23 @@ namespace SMSPlatform.Models
             set { dataPool["ContainerID"] = value; }
         }
 
+        public string ToPhoneNumber
+        {
+            get { return dataPool["ToPhoneNumber"] + ""; }
+            set { dataPool["ToPhoneNumber"] = value; }
+        }
+
+        public string ToName
+        {
+            get { return dataPool["ToName"] + ""; }
+            set { dataPool["ToName"] = value; }
+        }
+
+        public DateTime? SendTime
+        {
+            get { return (DateTime?)dataPool["SendTime"]; }
+            set { dataPool["SendTime"] = value; }
+        }
+
     }
 }

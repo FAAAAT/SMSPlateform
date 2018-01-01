@@ -32,7 +32,7 @@ namespace SMSPlatform.Models
             set { dataPool["ToName"] = value; }
         }
 
-        public DateTime SendTime
+        public DateTime? SendTime
         {
             get { return (DateTime)dataPool["SendTime"]; }
             set { dataPool["SendTime"] = value; }

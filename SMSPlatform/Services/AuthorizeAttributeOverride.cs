@@ -17,7 +17,7 @@ namespace SMSPlatform.Services
     {
         protected override void HandleUnauthorizedRequest(HttpActionContext actionContext)
         {
-            if (actionContext.RequestContext.Principal.Identity.IsAuthenticated)
+            if ( actionContext.RequestContext.Principal == null || actionContext.RequestContext.Principal.Identity.IsAuthenticated)
             {
                 actionContext.Response = new JsonResult<ReturnResult>(new ReturnResult()
                 {
