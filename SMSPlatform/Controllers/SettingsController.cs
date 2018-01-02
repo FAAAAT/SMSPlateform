@@ -140,7 +140,40 @@ namespace SMSPlatform.Controllers
             }
         }
 
-        
+        [HttpGet]
+        public IHttpActionResult GetSetting(int id)
+        {
+            try
+            {
+                var model = helper.SelectDataTable("select * from systemsettings where ID = " + id).Select().Select(x => (SystemSettingsModel)new SystemSettingsModel().SetData(x)).SingleOrDefault();
+                return Json(new ReturnResult()
+                {
+                    success = true,
+                    data = model,
+                    status = 200
+                });
+            }
+            catch (Exception e)
+            {
+
+                return Json(new ReturnResult()
+                {
+#if true
+                    msg = e+"",
+
+#else
+                    msg = "获取失败",
+#endif
+                    success = false,
+                    status = 500,
+
+                });
+            }
+
+
+        }
+
+
 
         protected override void Dispose(bool disposing)
         {

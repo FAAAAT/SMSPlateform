@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,6 +58,10 @@ namespace SMSPlatform.Services
             
         }
 
+        /// <summary>
+        /// 只能删除还未发送的短消息
+        /// </summary>
+        /// <param name="smsID"></param>
         public void DeleteSMS(int smsID)
         {
             helper.Delete("SMSSendQueue", $" ID = {smsID}");
@@ -98,10 +103,39 @@ namespace SMSPlatform.Services
             return helper.SelectDataTable("select * from SMSSendQueue "+whereStr+" union all select * from SMSSendRecord "+whereStr).Select().Select(x=>(SMSSendQueueModel)new SMSSendQueueModel().SetData(x));
 
         }
-
-
         
+        /// <summary>
+        /// 只能修改还未发送的短消息
+        /// </summary>
+        /// <param name="model"></param>
+        public void UpdateSMS(RecordContainerModel model)
+        {
+            var dic = new Dictionary<string,object>();
+            var id = model.ID;
+            if (!id.HasValue)
+            {
+                throw new Exception("ID不能为空");
+            }
+            dic.Remove("ID");
+            helper.Update("SMSSendQueue",dic," ID="+id,new List<SqlParameter>());
 
+
+        }
+        
+        public IEnumerable<int> GetSendingSMSID()
+        {
+            return helper.SelectList<int>("SMSSendQueue", "ID");
+        }
+
+        public SMSSendQueueModel GetSendQueueModel(int id)
+        {
+            return helper.SelectDataTable("select * from SMSSendQueue where ID = " + id).Select().Select(x=>(SMSSendQueueModel)new SMSSendQueueModel().SetData(x)).SingleOrDefault();
+        }
+
+        public RecordContainerModel GetContainerModel(int id)
+        {
+            return helper.SelectDataTable("select * from RecordContainer where ID = " + id).Select().Select(x=>(RecordContainerModel) new RecordContainerModel().SetData(x)).SingleOrDefault();
+        }
 
 
     }

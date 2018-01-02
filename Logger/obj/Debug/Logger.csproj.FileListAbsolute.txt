@@ -13,3 +13,4 @@ C:\projects\SMSPlateform\Logger\obj\Debug\Logger.csprojResolveAssemblyReference.
 C:\projects\SMSPlateform\Logger\obj\Debug\Logger.csproj.CoreCompileInputs.cache
 C:\projects\SMSPlateform\Logger\obj\Debug\Logger.dll
 C:\projects\SMSPlateform\Logger\obj\Debug\Logger.pdb
+F:\Projects\商大短信平台\SMSPlatform\Logger\obj\Debug\Logger.csprojResolveAssemblyReference.cache

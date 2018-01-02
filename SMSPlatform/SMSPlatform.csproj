@@ -129,7 +129,6 @@
     <None Include="Scripts\jquery-1.10.2.min.map">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Scripts\select2-master.zip" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\AsyncUsageAnalyzers.1.0.0-alpha003\analyzers\dotnet\AsyncUsageAnalyzers.dll" />
@@ -141,9 +140,10 @@
     <Content Include="Content\select2.min.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\bootstrap-select2-compatible.css" />
+    <Content Include="Pages\Wizard.html" />
     <Content Include="Pages\MonthlyLimitSettings.html" />
     <Content Include="Pages\Template.html" />
-    <Content Include="Pages\Contractors.html" />
+    <Content Include="Pages\Contactors.html" />
     <Content Include="Pages\Login.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -158,6 +158,7 @@
     </Content>
     <Content Include="Scripts\main.js" />
     <Content Include="Scripts\select2.full.min.js" />
+    <Content Include="Scripts\TableSelector.js" />
     <Content Include="Scripts\URI.min.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

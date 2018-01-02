@@ -3,7 +3,7 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title>模板管理管理</title>
+    <title>限额管理</title>
     <script type="text/javascript" src="/Scripts/jquery-1.10.2.js"></script>
     <script type="text/javascript" src="/Scripts/bootstrap.js"></script>
     <link href="/Content/bootstrap.css" rel="stylesheet" />
@@ -22,15 +22,15 @@
                 data: {
                     tagName: '', headerAndFooter: {}, datacollections: {}
                     , updateData: {},
-                    queryData: { name: '' },
+                    queryData: { phone: '' },
                     settingsID: ''
                 },
-                methods: { onRowDelete: rowDelete, on_edit: on_edit, on_delete: on_delete }
+                methods: { on_edit: on_edit, on_delete: on_delete }
             });
 
             function getData() {
                 $.ajax({
-                    url: '/api/template/gettemplates', data: vue$.queryData, method: 'get', success: function (data) {
+                    url: '/api/settings/getsettings', data: vue$.queryData, method: 'get', success: function (data) {
                         if (data.success) {
                             vue$.$data.datacollections = data.data;
 
@@ -40,6 +40,7 @@
                     }
                 });
             }
+
             window.getData = getData;
             getData();
 
@@ -77,11 +78,11 @@
             </div>
         </div>
         <div class="container body-content">
-            <h1>模板管理</h1>
+            <h1>限额管理</h1>
             <h3></h3>
             <div class="form-inline">
                 <div class="form-group">
-                    <label class="control-label" for="queryName">模板名称</label>
+                    <label class="control-label" for="queryPhone">电话号码</label>
                     <input id="queryPhone" v-model="queryData.phone" name="queryPhone" type="text" class="form-control" />
                 </div>
             </div>
@@ -191,7 +192,7 @@
 //                            vue$.updateData.ID = 1;
                             $.ajax({
                                 traditional: true,
-                                url: '/api/template/addtemplate',
+                                url: '/api/settings/addsettings',
                                 type: 'get',
                                 data: vue$.updateData,
                                 success: function (data) {
@@ -220,13 +221,13 @@
 
         }
 
-        function on_edit(templateId) {
+        function on_edit(settingsID) {
             vue$.settingsID = settingsID;
             vue$.updateData = {};
             $.ajax({
-                url: '/api/seggins/getsettign'
+                url: '/api/settings/getsetting'
                 , method: 'get'
-                , data: { id: templateId }
+                , data: { id: settingsID }
                 , success: function (data) {
                     vue$.updateData = data.data;
                     $('.modal').modal('show');
@@ -238,7 +239,7 @@
         function on_delete(templateid) {
             $.ajax({
                 traditional: true,
-                url: '/api/template/deletetemplate', method: 'get', data: { id: templateid }, success: function (data) {
+                url: '/api/settings/deletesettings', method: 'get', data: { id: templateid }, success: function (data) {
                     if (data.success) {
                         $.notifySuccess(data.msg);
                         getData();

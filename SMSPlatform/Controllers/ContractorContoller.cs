@@ -28,7 +28,7 @@ namespace SMSPlatform.Controllers
         }
 
         [HttpGet]
-        public IHttpActionResult Getcontactor(string name, string phone, string[] tagIds)
+        public IHttpActionResult Getcontactor(string name, string phone, string[] tagIds,int? pageIndex = null,int? pageSize = null)
         {
             try
             {
@@ -66,9 +66,17 @@ namespace SMSPlatform.Controllers
 
                 }
 
-                var datas = helper.SelectDataTable("select * from contactor " + whereStr, new List<IDataParameter>());
+                var datas = helper.SelectDataTable("select * from contactor " + whereStr, new List<IDataParameter>()).Select().Select(x=>new {ContactorName=x["ContactorName"]+"", PhoneNumber = x["PhoneNumber"]+""});
+                var total = datas.Count();
+                if (pageSize.HasValue&&pageIndex.HasValue)
+                {
+                    datas = datas.Skip(pageIndex.Value * pageSize.Value).Take(pageSize.Value).ToArray();
+                }
+                
 
-                return Json(new ReturnResult() {success = true, data = datas, status = 200});
+
+
+                return Json(new ReturnResult() {success = true, data = datas, status = 200,total = total});
 
 
             }
@@ -261,6 +269,8 @@ namespace SMSPlatform.Controllers
                 helper.Dispose();
             }
         }
+
+        
 
 
 

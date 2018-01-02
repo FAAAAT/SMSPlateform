@@ -9,6 +9,6 @@ namespace SMSPlatform.Controllers
 {
     public class MessageController:ApiController
     {
-
+        
     }
 }
