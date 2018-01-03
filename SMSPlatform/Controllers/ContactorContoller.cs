@@ -96,7 +96,7 @@ namespace SMSPlatform.Controllers
         [HttpGet]
         public IHttpActionResult Addcontactor(string name, string phone, string remark, string[] tagIds)
         {
-            var count = helper.SelectScalar<int>($"select count(1) from contactor where PhoneNumber = {phone}");
+            var count = helper.SelectScalar<int>($"select count(1) from contactor where PhoneNumber = '{phone}'");
             if (count != 0)
             {
                 return Json(new ReturnResult() {msg = "电话号码已存在", success = false, status = 200});

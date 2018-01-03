@@ -1,4 +1,6 @@
-﻿//使表格可以选择行
+﻿globalOnlyPageSwitch = false;
+
+//使表格可以选择行
 //需要在绑定OnSelect事件的元素上配置data-id属性。其中全选的data-id为all
 //options{dataHidden:<dataHidden>,Data:{pages:{all:<bool>,1:[<id>,<id>],2:[]....}}}
 //参数说明 dataHidden是用于回发数据的HIddenField的Selector
