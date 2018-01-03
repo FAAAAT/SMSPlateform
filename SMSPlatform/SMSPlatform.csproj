@@ -156,6 +156,7 @@
     <Content Include="Scripts\jquery-1.10.2.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Scripts\JSHelper.js" />
     <Content Include="Scripts\main.js" />
     <Content Include="Scripts\select2.full.min.js" />
     <Content Include="Scripts\TableSelector.js" />

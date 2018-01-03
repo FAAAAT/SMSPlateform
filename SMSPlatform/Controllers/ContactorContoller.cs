@@ -66,8 +66,9 @@ namespace SMSPlatform.Controllers
 
                 }
 
-                var datas = helper.SelectDataTable("select * from contactor " + whereStr, new List<IDataParameter>()).Select().Select(x=>new {ContactorName=x["ContactorName"]+"", PhoneNumber = x["PhoneNumber"]+""});
+                var datas = helper.SelectDataTable("select * from contactor " + whereStr, new List<IDataParameter>()).Select().Select(x=>new {ContactorName=x["ContactorName"]+"", PhoneNumber = x["PhoneNumber"]+"",ID=x["ID"]+""});
                 var total = datas.Count();
+                var allIds = datas.Select(x => x.ID);
                 if (pageSize.HasValue&&pageIndex.HasValue)
                 {
                     datas = datas.Skip(pageIndex.Value * pageSize.Value).Take(pageSize.Value).ToArray();
@@ -76,7 +77,11 @@ namespace SMSPlatform.Controllers
 
 
 
-                return Json(new ReturnResult() {success = true, data = datas, status = 200,total = total});
+                return Json(new ReturnResult()
+                {
+                    success = true, data = datas, status = 200,total = total,
+                    allIds = allIds.ToArray()
+                });
 
 
             }
@@ -91,6 +96,7 @@ namespace SMSPlatform.Controllers
 
 
         }
+
 
 
         [HttpGet]

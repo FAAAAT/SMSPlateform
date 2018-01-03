@@ -1,6 +1,7 @@
 ﻿globalOnlyPageSwitch = false;
 
 //使表格可以选择行
+//AllData
 //需要在绑定OnSelect事件的元素上配置data-id属性。其中全选的data-id为all
 //options{dataHidden:<dataHidden>,Data:{pages:{all:<bool>,1:[<id>,<id>],2:[]....}}}
 //参数说明 dataHidden是用于回发数据的HIddenField的Selector
@@ -14,6 +15,7 @@ function InitTableSelectable(table, options) {
     var eventList = [];
     var temp = $(table).attr('data-onlyOnePage');
     var onlyOnePage;
+    var onchange = options.onchange || function() {};
     if (temp) {
         onlyOnePage = temp.toLowerCase() === 'true';
     } else {
@@ -49,6 +51,7 @@ function InitTableSelectable(table, options) {
     function trSelector(event) {
         var eventTarget = event.currentTarget || event.target || event.srcElement;
         $(eventTarget).find(':checkbox')[0].click();
+        onchange();
     }
 
     //selector:触发事件的控件
@@ -117,6 +120,7 @@ function InitTableSelectable(table, options) {
 
         render();
         $(options.dataHidden).val(JSON.stringify(getIDs()));
+        onchange();
     }
 
     function onPageChange(event, pageOptions) {
@@ -125,8 +129,6 @@ function InitTableSelectable(table, options) {
             pageOptions = { pageIndex: 1 };
         }
 
-
-
         currentPageIndex = pageOptions.pageIndex;
 
         for (var name in pages) {
@@ -134,8 +136,6 @@ function InitTableSelectable(table, options) {
                 pages[name] = [];
             }
         }
-
-
 
         if (pages.all) {
             $(':checkbox[data-id=all]')[0].checked = true;

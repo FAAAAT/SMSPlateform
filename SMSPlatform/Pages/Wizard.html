@@ -14,6 +14,8 @@
     <script type="text/javascript" src="/Scripts/validator.min.js"></script>
     <link rel="stylesheet" href="/Content/select2.min.css" />
     <script type="text/javascript" src="/Scripts/select2.full.min.js"></script>
+
+    <script type="text/javascript" src="/Scripts/JSHelper.js"></script>
     <script type="text/javascript" src="/Scripts/TableSelector.js"></script>
     <!--    <link href="/Content/bootstrap-select2-compatible.css" rel="stylesheet" />-->
 
@@ -26,10 +28,14 @@
                     , name: '', phone: '', remark: '',
                     queryData: { name: '', phone: '', tagIds: [] },
                     contactorId: '',
-                    pagerData: { currentIndex: 0, pagerRange: 5, pageSize: 2, total: 30 }
+                    pagerData: { currentIndex: 0, pagerRange: 5, pageSize: 2, total: 30 },
+                    tabNav: { currentIndex: 0, pageNumber: 3 },
+                    updateData: { selectedContactors: [], containerData: { containerName: '', simPhones: [] } }
+
+
                 },
                 methods: {
-                    onRowDelete: rowDelete, on_edit: on_edit, on_delete: on_delete
+                    //                    onRowDelete: rowDelete, on_edit: on_edit, on_delete: on_delete
 
                 },
                 computed: {
@@ -46,6 +52,10 @@
 
                         return [...Array(range)].map((e, i, a) => i + start + 1);
                     }
+
+                    ,computedContactors: function() {
+                        return this.updateData.selectedContactors.map((e, i) => this.datacollections.find((ee, ii) => ee.ID == e));
+                    }
                 }
 
 
@@ -58,6 +68,30 @@
                         if (data.success) {
                             vue$.$data.datacollections = data.data;
                             vue$.$data.pagerData.total = data.total;
+                            if (!window.tableSelector) {
+                                window.tableSelector = InitTableSelectable($('table')[0], {
+                                    dataHidden: '#tableSelectorData', AllData: data.allIds
+                                    , onchange: function () {
+                                        vue$.updateData.selectedContactors = window.tableSelector.GetIDs();
+                                    }
+                                });
+
+                            } else {
+                                window.tableSelector = InitTableSelectable($('table')[0],
+                                    {
+                                        dataHidden: '#tableSelectorData', AllData: data.allIds, Data: window.tableSelector.Data
+                                        , onchange: function () {
+                                            vue$.updateData.selectedContactors = window.tableSelector.GetIDs();
+                                        }
+                                    });
+
+                            }
+
+                            vue$.$nextTick(function () {
+                                if (window.tableSelector) {
+                                    window.tableSelector.OnPageChange(this, { pageIndex: vue$.pagerData.currentIndex });
+                                }
+                            });
 
 
                         } else {
@@ -85,48 +119,28 @@
                     $('#queryTagSelect').select2({ data: data.data.results });
                     $('#fuckStupidS2>.select2-container').css('width', '100%');
                     $('#fuckStupidS2>.select2-container').css('min-width', '200px');
-
-
-
                 }
             });
 
-
-            function rowDelete(id) {
-                $.ajax({
-                    url: '/api/tag/DeleteTag', method: 'get', data: { tagID: id }, success: function (data) {
-                        if (data.success) {
-                            if (data.status == 200) {
-                                $.notifySuccess(data.msg, '');
-                            } else if (data.status == 500) {
-
-                            } else if (data.status == 302) {
-                                window.location.href = data.data;
-                            }
-
-                            getData();
-                        } else {
-                            $.notifyError(data.msg, '');
-                        }
-                    }
-                });
-            }
-
-        });
-    </script>
-
-    <script id="page2" type="text/javascript">
-        $(function () {
-            var vue2$ = new Vue({
-                el: '#app2',
-                data: {}
+            $.ajax({
+                url: '/api/message/GetSIMPhones', type: 'get',
+                success: function (data) {
+                    $('#sel_simSelector').select2({ data: data.data });
+                    $('#sel_simSelectorContainer>.select2-container').css('width', '100%');
+                    $('#sel_simSelectorContainer>.select2-container').css('min-width', '200px');
+                    $('#sel_simSelector').on('change', function (e) {
+                        vue$.updateData.containerData.simPhones = $('#sel_simSelector').val();
+                    });
+                }
 
             });
+
+
+
         });
-
-
-
     </script>
+
+
 
 </head>
 <body>
@@ -155,9 +169,9 @@
 
             <!-- Nav tabs -->
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#selectContactor" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
-                <li role="presentation"><a href="#createContainer" aria-controls="profile" role="tab" data-toggle="tab">Profile</a></li>
-                <li role="presentation"><a href="#confirm" aria-controls="messages" role="tab" data-toggle="tab">Messages</a></li>
+                <li role="presentation" class="active"><a href="#selectContactor" aria-controls="home" role="tab" data-toggle="tab">选择联系人</a></li>
+                <li role="presentation"><a href="#createContainer" aria-controls="profile" role="tab" data-toggle="tab">创建任务</a></li>
+                <li role="presentation"><a href="#confirm" aria-controls="messages" role="tab" data-toggle="tab">确认信息</a></li>
             </ul>
 
 
@@ -187,25 +201,25 @@
 
                     <button class="btn btn-primary" onclick="on_add(event)">添加</button>
                     <button Class="btn btn-primary" onclick="vue$.pagerData.currentIndex = 0;getData(true);">查询</button>
-                    <div style="min-height: 65vh">
+                    <div style="min-height: 44vh">
                         <table class="table table-striped table-hover table-bordered">
                             <thead>
                                 <tr>
-                                    <th><input type="checkbox" data-id="all" onchange="tableSelector.OnSelectChange(event, { pageIndex: 1 })" />全选</th>
+                                    <th><input type="checkbox" data-id="all" v-bind:onchange="'tableSelector.OnSelectChange(event, { pageIndex:'+pagerData.currentIndex+'})'" />全选</th>
                                     <th>联系人名称</th>
                                     <th>联系人电话</th>
                                     <th>操作</th>
                                 </tr>
 
                             </thead>
-                            <tbody v-for="row in datacollections">
-                                <tr>
-                                    <td><input type="checkbox" v-bind:data-id="row.ID" onchange="tableSelector.OnSelectChange(event, { pageindex: 1 })" /></td>
+                            <tbody>
+                                <tr v-for="row in datacollections">
+                                    <td><input type="checkbox" v-bind:data-id="row.ID" v-bind:onchange="'tableSelector.OnSelectChange(event, { pageIndex:'+pagerData.currentIndex+'})'" /></td>
                                     <td>{{row.ContactorName}}</td>
                                     <td>{{row.PhoneNumber}}</td>
                                     <td>
-                                        <button class="btn btn-danger" v-on:click="on_delete(row.ID)">删除</button>
-                                        <button class="btn btn-danger" v-on:click="on_edit(row.ID)">edit</button>
+                                        <button class="btn btn-danger" v-bind:onclick="'on_delete('+row.ID+')'">删除</button>
+                                        <button class="btn btn-danger" v-bind:onclick="'on_edit('+row.ID+')'">编辑</button>
 
                                     </td>
                                 </tr>
@@ -238,13 +252,64 @@
 
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="createContainer">
+                    <h1>创建任务</h1>
+                    <h3></h3>
+                    <div class="form" style="min-height: 65vh">
+                        <div class="form-group">
+                            <label class="control-label" for="txt_containerName">任务名称</label>
+                            <input id="txt_containerName" v-model="updateData.containerData.containerName" class="form-control" type="text" />
+                        </div>
 
+                        <div id="sel_simSelectorContainer" class="form-group">
+                            <label class="control-label" for="sel_simSelector">选择sim卡</label>
+                            <select multiple="multiple" id="sel_simSelector"></select>
+                        </div>
+
+                    </div>
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="confirm">
+                    <h1>最后确认一下</h1>
+                    <h3></h3>
+                    <div style="min-height: 65vh">
+                        <div style="min-height: 55vh">
+                        <table class="table table-striped table-hover table-bordered">
+                            <thead>
+                            <tr>
+                                <th>联系人名称</th>
+                                <th>联系人电话</th>
+                            </tr>
+
+                            </thead>
+                            <tbody>
+                            <tr v-for="row in computedContactors">
+
+                                <td>{{row.ContactorName}}</td>
+                                <td>{{row.PhoneNumber}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <span>任务名称:{{updateData.containerData.containerName}}</span>
+                                <br/>
+                                <span>使用SIM卡:{{updateData.containerData.simPhones.join(',')}}</span>
+
+                            </div>
+                        </div>
+                    </div>
+                  
 
                 </div>
             </div>
 
+
+            <nav>
+                <ul class="pager">
+                    <li v-if="tabNav.pageNumber!=0" class="previous"><a href="#"><span aria-hidden="true">&larr;</span>上一步</a></li>
+                    <li class="next"><a href="#">{{tabNav.currentIndex==tabNav.pageNumber?'完成':'下一步'}}<span aria-hidden="true">&rarr;</span></a></li>
+                </ul>
+            </nav>
 
 
             <hr />
@@ -357,7 +422,6 @@
                     console.log('prevented');
                     e.preventDefault();
                 });
-            window.tableSelector = InitTableSelectable($('table')[0], { dataHidden: '#tableSelectorData' });
         });
 
 
@@ -419,6 +483,9 @@
             vue$.pagerData.pageSize = pageSize;
 
             getData();
+
+
+
         }
 
     </script>

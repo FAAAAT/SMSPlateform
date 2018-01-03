@@ -60,6 +60,8 @@ namespace SMSPlatform
                 AppDomain.CurrentDomain.SetData("Pool", pool);
 
 
+
+
                 process = new Process();
                 process.StartInfo = new ProcessStartInfo(url);
 

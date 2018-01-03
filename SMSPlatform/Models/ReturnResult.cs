@@ -11,6 +11,7 @@ namespace SMSPlatform.Models
         public string msg { get; set; }
         public bool success { get; set; }
         public int status { get; set; } = 200;
+        public string[] allIds { get; set; }
         public int total { get; set; }
         public object data { get; set; }
 
