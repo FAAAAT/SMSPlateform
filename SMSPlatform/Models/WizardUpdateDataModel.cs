@@ -10,6 +10,7 @@ namespace SMSPlatform.Models
     {
         public int[] selectedContactors { get; set; }
         public ContainerData containerData { get; set; }
+        public int templateID { get; set; }
     }
 
     public class ContainerData

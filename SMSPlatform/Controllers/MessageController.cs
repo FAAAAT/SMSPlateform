@@ -74,7 +74,7 @@ namespace SMSPlatform.Controllers
         {
             var conn = helper.GetOpendSqlConnection();
             var tran = conn.BeginTransaction();
-            
+
             try
             {
                 var model = JsonConvert.DeserializeObject<WizardUpdateDataModel>(json);
@@ -85,20 +85,31 @@ namespace SMSPlatform.Controllers
                 container.SIMsPhone = model.containerData.simPhones;
 
                 var containerid = service.AddContainer(container);
+                var templateService = new TemplateService(helper);
+                TemplateModel template = templateService.GetTemplate(model.templateID);
 
-               
+
                 foreach (var contactorID in model.selectedContactors)
                 {
                     var cmodel =
                         helper.SelectDataTable("select * from where ID = " + contactorID)
                             .Select()
-                            .Select(x => (contactorModel) new contactorModel().SetData(x))
+                            .Select(x => (contactorModel)new contactorModel().SetData(x))
                             .SingleOrDefault();
 
                     SMSSendQueueModel smsmodel = new SMSSendQueueModel();
                     smsmodel.ContainerID = containerid;
                     smsmodel.CreateTime = container.CreateTime;
-                    smsmodel.SMSContent
+                    smsmodel.SMSContent = templateService.TemplateReplace(smsmodel.SMSContent,
+                        new Dictionary<string, string>()
+                        {
+                            { "姓名",cmodel.CongractorName},
+                            { "日期",DateTime.Now.ToString("yyyy年MM月dd日")},
+                            
+                        });
+                    smsmodel.TocontactorID = contactorID;
+                    smsmodel.ToName = cmodel.CongractorName;
+                    smsmodel.ToPhoneNumber = cmodel.PhoneNumber;
                 }
                 tran.Commit();
                 return Json(new ReturnResult()
@@ -113,18 +124,17 @@ namespace SMSPlatform.Controllers
                 tran.Rollback();
                 return Json(new ReturnResult()
                 {
-
 #if DEBUG
-                    msg = e+"",
+                    msg = e + "",
 #else
                     msg = "服务器内部错误 请联系管理员",
 #endif
                     success = false,
-                    status=500,
+                    status = 500,
                 });
             }
         }
-        
+
 
 
 
@@ -136,7 +146,7 @@ namespace SMSPlatform.Controllers
                 return Json(new ReturnResult()
                 {
                     success = true,
-                    data = pool.PhoneComDic.Select(x=>new {id=x.Value,text = x.Key}),
+                    data = pool.PhoneComDic.Select(x => new { id = x.Value, text = x.Key }),
                     status = 200,
                 });
             }
@@ -160,7 +170,7 @@ namespace SMSPlatform.Controllers
 
         protected override void Dispose(bool disposing)
         {
-            if (helper!=null)
+            if (helper != null)
             {
                 helper.Dispose();
             }

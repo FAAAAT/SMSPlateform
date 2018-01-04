@@ -48,7 +48,6 @@ F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Microsoft.SqlSe
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\SqlHelper.pdb
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\SqlHelper.dll.config
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\MySql.Data.xml
-F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\log4net.xml
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\zh-CHS\Microsoft.SqlServer.Management.Sdk.Sfc.resources.dll
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\zh-CHS\Microsoft.SqlServer.Dmf.resources.dll
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Microsoft.Owin.Cors.dll

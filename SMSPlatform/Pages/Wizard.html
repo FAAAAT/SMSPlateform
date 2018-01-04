@@ -30,9 +30,8 @@
                     contactorId: '',
                     pagerData: { currentIndex: 0, pagerRange: 5, pageSize: 2, total: 30 },
                     tabNav: { currentIndex: 0, pageNumber: 3 },
-                    updateData: { selectedContactors: [], containerData: { containerName: '', simPhones: [] } }
-
-
+                    templates:[],
+                    updateData: { selectedContactors: [],templateID:'', containerData: { containerName: '', simPhones: [] } }
                 },
                 methods: {
                     //                    onRowDelete: rowDelete, on_edit: on_edit, on_delete: on_delete
@@ -134,7 +133,14 @@
                 }
 
             });
-
+            $.ajax({
+                url: '/api/template/getTemplates',
+                type: 'get',
+                data: { name: '' },
+                success: function(data) {
+                    vue$.templates = data.data;
+                }
+            });
 
 
         });
@@ -264,6 +270,15 @@
                             <label class="control-label" for="sel_simSelector">选择sim卡</label>
                             <select multiple="multiple" id="sel_simSelector"></select>
                         </div>
+                        
+                        <div class="form-group">
+                            <label for="sel_template">选择模板</label>
+                            <select v-model="updateData.templateID" id="sel_template" class="form-control">
+                                <option disabled>请选择</option>
+                                <option v-for="template in templates" v-bind:value="template.ID">{{template.TemplateName}}</option>
+                            </select>
+                        </div>
+
 
                     </div>
                 </div>

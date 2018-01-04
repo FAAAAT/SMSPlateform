@@ -55,5 +55,15 @@ namespace SMSPlatform.Services
             return helper.SelectDataTable("select * from Template where ID = "+id).Select().Select(x=>(TemplateModel)new TemplateModel().SetData(x)).SingleOrDefault();
         }
 
+        public string TemplateReplace(string content,Dictionary<string, string> kv)
+        {
+            foreach (var data in kv)
+            {
+               content=  content.Replace("{"+data.Key+"}",data.Value);
+            }
+
+            return content;
+        }
+
     }
 }
