@@ -21,7 +21,28 @@ namespace SMSPlatform.Controllers
             {
                 HeaderFooterTemplateModel model = new HeaderFooterTemplateModel();
                 model.footer = "技术支持 天津恒创伟业科技有限公司";
-                model.menus.Add(new MenuItem() { name = "测试", href = "www.baidu.com" });
+                model.menus.Add(new MenuItem()
+                {
+                    name = "联系人", href = "/pages/contactors.html",
+                });
+                model.menus.Add(new MenuItem()
+                {
+                    name="资费",href="/pages/MonthlyLimitSettings.html"
+                });
+                model.menus.Add(new MenuItem()
+                {
+                    name="标签",href="/pages/tag.html"
+                });
+                model.menus.Add(new MenuItem()
+                {
+                    name="模板",href="/pages/template.html"
+                });
+                model.menus.Add(new MenuItem()
+                {
+                    name="创建任务",href="/pages/wizard.html"
+                });
+                model.menus.Add(new MenuItem());
+
                 model.applicationName = "天津商业大学短信平台";
                 return Json(new ReturnResult()
                 {

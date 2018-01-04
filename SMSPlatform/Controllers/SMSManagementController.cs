@@ -16,7 +16,13 @@ namespace SMSPlatform.Controllers
         [HttpGet]
         public IHttpActionResult GetSPs()
         {
-            return null;
+            SPService service = new SPService();
+            return Json(new ReturnResult()
+            {
+                success = true,
+                data = service.GetSPNames().Select(x => new { key = x, value = x }),
+
+            });
         }
 
 
@@ -27,7 +33,7 @@ namespace SMSPlatform.Controllers
         public IHttpActionResult SendSMS(string phone, string msg, string selectedCom)
         {
             GsmModem gsm = new GsmModem(selectedCom, SPService.BandRate);
-            
+
             gsm.Open();
             try
             {
@@ -35,12 +41,12 @@ namespace SMSPlatform.Controllers
 
                 var result = new ReturnResult();
 
-//                if (!gsm.SendMsg(phone, msg, out var error))
-//                {
-//                    result.msg = error;
-//                    result.success = false;
-//                    result.status = 500;
-//                }
+                if (!gsm.SendMsg(phone, msg,out string error, out int count))
+                {
+                    result.msg = error;
+                    result.success = false;
+                    result.status = 500;
+                }
                 return Json(result);
 
             }
@@ -60,10 +66,10 @@ namespace SMSPlatform.Controllers
         }
 
 
-//        public IHttpActionResult GetSMSAndDel()
-//        {
-//            
-//
-//        }
+        //        public IHttpActionResult GetSMSAndDel()
+        //        {
+        //            
+        //
+        //        }
     }
 }
