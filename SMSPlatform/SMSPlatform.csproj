@@ -90,6 +90,7 @@
     <Compile Include="Controllers\DynamicTemplateController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\MessageController.cs" />
+    <Compile Include="Controllers\MonthlyFeeRecordController.cs" />
     <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Controllers\SMSManagementController.cs" />
     <Compile Include="Controllers\TagController.cs" />
@@ -118,6 +119,7 @@
     <Compile Include="Services\ContractorService.cs" />
     <Compile Include="Services\CookieService.cs" />
     <Compile Include="Services\DBService.cs" />
+    <Compile Include="Services\MonthlyFeeService.cs" />
     <Compile Include="Services\SMSRecord.cs" />
     <Compile Include="Services\SPService.cs" />
     <Compile Include="Services\SystemSettingsService.cs" />
@@ -142,6 +144,8 @@
     <Content Include="Content\select2.min.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\bootstrap-select2-compatible.css" />
+    <Content Include="Pages\MonthlyFeeRecord.html" />
+    <Content Include="Pages\SendRecord.html" />
     <Content Include="Pages\SendQueue.html" />
     <Content Include="Pages\Wizard.html" />
     <Content Include="Pages\MonthlyLimitSettings.html" />

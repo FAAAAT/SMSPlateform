@@ -27,7 +27,7 @@ namespace SMSPlatform.Controllers
                 });
                 model.menus.Add(new MenuItem()
                 {
-                    name="资费",href="/pages/MonthlyLimitSettings.html"
+                    name="资费设置",href="/pages/MonthlyLimitSettings.html"
                 });
                 model.menus.Add(new MenuItem()
                 {
@@ -41,7 +41,18 @@ namespace SMSPlatform.Controllers
                 {
                     name="创建任务",href="/pages/wizard.html"
                 });
-                model.menus.Add(new MenuItem());
+                model.menus.Add(new MenuItem()
+                {
+                    name="任务列表",href="/pages/sendqueue.html",
+                });
+                model.menus.Add(new MenuItem()
+                {
+                    name="历史记录",href="/pages/sendrecord.html",
+                });
+                model.menus.Add(new MenuItem()
+                {
+                    name="资费列表",href = "/pages/MonthlyFeeRecord.html",
+                });
 
                 model.applicationName = "天津商业大学短信平台";
                 return Json(new ReturnResult()

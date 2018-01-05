@@ -14,7 +14,7 @@
     <script type="text/javascript" src="/Scripts/validator.min.js"></script>
     <link rel="stylesheet" href="/Content/select2.min.css" />
     <script type="text/javascript" src="/Scripts/select2.full.min.js"></script>
-<!--    <link href="/Content/bootstrap-select2-compatible.css" rel="stylesheet" />-->
+    <!--    <link href="/Content/bootstrap-select2-compatible.css" rel="stylesheet" />-->
     <script>
         $(function () {
             window.vue$ = new Vue({
@@ -25,7 +25,7 @@
                     queryData: { name: '', phone: '', tagIds: [] },
                     contactorId: ''
                 },
-                methods: { onRowDelete: rowDelete ,on_edit:on_edit,on_delete:on_delete}
+                methods: { onRowDelete: rowDelete, on_edit: on_edit, on_delete: on_delete }
             });
 
             function getData() {
@@ -33,9 +33,9 @@
                     url: '/api/contactor/getcontactor', data: vue$.queryData, method: 'get', success: function (data) {
                         if (data.success) {
                             vue$.$data.datacollections = data.data;
-                            
+
                         } else {
-                            $.notifyError(data.msg,'');
+                            $.notifyError(data.msg, '');
                         }
                     }
                 });
@@ -56,7 +56,7 @@
                 data: { id: null },
                 method: 'get',
                 success: function (data) {
-                    $('#queryTagSelect').select2({ data: data.data.results});
+                    $('#queryTagSelect').select2({ data: data.data.results });
                     $('#fuckStupidS2>.select2-container').css('width', '100%');
                     $('#fuckStupidS2>.select2-container').css('min-width', '200px');
 
@@ -109,7 +109,7 @@
             </div>
         </div>
         <div class="container body-content">
-            <h1>标签管理</h1>
+            <h1>联系人管理</h1>
             <h3></h3>
             <div class="form-inline">
                 <div class="form-group">
@@ -234,7 +234,7 @@
                                     remark: vue$.remark,
                                     tagIds: $('#tagSelect').val()
                                 },
-                                success: function(data) {
+                                success: function (data) {
                                     if (data.success) {
                                         $.notifySuccess(data.msg);
                                         getData();
@@ -249,7 +249,7 @@
                                 url: '/api/contactor/addcontactor',
                                 method: 'get',
                                 data: {
-                                    
+
                                     phone: vue$.phone,
                                     name: vue$.name,
                                     remark: vue$.remark,
@@ -282,9 +282,29 @@
         }
 
         function on_edit(contactorId) {
-            vue$.contactorId = contactorId;
-            initTagSelect2(contactorId);
-            $('.modal').modal('show');
+            if (vue$.contactorId != contactorId) {
+                vue$.contactorId = contactorId;
+                $.ajax({
+                    url: '/api/contactor/GetcontactorDetail', type: 'get', data: { id: contactorId }
+                    , success: function (data) {
+                        if (data.success) {
+                            vue$.name = data.data.contactor.ContactorName;
+                            vue$.phone = data.data.contactor.PhoneNumber;
+                            vue$.remark = data.data.contactor.Remark;
+                            initTagSelect2(contactorId);
+                            $('.modal').modal('show');
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
+                    }
+                }
+                );
+            } else {
+
+                $('.modal').modal('show');
+            }
+
+
         }
 
         function on_delete(contactorId) {
@@ -302,12 +322,24 @@
         }
 
         function initTagSelect2(contactorId) {
+            debugger;
+            if ($('#tagSelect').hasClass("select2-hidden-accessible")) {
+                // Select2 has been initialized
+                $('#tagSelect').select2('destroy');
+            }
             $.ajax({
-                traditional:true,
+                traditional: true,
                 url: '/api/tag/Select2GetTags', method: 'get', data: { id: contactorId }, success: function (data) {
-                    $('tagSelect').val(null);
+                    //                    $('#tagSelect').val(null);
+                    //                    $('#tagSelect').trigger('change');
+
+
                     if (data.success) {
                         $('#tagSelect').select2({ data: data.data.results });
+
+                        //                        var selecteds = data.data.results.filter((e, i) => { return e.selected; });
+                        //                        $('#tagSelect').val(selecteds.map((e, i) => e.id));
+                        //                        $('#tagSelect').trigger('chagne');
                     } else {
                         $.notifyError(data.msg);
                     }

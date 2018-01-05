@@ -37,7 +37,7 @@ namespace SMSPlatform.Controllers
                 tagIds = nvs["tagIds"]?.Split(',');
 
                 string whereStr = " where 1=1";
-                if (string.IsNullOrWhiteSpace(name))
+                if (!string.IsNullOrWhiteSpace(name))
                 {
                     whereStr += $" and contactorName like '%{name}%' ";
 
