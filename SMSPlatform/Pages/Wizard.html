@@ -30,13 +30,15 @@
                     contactorId: '',
                     pagerData: { currentIndex: 0, pagerRange: 5, pageSize: 2, total: 30 },
                     tabNav: { currentIndex: 0, pageNumber: 3 },
-                    templates:[],
+                    templates: [],
+                    templateContent:'',
                     updateData: { selectedContactors: [],templateID:'', containerData: { containerName: '', simPhones: [] } }
                 },
                 methods: {
                     //                    onRowDelete: rowDelete, on_edit: on_edit, on_delete: on_delete
-
+                  
                 },
+                
                 computed: {
                     indexes: function () {
                         var currentIndex = this.$data.pagerData.currentIndex;
@@ -55,8 +57,16 @@
                     ,computedContactors: function() {
                         return this.updateData.selectedContactors.map((e, i) => this.datacollections.find((ee, ii) => ee.ID == e));
                     }
+
+                    
                 }
 
+
+            });
+            vue$.$watch('updateData.templateID', function (newv, oldv) {
+                $.ajax({ url: '/api/template/gettemplate', type: 'get', data: { id: newv }, success: function(data) {
+                    vue$.templateContent = data.data.TemplateContent;
+                } });
 
             });
 
@@ -286,7 +296,7 @@
                     <h1>最后确认一下</h1>
                     <h3></h3>
                     <div style="min-height: 65vh">
-                        <div style="min-height: 55vh">
+                        <div style="min-height: 50vh">
                         <table class="table table-striped table-hover table-bordered">
                             <thead>
                             <tr>
@@ -309,7 +319,8 @@
                                 <span>任务名称:{{updateData.containerData.containerName}}</span>
                                 <br/>
                                 <span>使用SIM卡:{{updateData.containerData.simPhones.join(',')}}</span>
-
+                                <br/>
+                                <span>使用模板:{{templateContent}}</span>
                             </div>
                         </div>
                     </div>
@@ -322,7 +333,7 @@
             <nav>
                 <ul class="pager">
                     <li v-if="tabNav.pageNumber!=0" class="previous"><a href="#"><span aria-hidden="true">&larr;</span>上一步</a></li>
-                    <li class="next"><a href="#">{{tabNav.currentIndex==tabNav.pageNumber?'完成':'下一步'}}<span aria-hidden="true">&rarr;</span></a></li>
+                    <li class="next"><a href="javascript:submit()">{{tabNav.currentIndex==tabNav.pageNumber?'完成':'下一步'}}<span aria-hidden="true">&rarr;</span></a></li>
                 </ul>
             </nav>
 
@@ -471,6 +482,22 @@
                 }
             });
         }
+
+        function submit() {
+            $.ajax({ url: '/api/message/CreateSMSQueue', type: 'get', data: {
+                    json: JSON.stringify(vue$.updateData)
+                },
+                success: function (data) {
+//                    debugger;
+                    if (data.success) {
+                        $.notifySuccess(data.msg, '');
+                    } else {
+                        $.notifyError(data.msg, '');
+                    }
+                }
+             });
+        }
+
 
         function initTagSelect2(contactorId) {
             $.ajax({

@@ -14,10 +14,10 @@ namespace SMSPlatform.Models
             set { dataPool["ID"] = value; }
         }
 
-        public string CongractorName
+        public string ContactorName
         {
-            get { return dataPool["CongractorName"] +""; }
-            set { dataPool["CongractorName"] = value; }
+            get { return dataPool["ContactorName"] +""; }
+            set { dataPool["ContactorName"] = value; }
         }
 
         public string PhoneNumber

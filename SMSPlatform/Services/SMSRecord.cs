@@ -108,7 +108,7 @@ namespace SMSPlatform.Services
         /// 只能修改还未发送的短消息
         /// </summary>
         /// <param name="model"></param>
-        public void UpdateSMS(RecordContainerModel model)
+        public void UpdateSMS(SMSSendQueueModel model)
         {
             var dic = new Dictionary<string,object>();
             var id = model.ID;
@@ -137,6 +137,6 @@ namespace SMSPlatform.Services
             return helper.SelectDataTable("select * from RecordContainer where ID = " + id).Select().Select(x=>(RecordContainerModel) new RecordContainerModel().SetData(x)).SingleOrDefault();
         }
 
-
+        
     }
 }

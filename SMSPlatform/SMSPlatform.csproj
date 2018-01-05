@@ -100,6 +100,7 @@
     <Compile Include="Models\ContractorModel.cs" />
     <Compile Include="Models\CookieModels.cs" />
     <Compile Include="Models\menuTemplate.cs" />
+    <Compile Include="Models\MonthlyFeeRecordModel.cs" />
     <Compile Include="Models\RecordContainerModel.cs" />
     <Compile Include="Models\ReturnResult.cs" />
     <Compile Include="Models\Selecg2Model.cs" />
@@ -141,6 +142,7 @@
     <Content Include="Content\select2.min.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\bootstrap-select2-compatible.css" />
+    <Content Include="Pages\SendQueue.html" />
     <Content Include="Pages\Wizard.html" />
     <Content Include="Pages\MonthlyLimitSettings.html" />
     <Content Include="Pages\Template.html" />

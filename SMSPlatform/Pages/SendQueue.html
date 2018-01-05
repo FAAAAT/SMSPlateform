@@ -1,0 +1,196 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>发送任务</title>
+
+    <script type="text/javascript" src="/Scripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="/Scripts/bootstrap.js"></script>
+    <link href="/Content/bootstrap.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/vue.js"></script>
+    <link href="/Content/Site.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/bootstrap-notify.js"></script>
+    <script type="text/javascript" src="/Scripts/main.js"></script>
+
+
+    <script>
+        $(function () {
+            window.vue$ = new Vue({
+                el: '#app',
+                data: {
+                    tagName: '', headerAndFooter: {}, datacollections: {} 
+                    , queryData: { containerID: null, toName: '', toPhone: '', beginTime: null, endTime: null, smsContent: '' }
+                    , sendContext: { status: 0 }
+                    , updateData: {}
+                    , smsQueueID: ''
+                },
+                methods: {
+//                     onRowDelete: rowDelete
+                }
+            });
+
+            function getData() {
+                $.ajax({
+                    url: '/api/message/getsmsqueue', data: vue$.queryData, type: 'get', success: function (data) {
+                        if (data.success) {
+                            vue$.$data.datacollections = data.data;
+                        } else {
+                            $.notifyError(data.msg, '');
+
+                        }
+
+                    }
+                });
+            }
+            window.getData = getData;
+            getData();
+
+            $.ajax({
+                url: '/api/DynamicTemplate/HeaderAndFooter',
+                method: 'get',
+                success: function (data) {
+                    vue$.$data.headerAndFooter = Object.assign({}, vue$.$data.headerAndFooter, data.data);
+                }
+            });
+
+            
+        });
+    </script>
+</head>
+<body>
+    <div id="app">
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" runat="server" href="~/">{{headerAndFooter.applicationName}}</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul v-for="menu in headerAndFooter.menus" class="nav navbar-nav">
+                        <li><a runat="server" v-bind:href="menu.href">{{menu.name}}</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="container body-content">
+            <h1>发送任务-{{sendContext.status==0?'等待':'发送中'}}</h1>
+            <h3></h3>
+            <div class="form">
+                <div class="form-group">
+                    <label>标签名称</label>
+                    <input id="txt_tagName" v-model="tagName" name="txt_tagName" type="text" class="form-control" />
+                </div>
+            </div>
+            <!--            <asp:Button ID="btn_submit" ClientIDMode="static" OnClick="on_submit" UseSubmitBehavior="False" CssClass="btn btn-primary" Text="添加" runat="server" />-->
+            <!--            <asp:Button ID="btn_query" ClientIDMode="static" OnClick="btn_query_OnClick" UseSubmitBehavior="False" CssClass="btn btn-primary" Text="查询" runat="server" />-->
+<!--            <button Class="btn btn-success" onclick="on_add(event)">添加</button>-->
+            <button Class="btn btn-primary" onclick="getData()">查询</button>
+            <div style="min-height: 65vh">
+                <table class="table table-striped table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th>电话</th>
+                            <th>姓名</th>
+                            <th>内容</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+
+                    </thead>
+                    <tbody v-for="row in datacollections">
+                        <tr>
+                            <td>{{row.ToPhoneNumber}}</td>
+                            <td>{{row.ToName}}</td>
+                            <td>{{row.SMSContent}}</td>
+                            <td>{{row.Status==0?'等待发送':''}}</td>
+                            <td><button class="btn btn-danger" v-on:click="on_delete(row.id)">删除</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+
+
+            <hr />
+            <footer>
+                <p>{{headerAndFooter.footer}}</p>
+            </footer>
+        </div>
+
+
+
+        <div class="modal fade" id="contactorModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel">{{contactorId?'编辑':'添加'}}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form role="form" id="addcontactor">
+                            <div class="form-group">
+                                <label for="name" class="control-label">姓名</label>
+                                <input type="text" v-model="name" class="form-control" required id="name">
+                                <!--                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>-->
+                                <div class="hid help-block with-errors"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone" class="control-label">电话</label>
+                                <input type="text" maxlength="14" v-model="phone" minlength="11" class="form-control" required id="phone">
+                                <!--                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>-->
+                                <div class="hid help-block with-errors"></div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label for="remark" class="control-label">备注</label>
+                                <textarea class="form-control" v-model="remark" id="remark"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="tagSelect" class="control-label">标签</label>
+                                <select class="form-control" style="width: 100%" id="tagSelect" multiple="multiple" name="tagSelect"></select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" onclick="$('#addcontactor').submit()" class="btn btn-primary">Send message</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script>
+
+//        function on_add() {
+//            vue$.smsQueueID = '';
+//            vue$.updateData
+//            $('.modal').modal('show');
+//
+//
+//        }
+
+        function on_delete(id) {
+            $.ajax({ url: '/api/message/deletesmsqueue', type: 'get', data: { id: id }, success: function(data) {
+                if (data.success) {
+                    $.notifySuccess(data.msg, '');
+                } else {
+                    $.notifyError(data.msg, '');
+                }
+            }});
+
+
+        }
+
+    </script>
+
+</body>
+</html>

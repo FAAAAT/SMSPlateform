@@ -25,10 +25,10 @@ namespace SMSPlatform.Models
             set { dataPool["CreateTime"] = value; }
         }
 
-        public int TocontactorID
+        public int ToContactorID
         {
-            get { return (int) dataPool["TocontactorID"]; }
-            set { dataPool["TocontactorID"] = value; }
+            get { return (int) dataPool["ToContactorID"]; }
+            set { dataPool["ToContactorID"] = value; }
         }
 
         public int Status
@@ -57,7 +57,7 @@ namespace SMSPlatform.Models
 
         public DateTime? SendTime
         {
-            get { return (DateTime?)dataPool["SendTime"]; }
+            get { return dataPool["SendTime"]==DBNull.Value?null:new DateTime?((DateTime)dataPool["SendTime"]); }
             set { dataPool["SendTime"] = value; }
         }
 

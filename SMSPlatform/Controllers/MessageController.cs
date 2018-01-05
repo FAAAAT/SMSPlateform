@@ -39,6 +39,40 @@ namespace SMSPlatform.Controllers
 
         }
 
+
+
+
+        [HttpGet]
+        public IHttpActionResult GetSMSQueue(int? containerId, string toName, string toPhone,
+            DateTime? beginTime, DateTime? endTime, string smsContent)
+        {
+            try
+            {
+                SMSSendQueueService service = new SMSSendQueueService(helper);
+                var datas = service.GetSMSSend(containerId, toName, toPhone, 0, beginTime, endTime, smsContent);
+                return Json(new ReturnResult()
+                {
+                    success = true,
+                    data = datas,
+                    status = 200
+                });
+
+            }
+            catch (Exception ex)
+            {
+                return Json(new ReturnResult()
+                {
+#if DEBUG
+                    msg = ex.ToString(),
+#else 
+                    msg = ex.toString(),
+#endif
+                    success = false,
+                    status = 500
+                });
+            }
+        }
+
         [HttpGet]
         public IHttpActionResult GetSIMPhones()
         {
@@ -70,11 +104,11 @@ namespace SMSPlatform.Controllers
         }
 
         [HttpGet]
-        public IHttpActionResult CreateSMSRecord(string json)
+        public IHttpActionResult CreateSMSQueue(string json)
         {
             var conn = helper.GetOpendSqlConnection();
             var tran = conn.BeginTransaction();
-
+            helper.SetTransaction(tran);
             try
             {
                 var model = JsonConvert.DeserializeObject<WizardUpdateDataModel>(json);
@@ -92,7 +126,7 @@ namespace SMSPlatform.Controllers
                 foreach (var contactorID in model.selectedContactors)
                 {
                     var cmodel =
-                        helper.SelectDataTable("select * from where ID = " + contactorID)
+                        helper.SelectDataTable("select * from Contactor where ID = " + contactorID)
                             .Select()
                             .Select(x => (contactorModel)new contactorModel().SetData(x))
                             .SingleOrDefault();
@@ -100,16 +134,19 @@ namespace SMSPlatform.Controllers
                     SMSSendQueueModel smsmodel = new SMSSendQueueModel();
                     smsmodel.ContainerID = containerid;
                     smsmodel.CreateTime = container.CreateTime;
-                    smsmodel.SMSContent = templateService.TemplateReplace(smsmodel.SMSContent,
+                    smsmodel.SMSContent = templateService.TemplateReplace(template.TemplateContent,
                         new Dictionary<string, string>()
                         {
-                            { "姓名",cmodel.CongractorName},
-                            { "日期",DateTime.Now.ToString("yyyy年MM月dd日")},
-                            
+                            {"姓名", cmodel.ContactorName},
+                            {"日期", DateTime.Now.ToString("yyyy年MM月dd日")},
+
                         });
-                    smsmodel.TocontactorID = contactorID;
-                    smsmodel.ToName = cmodel.CongractorName;
+                    smsmodel.ToContactorID = contactorID;
+                    smsmodel.ToName = cmodel.ContactorName;
                     smsmodel.ToPhoneNumber = cmodel.PhoneNumber;
+                    smsmodel.Status = 0;
+                    smsmodel.CreateTime = DateTime.Now;
+                    service.AddSMSSendQueue(smsmodel);
                 }
                 tran.Commit();
                 return Json(new ReturnResult()
@@ -135,8 +172,96 @@ namespace SMSPlatform.Controllers
             }
         }
 
+        [HttpGet]
+        public IHttpActionResult GetSMSQueue(int id)
+        {
+            try
+            {
+                SMSSendQueueService service = new SMSSendQueueService(helper);
+                var data = service.GetSendQueueModel(id);
+                return Json(new ReturnResult()
+                {
+                    data = data,
+                    success = true,
+                    status = 200
 
+                });
 
+            }
+            catch (Exception ex)
+            {
+                return Json(new ReturnResult()
+                {
+#if DEBUG
+                    msg = ex.ToString(),
+#else
+                    msg = "内部错误",
+#endif
+                    success = false,
+                    status = 500,
+                });
+            }
+        }
+
+        [HttpGet]
+        public IHttpActionResult UpdateSMSQueue([FromUri] SMSSendQueueModel model)
+        {
+            try
+            {
+                SMSSendQueueService service = new SMSSendQueueService(helper);
+                service.UpdateSMS(model);
+                return Json(new ReturnResult()
+                {
+                    msg = "更新成功",
+                    success = true,
+                    status = 200
+                });
+
+            }
+            catch (Exception ex)
+            {
+                return Json(new ReturnResult()
+                {
+#if DEBUG
+                    msg = ex.ToString(),
+#else 
+                    msg = "内部错误",
+#endif
+                    success=false,
+                    status = 500
+                });
+            }
+        }
+
+        [HttpGet]
+        public IHttpActionResult DeleteSMSQueue(int id)
+        {
+            try
+            {
+                SMSSendQueueService service = new SMSSendQueueService(helper);
+                service.DeleteSMS(id);
+                return Json(new ReturnResult()
+                {
+                    msg = "删除成功",
+                    success = true,
+                    status = 200
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new ReturnResult()
+                {
+#if DEBUG
+                    msg = ex.ToString(),
+
+#else 
+                    msg="内部错误",
+#endif
+                    success = false,
+                    status = 500,
+                });
+            }
+        }
 
         [HttpGet]
         public IHttpActionResult Select2GetSIMPhones()
