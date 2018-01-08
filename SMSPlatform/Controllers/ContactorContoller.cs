@@ -191,7 +191,7 @@ namespace SMSPlatform.Controllers
         }
 
         [HttpGet]
-        public IHttpActionResult UpdateCongractor(int id, string phoneNumber, string name, string remark, string[] tagIds)
+        public IHttpActionResult UpdateContactor(int id, string phone, string name, string remark)
         {
             var conn = helper.GetOpendSqlConnection();
             var tran = conn.BeginTransaction();
@@ -200,23 +200,23 @@ namespace SMSPlatform.Controllers
             {
 
                 var nvs = Request.RequestUri.ParseQueryString();
-                tagIds = nvs["tagIds"].Split(',');
+                var tagIds = nvs["tagIds"].Split(',');
 
                 helper.Update("contactor",
                     new Dictionary<string, object>()
                     {
                         {"contactorName", name},
-                        {"PhoneNumber", phoneNumber},
+                        {"PhoneNumber", phone},
                         {"Remark", remark}
                     }, $" ID = {id}", new List<SqlParameter>());
-                var existsTagIds = helper.SelectList<int>("Tagcontactor", "TagID", $" ContractID = {id}",
+                var existsTagIds = helper.SelectList<int>("Tagcontactor", "TagID", $" ContactID = {id}",
                     new List<SqlParameter>());
                 var addedTagIds = existsTagIds.Except(tagIds.Select(int.Parse));
                 var deletedTagIds = tagIds.Select(int.Parse).Except(existsTagIds);
                 foreach (var addedTagId in addedTagIds)
                 {
-                    helper.Insert("TagContract",
-                        new Dictionary<string, object>() {{"ContractID", id}, {"TagID", addedTagId}});
+                    helper.Insert("TagContact",
+                        new Dictionary<string, object>() {{"ContactID", id}, {"TagID", addedTagId}});
                 }
                 if (deletedTagIds.Any())
                 {

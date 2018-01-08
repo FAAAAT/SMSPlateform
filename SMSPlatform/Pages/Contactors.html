@@ -227,8 +227,9 @@
                             $.ajax({
                                 url: '/api/contactor/updatecontactor',
                                 method: 'get',
+                                traditional:true,
                                 data: {
-                                    id: vue$.contracorId,
+                                    id: vue$.contactorId,
                                     phone: vue$.phone,
                                     name: vue$.name,
                                     remark: vue$.remark,
@@ -322,7 +323,7 @@
         }
 
         function initTagSelect2(contactorId) {
-            debugger;
+           
             if ($('#tagSelect').hasClass("select2-hidden-accessible")) {
                 // Select2 has been initialized
                 $('#tagSelect').select2('destroy');
