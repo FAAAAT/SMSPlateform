@@ -87,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\ContactorContoller.cs" />
+    <Compile Include="Controllers\DepartmentController.cs" />
     <Compile Include="Controllers\DynamicTemplateController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\MessageController.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="Models\ContectorModel.cs" />
     <Compile Include="Models\ContractorModel.cs" />
     <Compile Include="Models\CookieModels.cs" />
+    <Compile Include="Models\DepartmentModel.cs" />
     <Compile Include="Models\menuTemplate.cs" />
     <Compile Include="Models\MonthlyFeeRecordModel.cs" />
     <Compile Include="Models\RecordContainerModel.cs" />
@@ -119,6 +121,7 @@
     <Compile Include="Services\ContractorService.cs" />
     <Compile Include="Services\CookieService.cs" />
     <Compile Include="Services\DBService.cs" />
+    <Compile Include="Services\DepartmentService.cs" />
     <Compile Include="Services\MonthlyFeeService.cs" />
     <Compile Include="Services\SMSRecord.cs" />
     <Compile Include="Services\SPService.cs" />
@@ -130,6 +133,12 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="Scripts\bootstrapTreeview\css\bootstrap-theme.css.map" />
+    <None Include="Scripts\bootstrapTreeview\css\bootstrap.css.map" />
+    <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.eot" />
+    <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.ttf" />
+    <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.woff" />
+    <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.woff2" />
     <None Include="Scripts\jquery-1.10.2.min.map">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -147,6 +156,7 @@
     <Content Include="Pages\MonthlyFeeRecord.html" />
     <Content Include="Pages\SendRecord.html" />
     <Content Include="Pages\SendQueue.html" />
+    <Content Include="Pages\Department.html" />
     <Content Include="Pages\Wizard.html" />
     <Content Include="Pages\MonthlyLimitSettings.html" />
     <Content Include="Pages\Template.html" />
@@ -160,6 +170,18 @@
     <Content Include="Scripts\bootstrap.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Scripts\bootstrapTreeview\css\bootstrap-theme.css" />
+    <Content Include="Scripts\bootstrapTreeview\css\bootstrap-theme.min.css" />
+    <Content Include="Scripts\bootstrapTreeview\css\bootstrap-treeview.css" />
+    <Content Include="Scripts\bootstrapTreeview\css\bootstrap.css" />
+    <Content Include="Scripts\bootstrapTreeview\css\bootstrap.min.css" />
+    <Content Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="Scripts\bootstrapTreeview\js\bootstrap-treeview.js" />
+    <Content Include="Scripts\bootstrapTreeview\js\bootstrap-treeview.min.js" />
+    <Content Include="Scripts\bootstrapTreeview\js\bootstrap.js" />
+    <Content Include="Scripts\bootstrapTreeview\js\bootstrap.min.js" />
+    <Content Include="Scripts\bootstrapTreeview\js\npm.js" />
+    <Content Include="Scripts\bootstrapTreeview\lymiTreeView_jquery.js" />
     <Content Include="Scripts\jquery-1.10.2.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -191,6 +213,9 @@
       <Project>{d957992b-913d-4338-9215-3a51faa30117}</Project>
       <Name>Logger</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Content\Images\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

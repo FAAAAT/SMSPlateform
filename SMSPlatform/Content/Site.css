@@ -24,3 +24,14 @@ body {
         padding: 0;
     }
 }
+
+
+.treetitle {
+    height: 40px;
+    line-height: 40px;
+    font-size: 20px;
+    background: #f4f5fa url(../images/fk.png) no-repeat 10px center;
+    border-radius: 4px 4px 0 0;
+    border: 1px solid #e8e8f3;
+    padding-left: 30px;
+}

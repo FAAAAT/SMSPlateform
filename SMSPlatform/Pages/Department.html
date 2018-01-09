@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>模板</title>
+
+    <script type="text/javascript" src="/Scripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="/Scripts/bootstrap.js"></script>
+    <link href="/Content/bootstrap.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/vue.js"></script>
+    <link href="/Content/Site.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/bootstrap-notify.js"></script>
+    <script type="text/javascript" src="/Scripts/main.js"></script>
+    <script type="text/javascript" src="/scripts/bootstrapTreeview/js/bootstrap-treeview.js"></script>
+    <script type="text/javascript" src="/scripts/bootstrapTreeview/lymiTreeView_jquery.js"></script>
+
+
+    <script>
+        $(function () {
+            window.vue$ = new Vue({
+                el: '#app',
+                data: {
+                    tagName: '', headerAndFooter: {}, datacollections: {},
+                    updateData: { ID: '', PDID: '', DName: '' },
+                    displayData: { PDName: '' },
+                    modalData: { selectedDeps: [] },
+                    selectedDeps: {}
+                },
+
+                methods: { onRowDelete: rowDelete }
+            });
+
+            function getData(query) {
+                $.ajax({
+                    url: '/api/Tag/GetTags', data: query ? { tagName: vue$.tagName } : {}, method: 'get', success: function (data) {
+                        vue$.$data.datacollections = data.data;
+                    }
+                });
+            }
+            window.getData = getData;
+            getData();
+
+            $.ajax({
+                url: '/api/DynamicTemplate/HeaderAndFooter',
+                method: 'get',
+                success: function (data) {
+                    vue$.$data.headerAndFooter = Object.assign({}, vue$.$data.headerAndFooter, data.data);
+                }
+            });
+
+
+            function rowDelete(id) {
+                $.ajax({
+                    url: '/api/tag/DeleteTag', method: 'get', data: { tagID: id }, success: function (data) {
+                        if (data.success) {
+                            if (data.status == 200) {
+                                $.notifySuccess(data.msg, '');
+                            } else if (data.status == 500) {
+
+                            } else if (data.status == 302) {
+                                window.location.href = data.data;
+                            }
+
+                            getData();
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
+                    }
+                });
+            }
+
+        });
+    </script>
+</head>
+<body>
+    <div id="app">
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" runat="server" href="~/">{{headerAndFooter.applicationName}}</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul v-for="menu in headerAndFooter.menus" class="nav navbar-nav">
+                        <li><a runat="server" v-bind:href="menu.href">{{menu.name}}</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="container body-content">
+            <h1>部门管理</h1>
+            <h3></h3>
+            <div style="height:78vh" class="row">
+                <div class="col-lg-5">
+                    <h3 class="treetitle">选择部门</h3>
+                    <input id="depTreeSearchBox" type="text" class="form-control" onchange="mainTreeView.treeOnSearch(event)" onkeydown="mainTreeView.searchOnKeypress(event)" />
+                    <div id="departmentTreeView" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll;"></div>
+                    <div style="text-align: center; height: 60px; margin-top: 10px;" class="loadimg-div">
+                        <img src="/Content/Images/loading.gif" style="width: 30px;" class="loadimg" />
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="form">
+                        <div v-if="updateData.ID!=0" class="form-group">
+                            <label class="control-label">
+                                上级部门
+                            </label>
+                            <input type="text" v-model="displayData.PDName" onclick="$('.modal').modal('show')" readonly="readonly" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">
+                                部门名称
+                            </label>
+                            <input type="text" v-model="updateData.DName" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <button class="btn btn-primary" id="btn_submit">{{updateData.ID||updateData.ID===0?'修改':'添加'}}</button>
+                            <button class="btn btn-danger" id="btn_del">删除</button>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+
+
+
+            <br />
+
+
+            <footer>
+                <p>{{headerAndFooter.footer}}</p>
+            </footer>
+        </div>
+
+
+    </div>
+
+
+
+    <div class="modal fade" id="contactorModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="exampleModalLabel">选择父级部门</h4>
+                </div>
+                <div class="modal-body">
+                    <h3 class="treetitle">选择部门</h3>
+                    <input type="text" class="form-control" onchange="modalTreeView.treeOnSearch(event)" onkeydown="modalTreeView.searchOnKeypress(event)" />
+                    <div id="modalDepartmentTreeView" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll;"></div>
+                    <div style="text-align: center; height: 60px; margin-top: 10px;" class="loadimg-div">
+                        <img src="/Content/Images/loading.gif" style="width: 30px;" class="loadimg" />
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" onclick="$('#addcontactor').submit()" class="btn btn-primary">Send message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <script>
+
+        function on_add() {
+            $.ajax({
+                url: '/api/tag/addtag', method: 'get', data: { tagName: vue$.tagName }, success: function (data) {
+                    if (data.success) {
+                        $.notifySuccess('<h6>' + data.msg + '</h6>', '');
+                        getData();
+                    } else {
+                        $.notifyError('<h6>' + data.msg + '</h6>', '');
+                    }
+                }
+            });
+
+        }
+
+
+        var mainTreeView = $.lymiTreeSelector({
+            treeviewID: 'departmentTreeView',
+            treeviewOptions: { color: '#4280cd' },
+            requestUrl: '/api/Department/GetDepartmentTreeData',
+            onClientSelected: function (data) {
+                if (data.length == 0) {
+                    vue$.updateData.ID = '';
+                    vue$.updateData.PDID = '';
+                    vue$.displayData.PDName = '';
+                    vue$.updateData.DName = '';
+
+                } else {
+                    var pdata = mainTreeView.instance.treeview('getParent', data[0].MID);
+                    if (pdata) {
+                        vue$.updateData.PDID = pdata.MID;
+                        vue$.displayData.PDName = pdata.text;
+                    }
+                    vue$.updateData.ID = data[0].MID;
+                    vue$.updateData.DName = data[0].text;
+                    vue$.updateData.selectedDeps = data;
+                }
+
+                //                console.log(data);
+
+            },
+        });
+
+        var modalTreeView = $.lymiTreeSelector({
+            treeviewID: 'modalDepartmentTreeView',
+            treeviewOptions: { color: '#4280cd' },
+            requestUrl: '/api/Department/GetDepartmentTreeData',
+            onClientSelected: function (data) {
+                vue$.modalData.selectedDeps = data;
+            }
+        });
+
+    </script>
+
+
+
+
+
+</body>
+</html>
