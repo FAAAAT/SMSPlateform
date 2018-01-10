@@ -14,23 +14,48 @@
     <script type="text/javascript" src="/Scripts/validator.min.js"></script>
     <link rel="stylesheet" href="/Content/select2.min.css" />
     <script type="text/javascript" src="/Scripts/select2.full.min.js"></script>
+    <script type="text/javascript" src="/scripts/bootstrapTreeview/js/bootstrap-treeview.js"></script>
+    <script type="text/javascript" src="/scripts/bootstrapTreeview/lymiTreeView_jquery.js"></script>
+
     <!--    <link href="/Content/bootstrap-select2-compatible.css" rel="stylesheet" />-->
     <script>
         $(function () {
             window.vue$ = new Vue({
                 el: '#app',
                 data: {
-                    tagName: '', headerAndFooter: {}, datacollections: {}
-                    , name: '', phone: '', remark: '',
-                    queryData: { name: '', phone: '', tagIds: [] },
+                    tagName: '',
+                    headerAndFooter: {},
+                    datacollections: {},
+                    name: '',
+                    phone: '',
+                    remark: '',
+                    queryData: { name: '', phone: '', tagIds: [], selectedDeps: [] },
+                    querySelectedDeps:[],
+                    modalData: { selectedDeps: [] },
                     contactorId: ''
                 },
-                methods: { onRowDelete: rowDelete, on_edit: on_edit, on_delete: on_delete }
+                methods: { onRowDelete: rowDelete, on_edit: on_edit, on_delete: on_delete },
+                computed: {
+                    queryDNames: function () {
+                        return this.querySelectedDeps.map(function (e, i) {
+                            return queryTreeView.instance.treeview('getNode', e.nodeId).text;
+                        });
+                    }
+                },
+               
+
+            });
+
+            vue$.$watch('querySelectedDeps', (n, o) => {
+                
+                vue$.queryData.selectedDeps = n.map((e, i) => e.MID);
             });
 
             function getData() {
                 $.ajax({
-                    url: '/api/contactor/getcontactor', data: vue$.queryData, method: 'get', success: function (data) {
+                    url: '/api/contactor/getcontactor',
+                    traditional:true,
+                    data: vue$.queryData, method: 'get', success: function (data) {
                         if (data.success) {
                             vue$.$data.datacollections = data.data;
 
@@ -59,6 +84,9 @@
                     $('#queryTagSelect').select2({ data: data.data.results });
                     $('#fuckStupidS2>.select2-container').css('width', '100%');
                     $('#fuckStupidS2>.select2-container').css('min-width', '200px');
+                    $('#queryTagSelect').on('change', function(e) {
+                        vue$.queryData.tagIds = $('#queryTagSelect').val();
+                    });
                 }
             });
 
@@ -124,6 +152,13 @@
                     <select multiple="multiple" id="queryTagSelect"></select>
                 </div>
 
+                <div class="form-group">
+                    <label class="control-label">
+                        部门
+                    </label>
+                    <input type="text" v-model="queryDNames" onclick="openQueryDepModal(event)" readonly="readonly" class="form-control" />
+                </div>
+
             </div>
 
             <button class="btn btn-primary" onclick="on_add(event)">添加</button>
@@ -144,7 +179,7 @@
                             <td>{{row.PhoneNumber}}</td>
                             <td>
                                 <button class="btn btn-danger" v-on:click="on_delete(row.ID)">删除</button>
-                                <button class="btn btn-danger" v-on:click="on_edit(row.ID)">edit</button>
+                                <button class="btn btn-primary" v-on:click="on_edit(row.ID)">编辑</button>
 
                             </td>
                         </tr>
@@ -191,10 +226,23 @@
                                 <label for="remark" class="control-label">备注</label>
                                 <textarea class="form-control" v-model="remark" id="remark"></textarea>
                             </div>
+
                             <div class="form-group">
                                 <label for="tagSelect" class="control-label">标签</label>
                                 <select class="form-control" style="width: 100%" id="tagSelect" multiple="multiple" name="tagSelect"></select>
                             </div>
+
+                            <div class="form-group">
+                                <h3 class="treetitle">选择部门</h3>
+                                <input type="text" class="form-control" onchange="modalTreeView.treeOnSearch(event)" onkeydown="modalTreeView.searchOnKeypress(event)" />
+                                <div id="modalDepartmentTreeView" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll;"></div>
+                                <div style="text-align: center; height: 60px; margin-top: 10px;" class="loadimg-div">
+                                    <img src="/Content/Images/loading.gif" style="width: 30px;" class="loadimg" />
+                                </div>
+                            </div>
+
+
+
                         </form>
                     </div>
                     <div class="modal-footer">
@@ -205,6 +253,32 @@
             </div>
         </div>
 
+
+
+
+        <div class="modal fade" id="departemntModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="">选择部门</h4>
+                    </div>
+                    <div class="modal-body">
+                        <h3 class="treetitle">选择部门</h3>
+                        <input type="text" class="form-control" onchange="queryTreeView.treeOnSearch(event)" onkeydown="modalTreeView.searchOnKeypress(event)" />
+                        <div id="queryDepartmentTreeView" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll;"></div>
+                        <div style="text-align: center; height: 60px; margin-top: 10px;" class="loadimg-div">
+                            <img src="/Content/Images/loading.gif" style="width: 30px;" class="loadimg" />
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <!--                        <button type="button" onclick="modalConfirm(event)" class="btn btn-success">确认</button>-->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 
@@ -224,13 +298,14 @@
                             $.ajax({
                                 url: '/api/contactor/updatecontactor',
                                 method: 'get',
-                                traditional:true,
+                                traditional: true,
                                 data: {
                                     id: vue$.contactorId,
                                     phone: vue$.phone,
                                     name: vue$.name,
                                     remark: vue$.remark,
-                                    tagIds: $('#tagSelect').val()
+                                    tagIds: $('#tagSelect').val(),
+                                    selectedDeps: vue$.modalData.selectedDeps.map((me, mi) => me.MID),
                                 },
                                 success: function (data) {
                                     if (data.success) {
@@ -251,7 +326,9 @@
                                     phone: vue$.phone,
                                     name: vue$.name,
                                     remark: vue$.remark,
-                                    tagIds: $('#tagSelect').val()
+                                    tagIds: $('#tagSelect').val(),
+                                    selectedDeps: vue$.modalData.selectedDeps.map((me, mi) => me.MID),
+
                                 },
                                 success: function (data) {
                                     if (data.success) {
@@ -275,7 +352,11 @@
 
             initTagSelect2('');
 
-            $('.modal').modal('show');
+            modalTreeView.clearSelection();
+
+
+
+            $('#contactorModal').modal('show');
 
         }
 
@@ -290,7 +371,13 @@
                             vue$.phone = data.data.contactor.PhoneNumber;
                             vue$.remark = data.data.contactor.Remark;
                             initTagSelect2(contactorId);
-                            $('.modal').modal('show');
+                            modalTreeView.clearSelection();
+                            console.log(data.data.depIds);
+                            modalTreeView.selectNodes(data.data.depIds);
+
+
+
+                            $('#contactorModal').modal('show');
                         } else {
                             $.notifyError(data.msg, '');
                         }
@@ -299,7 +386,7 @@
                 );
             } else {
 
-                $('.modal').modal('show');
+                $('#contactorModal').modal('show');
             }
 
 
@@ -320,10 +407,13 @@
         }
 
         function initTagSelect2(contactorId) {
-           
+
             if ($('#tagSelect').hasClass("select2-hidden-accessible")) {
                 // Select2 has been initialized
+                $('#tagSelect').val(null);
+                $('#tagSelect').trigger('change');
                 $('#tagSelect').select2('destroy');
+             
             }
             $.ajax({
                 traditional: true,
@@ -333,17 +423,48 @@
 
 
                     if (data.success) {
-                        $('#tagSelect').select2({ data: data.data.results });
 
-                        //                        var selecteds = data.data.results.filter((e, i) => { return e.selected; });
-                        //                        $('#tagSelect').val(selecteds.map((e, i) => e.id));
-                        //                        $('#tagSelect').trigger('chagne');
+                        $('#tagSelect').select2({ data: data.data.results });
+                        setTimeout(function () {
+                            console.log($('#tagSelect').hasClass("select2-hidden-accessible"));
+                            var selecteds = data.data.results.filter((e, i) => { return e.selected; });
+                            var selectedIds = selecteds.map((e, i) => e.id);
+                            console.log('set values:' + selectedIds);
+                            $('#tagSelect').val(selectedIds);
+                            $('#tagSelect').trigger('change');
+                        }, 300);
+                        console.log(data);
+
                     } else {
                         $.notifyError(data.msg);
                     }
                 }
             });
         }
+
+        function openQueryDepModal() {
+            $('#departemntModal').modal('show');
+        }
+
+        var modalTreeView = $.lymiTreeSelector({
+            treeviewID: 'modalDepartmentTreeView',
+            treeviewOptions: { color: '#4280cd' },
+            requestUrl: '/api/Department/GetDepartmentTreeData',
+            onClientSelected: function (data) {
+                vue$.modalData.selectedDeps = data;
+            }
+        });
+
+        var queryTreeView = $.lymiTreeSelector({
+            treeviewID: 'queryDepartmentTreeView',
+            treeviewOptions: { multiSelect: true, color: '#4280cd' },
+            requestUrl: '/api/Department/GetDepartmentTreeData',
+            onClientSelected: function (data) {
+                
+                vue$.querySelectedDeps = data;
+            }
+        });
+
 
     </script>
 

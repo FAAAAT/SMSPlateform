@@ -106,11 +106,11 @@
                 </div>
                 <div class="col-lg-7">
                     <div class="form">
-                        <div v-if="updateData.ID!=0" class="form-group">
+                        <div v-if="updateData.ID!==0" class="form-group">
                             <label class="control-label">
                                 上级部门
                             </label>
-                            <input type="text" v-model="displayData.PDName" onclick="$('.modal').modal('show')" readonly="readonly" class="form-control" />
+                            <input type="text" v-model="displayData.PDName" onclick="openModal(event)" readonly="readonly" class="form-control" />
                         </div>
 
                         <div class="form-group">
@@ -121,12 +121,10 @@
                         </div>
 
                         <div class="form-group">
-                            <button class="btn btn-primary" id="btn_submit">{{updateData.ID||updateData.ID===0?'修改':'添加'}}</button>
-                            <button class="btn btn-danger" id="btn_del">删除</button>
+                            <button class="btn btn-primary" onclick="on_submit(event)" id="btn_submit">{{updateData.ID||updateData.ID===0?'修改':'添加'}}</button>
+                            <button class="btn btn-danger" onclick="on_del(event)" id="btn_del">删除</button>
                         </div>
                     </div>
-
-
                 </div>
             </div>
 
@@ -163,8 +161,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" onclick="$('#addcontactor').submit()" class="btn btn-primary">Send message</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" onclick="modalConfirm(event)" class="btn btn-success">确认</button>
                 </div>
             </div>
         </div>
@@ -209,7 +207,7 @@
                     }
                     vue$.updateData.ID = data[0].MID;
                     vue$.updateData.DName = data[0].text;
-                    vue$.updateData.selectedDeps = data;
+//                    vue$.updateData.selectedDeps = data;
                 }
 
                 //                console.log(data);
@@ -226,6 +224,96 @@
             }
         });
 
+
+        function openModal(e) {
+            modalTreeView.clearSelection();
+            if (vue$.updateData.PDID||vue$.updateData.PDID===0) {
+                modalTreeView.instance.treeview('selectNode', vue$.updateData.PDID);
+            }
+            $('.modal').modal('show');
+        }
+
+        function modalConfirm(e) {
+            var datas =vue$.modalData.selectedDeps;
+            if (datas.length) {
+                vue$.updateData.PDID = vue$.modalData.selectedDeps[0].MID;
+                vue$.displayData.PDName = vue$.modalData.selectedDeps[0].text;
+            } else {
+                vue$.updateData.PDID = null;
+                vue$.displayData.PDName = '';
+            }
+
+            $('.modal').modal('hide');
+        }
+
+        
+
+        function on_submit() {
+            if (vue$.updateData.ID === 0 || vue$.updateData.ID) {
+                $.ajax({
+                    url: '/api/department/edit',
+                    type: 'get',
+                    data: vue$.updateData,
+                    success: function(data) {
+                        if (data.success) {
+                            $.notifySuccess(data.msg, '');
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
+
+                        reInitTree();
+                    }
+                });
+            } else {
+                $.ajax({
+                    url: '/api/department/add',
+                    type: 'get',
+                    data: vue$.updateData,
+                    success: function(data) {
+                        if (data.success) {
+                            $.notifySuccess(data.msg, '');
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
+                        vue$.updateData.ID = data.data;
+                        reInitTree();
+                    }
+                });
+
+            }
+
+            
+        }
+
+        function on_del() {
+            $.ajax({
+                url: '/api/department/del',
+                type: 'get',
+                data: vue$.updateData,
+                success: function(data) {
+                    if (data.success) {
+                        $.notifySuccess(data.msg, '');
+                    } else {
+                        $.notifyError(data.msg, '');
+                    }
+                    vue$.updateData.PDID = null;
+                    vue$.displayData.PDName = '',
+                    vue$.updateData.DName = '',
+                    reInitTree();
+                },
+                error: function(data) {
+                    $.notifyError(data,'');
+                }
+
+
+            });
+        }
+
+
+        function reInitTree() {
+            mainTreeView.init();
+            modalTreeView.init();
+        }
     </script>
 
 

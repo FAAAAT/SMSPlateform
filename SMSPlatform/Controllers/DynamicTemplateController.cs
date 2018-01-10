@@ -27,6 +27,10 @@ namespace SMSPlatform.Controllers
                 });
                 model.menus.Add(new MenuItem()
                 {
+                    name="部门管理",href="/pages/department.html",
+                });
+                model.menus.Add(new MenuItem()
+                {
                     name="资费设置",href="/pages/MonthlyLimitSettings.html"
                 });
                 model.menus.Add(new MenuItem()

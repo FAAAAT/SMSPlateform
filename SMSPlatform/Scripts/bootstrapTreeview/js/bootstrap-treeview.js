@@ -173,8 +173,8 @@
 	};
 
     //获取树中的所有节点
-    Tree.prototype.getNodes= function(refNodes) {
-        refNodes = this.nodes;
+    Tree.prototype.getNodes= function() {
+        return this.nodes;
     }
 
     Tree.prototype.remove = function () {
@@ -1229,9 +1229,9 @@
 	$.fn[pluginName] = function (options, args) {
 
 		var result;
-
 		this.each(function () {
-			var _this = $.data(this, pluginName);
+            var _this = $.data(this, pluginName);
+		    
 			if (typeof options === 'string') {
 				if (!_this) {
 					logError('Not initialized, can not call method : ' + options);

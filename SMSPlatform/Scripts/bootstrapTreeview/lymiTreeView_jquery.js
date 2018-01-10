@@ -14,7 +14,7 @@
                 treeviewOptions: {},
             };
             var finalOptions = $.extend({}, defaultOptions, options);
-          
+
             return new LymiTreeSelector(finalOptions);
         }
     });
@@ -116,7 +116,7 @@ function treeSelectorInit(initOptions, departmentSelector) {
                         });
                     }
 
-        
+
                     $(defaultSelectedItems).each(function (innerIndex, innerItem) {
                         if (item.MID === innerItem.MID) {
                             var p = {};
@@ -269,6 +269,26 @@ function treeSelectorInit(initOptions, departmentSelector) {
         //            $("#<%=btn_chooseDep.ClientID%>").click();
 
         DepartmentSelector.oldData = { oldNodes: DepartmentSelector.instance.treeview('getSelected') }
+    }
+
+    DepartmentSelector.clearSelection = function () {
+        $(DepartmentSelector.instance.treeview('getSelected')).each(function (i, e) {
+            DepartmentSelector.instance.treeview('unselectNode', e);
+        });;
+    }
+    DepartmentSelector.selectNodes = function (mids) {
+        if (mids) {
+            var nodes = DepartmentSelector.instance.treeview('getNodes');
+
+            $(mids).each(function (index, element) {
+                var node = nodes.find((e, i) => e.MID == element);
+                console.log(node);
+                DepartmentSelector.instance.treeview('selectNode', node);
+
+
+                DepartmentSelector.instance.treeview('expandNode', node, { levels: node.level });
+            });
+        }
     }
 }
 
