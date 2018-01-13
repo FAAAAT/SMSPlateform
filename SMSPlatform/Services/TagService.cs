@@ -49,7 +49,7 @@ namespace SMSPlatform.Services
             {
                 throw new Exception("TagName 不能为空");
             }
-            if (helper.SelectScalar<int>("select count(1) where TagName = '" + model.TagName + "'") == 0)
+            if (helper.SelectScalar<int>("select count(1) from Tag where ID = '" + model.ID + "'") == 0)
             {
                 throw new Exception("Tag 不存在");
             }

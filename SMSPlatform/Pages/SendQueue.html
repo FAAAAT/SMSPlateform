@@ -77,22 +77,25 @@
                 </div>
             </div>
         </div>
+        
+
         <div class="container body-content">
             <h1>发送任务-{{sendContext.status==0?'等待':'发送中'}}</h1>
             <h3></h3>
-            <div class="form">
-                <div class="form-group">
-                    <label>标签名称</label>
-                    <input id="txt_tagName" v-model="tagName" name="txt_tagName" type="text" class="form-control" />
+            <div id="container-parent">
+                <div class="form">
+                    <div class="form-group">
+                        <label>标签名称</label>
+                        <input id="txt_tagName" v-model="tagName" name="txt_tagName" type="text" class="form-control" />
+                    </div>
                 </div>
-            </div>
-            <!--            <asp:Button ID="btn_submit" ClientIDMode="static" OnClick="on_submit" UseSubmitBehavior="False" CssClass="btn btn-primary" Text="添加" runat="server" />-->
-            <!--            <asp:Button ID="btn_query" ClientIDMode="static" OnClick="btn_query_OnClick" UseSubmitBehavior="False" CssClass="btn btn-primary" Text="查询" runat="server" />-->
-<!--            <button Class="btn btn-success" onclick="on_add(event)">添加</button>-->
-            <button Class="btn btn-primary" onclick="getData()">查询</button>
-            <div style="min-height: 65vh">
-                <table class="table table-striped table-hover table-bordered">
-                    <thead>
+                <!--            <asp:Button ID="btn_submit" ClientIDMode="static" OnClick="on_submit" UseSubmitBehavior="False" CssClass="btn btn-primary" Text="添加" runat="server" />-->
+                <!--            <asp:Button ID="btn_query" ClientIDMode="static" OnClick="btn_query_OnClick" UseSubmitBehavior="False" CssClass="btn btn-primary" Text="查询" runat="server" />-->
+                <!--            <button Class="btn btn-success" onclick="on_add(event)">添加</button>-->
+                <button Class="btn btn-primary" onclick="getData()">查询</button>
+                <div style="min-height: 65vh">
+                    <table class="table table-striped table-hover table-bordered">
+                        <thead>
                         <tr>
                             <th>电话</th>
                             <th>姓名</th>
@@ -101,8 +104,8 @@
                             <th>操作</th>
                         </tr>
 
-                    </thead>
-                    <tbody v-for="row in datacollections">
+                        </thead>
+                        <tbody v-for="row in datacollections">
                         <tr>
                             <td>{{row.ToPhoneNumber}}</td>
                             <td>{{row.ToName}}</td>
@@ -110,11 +113,60 @@
                             <td>{{row.Status==0?'等待发送':''}}</td>
                             <td><button class="btn btn-danger" v-on:click="on_delete(row.id)">删除</button></td>
                         </tr>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                
 
+                </div>
             </div>
+       
+            <div id="container-children">
+                <div class="form">
+                    <div class="form-group">
+                        <label>电话</label>
+                        <input id="txt_queryPhone" v-model="" name="txt_queryPhone" type="text" class="form-control" />
 
+                    </div>
+                    <div class="form-group">
+                        <label>姓名</label>
+                        <input id="txt_queryRecName" v-model="" name="txt_queryRecName" type="text" class="form-control" />
+
+                    </div>
+                    <div class="form-group">
+                        <label>时间</label>
+                        
+                    </div>
+                </div>
+                <!--            <asp:Button ID="btn_submit" ClientIDMode="static" OnClick="on_submit" UseSubmitBehavior="False" CssClass="btn btn-primary" Text="添加" runat="server" />-->
+                <!--            <asp:Button ID="btn_query" ClientIDMode="static" OnClick="btn_query_OnClick" UseSubmitBehavior="False" CssClass="btn btn-primary" Text="查询" runat="server" />-->
+                <!--            <button Class="btn btn-success" onclick="on_add(event)">添加</button>-->
+                <button Class="btn btn-primary" onclick="getData()">查询</button>
+                <div style="min-height: 65vh">
+                    <table class="table table-striped table-hover table-bordered">
+                        <thead>
+                        <tr>
+                            <th>电话</th>
+                            <th>姓名</th>
+                            <th>内容</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+
+                        </thead>
+                        <tbody v-for="row in datacollections">
+                        <tr>
+                            <td>{{row.ToPhoneNumber}}</td>
+                            <td>{{row.ToName}}</td>
+                            <td>{{row.SMSContent}}</td>
+                            <td>{{row.Status==0?'等待发送':''}}</td>
+                            <td><button class="btn btn-danger" v-on:click="on_delete(row.id)">删除</button></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                
+
+                </div>
+            </div>
 
 
             <hr />

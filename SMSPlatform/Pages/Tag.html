@@ -10,25 +10,48 @@
     <link href="/Content/bootstrap.css" rel="stylesheet" />
     <script type="text/javascript" src="/Scripts/vue.js"></script>
     <link href="/Content/Site.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/validator.min.js"></script>
+
     <script type="text/javascript" src="/Scripts/bootstrap-notify.js"></script>
     <script type="text/javascript" src="/Scripts/main.js"></script>
     <script>
         $(function () {
             window.vue$ = new Vue({
                 el: '#app',
-                data: { tagName: '', headerAndFooter: {}, datacollections: {} },
-                methods: { onRowDelete: rowDelete }
+                data: {
+                    tagName: ''
+                    , headerAndFooter: {}
+                    , datacollections: {}
+                    , updateData: { TagName: '', ID: '' }
+                },
+
+                methods: { onRowDelete: rowDelete,on_edit:on_edit },
+
             });
+
+            vue$.$watch('updateData.ID', function (nv, ov) {
+                if (nv) {
+              
+                    var data = vue$.datacollections.find((e, i) => e.id == nv);
+                    console.log(data);
+                    vue$.$data.updateData.TagName = data.name;
+                    console.log(vue$.$data);
+
+                }
+            });
+
 
             function getData(query) {
                 $.ajax({
-                    url: '/api/Tag/GetTags',data:query?{tagName : vue$.tagName}: {}, method: 'get', success: function (data) {
+                    url: '/api/Tag/GetTags', data: query ? { tagName: vue$.tagName } : {}, method: 'get', success: function (data) {
                         vue$.$data.datacollections = data.data;
                     }
                 });
             }
             window.getData = getData;
             getData();
+
+
 
             $.ajax({
                 url: '/api/DynamicTemplate/HeaderAndFooter',
@@ -44,10 +67,10 @@
                     url: '/api/tag/DeleteTag', method: 'get', data: { tagID: id }, success: function (data) {
                         if (data.success) {
                             if (data.status == 200) {
-                                $.notifySuccess(data.msg,'');
-                            } else if(data.status == 500) {
-                                
-                            } else if(data.status == 302) {
+                                $.notifySuccess(data.msg, '');
+                            } else if (data.status == 500) {
+
+                            } else if (data.status == 302) {
                                 window.location.href = data.data;
                             }
 
@@ -108,7 +131,11 @@
                         <tr>
                             <td>{{row.name}}</td>
                             <td>{{row.count}}</td>
-                            <td><button class="btn btn-danger" v-on:click="onRowDelete(row.id)">删除</button></td>
+                            <td>
+                                <button class="btn btn-danger" v-on:click="onRowDelete(row.id)">删除</button>
+                                <button class="btn btn-primary" v-on:click="on_edit(row.id)">编辑</button>
+                            </td>
+
                         </tr>
                     </tbody>
                 </table>
@@ -123,8 +150,67 @@
             </footer>
         </div>
 
+
+
+
+        <div class="modal fade" id="udpateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel">{{updateData.ID?'编辑':'添加'}}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form role="form" id="addcontactor">
+                            <div class="form-group">
+                                <label for="name" class="control-label">标签名称</label>
+                                <input type="text" v-model="updateData.TagName" class="form-control" required id="tagName">
+                                <!--                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>-->
+                                <div class="hid help-block with-errors"></div>
+                            </div>
+
+
+
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" onclick="$('#addcontactor').submit()" class="btn btn-primary">Send message</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
     </div>
     <script>
+        $(function() {
+            var validator1 = $('#addcontactor').validator().on('submit', function(e) {
+          
+                if (!e.isDefaultPrevented()) {
+                    if (vue$.updateData.ID) {
+                        $.ajax({
+                            url: '/api/tag/updatetag', data: vue$.updateData, type: 'get'
+                            , success: function(data) {
+                                if (data.success) {
+                                    getData(true);
+                                    $.notifySuccess(data.msg,'');
+                                } else {
+                                    $.notifyError(data.msg, '');
+                                }
+                            },error: function(data) {
+                                $.notifyError(data, '');
+                            }
+                        });
+                    }
+                }
+                e.preventDefault();
+            });
+        });
+        
 
         function on_add() {
             $.ajax({
@@ -133,14 +219,20 @@
                         $.notifySuccess('<h6>' + data.msg + '</h6>', '');
                         getData();
                     } else {
-                        $.notifyError('<h6>' + data.msg + '</h6>','');
+                        $.notifyError('<h6>' + data.msg + '</h6>', '');
                     }
                 }
             });
-            
+
         }
 
-       
+        function on_edit(id) {
+            vue$.updateData.ID = id;
+
+            $('#udpateModal').modal('show');
+
+        }
+
 
     </script>
 

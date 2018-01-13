@@ -130,7 +130,7 @@ namespace SMSPlatform.Controllers
         }
 
         [HttpGet]
-        public IHttpActionResult UpdateTag(TagModel model)
+        public IHttpActionResult UpdateTag([FromUri]TagModel model)
         {
             SqlHelper helper = new SqlHelper();
             try
@@ -166,6 +166,7 @@ namespace SMSPlatform.Controllers
             }
         }
 
+        
 
         [HttpGet]
         public IHttpActionResult Select2GetTags(int? id = null)
