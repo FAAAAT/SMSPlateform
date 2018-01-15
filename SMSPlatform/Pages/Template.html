@@ -162,8 +162,8 @@
                             <div class="form-group">
                                 <label for="remark" class="control-label">模板内容</label>
                                 <textarea class="form-control" v-model="updateData.TemplateContent" id="content"></textarea>
-                                <label>约{{updateData.TemplateContent?updateData.TemplateContent.length:0}}字/70字一条</label>
-                            </div>
+<!--                                <label>约{{updateData.TemplateContent?updateData.TemplateContent.length:0}}字/70字一条</label>-->
+                            </div><label>可用模板参数{姓名}{电话}{日期}{通知内容}</label>
 
                         </form>
                     </div>
@@ -195,7 +195,7 @@
                             $.ajax({
                                 url: '/api/template/updatetemplate',
                                 method: 'get',
-                                data: vue$.updateData ,
+                                data: vue$.updateData,
                                 success: function (data) {
                                     if (data.success) {
                                         $.notifySuccess(data.msg);
@@ -206,7 +206,7 @@
                                 }
                             });
                         } else {
-//                            vue$.updateData.ID = 1;
+                            //                            vue$.updateData.ID = 1;
                             $.ajax({
                                 traditional: true,
                                 url: '/api/template/addtemplate',
