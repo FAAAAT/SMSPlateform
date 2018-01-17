@@ -124,17 +124,24 @@ namespace SMSPlatform.Controllers
 
         [HttpGet]
         public IHttpActionResult GetSMSQueue(int? containerId, string toName, string toPhone,
-            DateTime? beginTime, DateTime? endTime, string smsContent)
+            DateTime? beginTime, DateTime? endTime, string smsContent,int? pageIndex,int? pageSize)
         {
             try
             {
                 SMSSendQueueService service = new SMSSendQueueService(helper);
                 var datas = service.GetSMSSend(containerId, toName, toPhone, 0, beginTime, endTime, smsContent);
+                int total = datas.Count();
+                if (pageIndex.HasValue&&pageSize.HasValue)
+                {
+                    datas = datas.Skip(pageIndex.Value*pageSize.Value).Take(pageSize.Value);
+
+                }
                 return Json(new ReturnResult()
                 {
                     success = true,
                     data = datas,
                     status = 200
+                    ,total = total
                 });
 
             }
@@ -152,6 +159,46 @@ namespace SMSPlatform.Controllers
                 });
             }
         }
+
+        [HttpGet]
+        public IHttpActionResult GetSMSRecord(int? containerId, string toName, string toPhone,
+           DateTime? beginTime, DateTime? endTime, string smsContent, int? pageIndex, int? pageSize)
+        {
+            try
+            {
+                SMSSendQueueService service = new SMSSendQueueService(helper);
+                var datas = service.GetSMSSend(containerId, toName, toPhone, 0, beginTime, endTime, smsContent);
+                int total = datas.Count();
+                if (pageIndex.HasValue && pageSize.HasValue)
+                {
+                    datas = datas.Skip(pageIndex.Value * pageSize.Value).Take(pageSize.Value);
+
+                }
+                return Json(new ReturnResult()
+                {
+                    success = true,
+                    data = datas,
+                    status = 200
+                    ,
+                    total = total
+                });
+
+            }
+            catch (Exception ex)
+            {
+                return Json(new ReturnResult()
+                {
+#if DEBUG
+                    msg = ex.ToString(),
+#else 
+                    msg = ex.toString(),
+#endif
+                    success = false,
+                    status = 500
+                });
+            }
+        }
+
 
         [HttpGet]
         public IHttpActionResult GetSIMPhones()

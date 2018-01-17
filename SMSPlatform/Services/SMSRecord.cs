@@ -159,6 +159,43 @@ namespace SMSPlatform.Services
 
         }
 
+
+        public IEnumerable<SMSSendQueueModel> GetSMSRecord(int? containerId, string toName, string toPhone, int? status, DateTime? beginTime, DateTime? endTime, string smsContent)
+        {
+            var whereStr = " where 1=1 ";
+            if (containerId.HasValue)
+            {
+                whereStr += $" and ContainerID ={containerId}";
+            }
+            if (!string.IsNullOrWhiteSpace(toName))
+            {
+                whereStr += $" and ToName like '%{toName}%'";
+            }
+            if (!string.IsNullOrWhiteSpace(toPhone))
+            {
+                whereStr += $" and ToPhoneNumber like '%{toPhone}%'";
+            }
+            if (status.HasValue)
+            {
+                whereStr += $" and Status = {status}";
+            }
+            if (beginTime.HasValue)
+            {
+                whereStr += $" and CreateTime > '{beginTime}'";
+            }
+            if (endTime.HasValue)
+            {
+                whereStr += $" and CreateTime < '{endTime}'";
+            }
+            if (!string.IsNullOrWhiteSpace(smsContent))
+            {
+                whereStr += $" and SMSContent like '%{smsContent}%'";
+            }
+
+            return helper.SelectDataTable("select * from SMSSendRecord " + whereStr + " union all select * from SMSSendRecord " + whereStr).Select().Select(x => (SMSSendQueueModel)new SMSSendQueueModel().SetData(x));
+
+        }
+
         /// <summary>
         /// 只能修改还未发送的短消息
         /// </summary>
