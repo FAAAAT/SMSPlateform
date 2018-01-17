@@ -23,7 +23,7 @@ namespace SMSPlatform.Services
             var dic = new Dictionary<string, object>();
             model.GetValues(dic);
             dic.Remove("ID");
-            return (int) helper.Insert("RecordContainer", dic, "OUTPUT inserted.ID");
+            return (int)helper.Insert("RecordContainer", dic, "OUTPUT inserted.ID");
         }
 
         public int AddSMSSendQueue(SMSSendQueueModel model)
@@ -32,22 +32,48 @@ namespace SMSPlatform.Services
             model.GetValues(dic);
             model.Status = 0;
             dic.Remove("ID");
-            return (int) helper.Insert("SMSSendQueue", dic, "OUTPUT inserted.ID");
+            return (int)helper.Insert("SMSSendQueue", dic, "OUTPUT inserted.ID");
         }
 
-        public void CompleteSMS(int smsID,bool success)
+        public SMSSendQueueModel GetNextData(string phone)
+        {
+            var container = helper.SelectDataTable($"select * from RecordContainer where SIMsPhone like '%{phone}%'").Select().Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
+            if (container == null)
+            {
+                return null;
+            }
+            else
+            {
+                var model = helper.SelectDataTable(
+                    $"select * from SMSSendQueue where ID = (select Min(ID) from SMSSendQueue where ContainerID = {container.ID}) and (status = 0)").Select().Select(x => new SMSSendQueueModel().SetData(x) as SMSSendQueueModel).SingleOrDefault();
+                model.Status = 1;
+                var dic = new Dictionary<string, object>();
+                model.GetValues(dic);
+                dic.Remove("ID");
+                helper.Update("SMSSendQueue", dic, " ID = " + model.ID, new List<SqlParameter>());
+
+                return model;
+            }
+
+
+        }
+
+        public void CompleteSMS(int smsID, bool success)
         {
             var conn = helper.GetOpendSqlConnection();
             var tran = conn.BeginTransaction();
+            SMSSendQueueModel model = null;
+            helper.SetTransaction(tran);
             try
             {
-                var model = helper.SelectDataTable($"select * from SMSSendQueue where ID = {smsID}").Select().Select(x=>(SMSSendQueueModel)new SMSSendQueueModel().SetData(x)).SingleOrDefault();
+                model = helper.SelectDataTable($"select * from SMSSendQueue where ID = {smsID}").Select()
+                    .Select(x => (SMSSendQueueModel)new SMSSendQueueModel().SetData(x)).SingleOrDefault();
                 helper.Delete("SMSSendQueue", $" ID = {model.ID}");
-                var dic = new Dictionary<string,object>();
-                model.Status = success?2:3;
+                var dic = new Dictionary<string, object>();
+                model.Status = success ? 2 : 3;
                 model.GetValues(dic);
                 dic.Remove("ID");
-                helper.Insert("SMSSendQueue", dic);
+                helper.Insert("SMSSendRecord", dic);
 
                 tran.Commit();
             }
@@ -55,8 +81,37 @@ namespace SMSPlatform.Services
             {
                 tran.Rollback();
             }
-            
+            finally
+            {
+                helper.ClearTransaction();
+            }
+            if (model != null)
+            {
+                var count =GetNotCompletedContainerQueueCount(model.ContainerID.Value);
+                if (count == 0)
+                {
+                    var containerModel = helper.SelectDataTable($"select * from RecordContainer where ID = {model.ContainerID}").Select().Select(x=>new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
+                    var dic = new Dictionary<string,object>();
+                    containerModel.Status = 2;
+                    containerModel.GetValues(dic);
+                    dic.Remove("ID");
+                    helper.Update("RecordContainer", dic, " ID = " + containerModel.ID.Value, new List<SqlParameter>());
+                }
+            }
         }
+
+
+        public int GetNotCompletedContainerQueueCount(int id)
+        {
+            var count = helper.SelectScalar<int>($"select count(1) from SMSSendQueue where ContainerID = {id} and (status =0 or satatus =1)");
+            return count;
+        }
+
+        public int? GetContainerStatus(int id)
+        {
+             return helper.SelectScalar<int?>($"select status from recordcontainer where ID = {id}");
+        }
+
 
         /// <summary>
         /// 只能删除还未发送的短消息
@@ -68,7 +123,7 @@ namespace SMSPlatform.Services
 
         }
 
-        public IEnumerable<SMSSendQueueModel> GetSMSSend(int? containerId,string toName,string toPhone,int? status,DateTime? beginTime,DateTime? endTime,string smsContent)
+        public IEnumerable<SMSSendQueueModel> GetSMSSend(int? containerId, string toName, string toPhone, int? status, DateTime? beginTime, DateTime? endTime, string smsContent)
         {
             var whereStr = " where 1=1 ";
             if (containerId.HasValue)
@@ -100,28 +155,28 @@ namespace SMSPlatform.Services
                 whereStr += $" and SMSContent like '%{smsContent}%'";
             }
 
-            return helper.SelectDataTable("select * from SMSSendQueue "+whereStr+" union all select * from SMSSendRecord "+whereStr).Select().Select(x=>(SMSSendQueueModel)new SMSSendQueueModel().SetData(x));
+            return helper.SelectDataTable("select * from SMSSendQueue " + whereStr + " union all select * from SMSSendRecord " + whereStr).Select().Select(x => (SMSSendQueueModel)new SMSSendQueueModel().SetData(x));
 
         }
-        
+
         /// <summary>
         /// 只能修改还未发送的短消息
         /// </summary>
         /// <param name="model"></param>
         public void UpdateSMS(SMSSendQueueModel model)
         {
-            var dic = new Dictionary<string,object>();
+            var dic = new Dictionary<string, object>();
             var id = model.ID;
             if (!id.HasValue)
             {
                 throw new Exception("ID不能为空");
             }
             dic.Remove("ID");
-            helper.Update("SMSSendQueue",dic," ID="+id,new List<SqlParameter>());
+            helper.Update("SMSSendQueue", dic, " ID=" + id, new List<SqlParameter>());
 
 
         }
-        
+
         public IEnumerable<int> GetSendingSMSID()
         {
             return helper.SelectList<int>("SMSSendQueue", "ID");
@@ -129,14 +184,14 @@ namespace SMSPlatform.Services
 
         public SMSSendQueueModel GetSendQueueModel(int id)
         {
-            return helper.SelectDataTable("select * from SMSSendQueue where ID = " + id).Select().Select(x=>(SMSSendQueueModel)new SMSSendQueueModel().SetData(x)).SingleOrDefault();
+            return helper.SelectDataTable("select * from SMSSendQueue where ID = " + id).Select().Select(x => (SMSSendQueueModel)new SMSSendQueueModel().SetData(x)).SingleOrDefault();
         }
 
         public RecordContainerModel GetContainerModel(int id)
         {
-            return helper.SelectDataTable("select * from RecordContainer where ID = " + id).Select().Select(x=>(RecordContainerModel) new RecordContainerModel().SetData(x)).SingleOrDefault();
+            return helper.SelectDataTable("select * from RecordContainer where ID = " + id).Select().Select(x => (RecordContainerModel)new RecordContainerModel().SetData(x)).SingleOrDefault();
         }
 
-        
+
     }
 }

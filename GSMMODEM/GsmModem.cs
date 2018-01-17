@@ -61,7 +61,7 @@ namespace GSMMODEM
             _com.RtsEnable = true;            //必须为true 这样串口才能接收到数据
 
             _com.DataReceived += new EventHandler(sp_DataReceived);
-          
+
 
         }
 
@@ -152,8 +152,10 @@ namespace GSMMODEM
             }
         }
 
-        public string PhoneNumber {
-            get {
+        public string PhoneNumber
+        {
+            get
+            {
                 if (string.IsNullOrWhiteSpace(phoneNumber))
                 {
                     phoneNumber = this.GetPhoneNum();
@@ -163,6 +165,8 @@ namespace GSMMODEM
         }
 
         private string phoneNumber;
+
+        public GSMModemStatus Status = GSMModemStatus.Unknown;
 
         #endregion
 
@@ -186,16 +190,16 @@ namespace GSMMODEM
         /// <param name="e"></param>
         void sp_DataReceived(object sender, EventArgs e)
         {
-            Console.WriteLine(this.ComPort+" received data!!!");
+            Console.WriteLine(this.ComPort + " received data!!!");
             string temp;
 
-            if (_com.BytesToRead==0)
+            if (_com.BytesToRead == 0)
             {
                 return;
             }
             else
             {
-               temp = _com.ReadExisting();
+                temp = _com.ReadExisting();
             }
             if (temp.Length > 8)
             {
@@ -235,7 +239,7 @@ namespace GSMMODEM
             {
                 _com.Close();
             }
-
+            Status = GSMModemStatus.StandBy;
             _com.Open();
 
             //初始化设备
@@ -261,6 +265,11 @@ namespace GSMMODEM
             }
             catch (Exception ex)
             {
+
+            }
+            finally
+            {
+                Status = GSMModemStatus.Unknown;
             }
         }
 
@@ -401,37 +410,56 @@ namespace GSMMODEM
         /// </summary>
         /// <param name="phone">手机号码</param>
         /// <param name="msg">短信内容</param>
-        public bool SendMsg(string phone, string msg,out string error,out int msgCount)
+        public bool SendMsg(string phone, string msg, out string error, out int msgCount)
         {
-            PDUEncoding pe = new PDUEncoding();
-            pe.ServiceCenterAddress = msgCenter;                    //短信中心号码 服务中心地址
-            error = string.Empty;
-            string resultT = string.Empty;
-            string tmp = string.Empty;
-
-            msgCount = 0;
-            foreach (CodedMessage cm in pe.PDUEncoder(phone, msg))
+            try
             {
-                msgCount++;
-                //注销事件关联，为发送做准备
-                _com.DataReceived -= sp_DataReceived;
-
-                _com.Write("AT+CMGS=" + cm.Length.ToString() + "\r");
-                _com.ReadTo(">");
-                _com.DiscardInBuffer();
-
-                //事件重新绑定 正常监视串口数据
-                _com.DataReceived += sp_DataReceived;
-
-                tmp = SendAT(cm.PduCode + (char)(26));  //26 Ctrl+Z ascii码
-
-                if (!tmp.Contains("OK"))
+                lock (this)
                 {
-                    error = tmp;
-                    return false;
+                    Status = GSMModemStatus.Busy;
+
+                    PDUEncoding pe = new PDUEncoding();
+                    pe.ServiceCenterAddress = msgCenter;                    //短信中心号码 服务中心地址
+                    error = string.Empty;
+                    string resultT = string.Empty;
+                    string tmp = string.Empty;
+
+                    msgCount = 0;
+                    foreach (CodedMessage cm in pe.PDUEncoder(phone, msg))
+                    {
+                        msgCount++;
+                        //注销事件关联，为发送做准备
+                        _com.DataReceived -= sp_DataReceived;
+
+                        _com.Write("AT+CMGS=" + cm.Length.ToString() + "\r");
+                        _com.ReadTo(">");
+                        _com.DiscardInBuffer();
+
+                        //事件重新绑定 正常监视串口数据
+                        _com.DataReceived += sp_DataReceived;
+
+                        tmp = SendAT(cm.PduCode + (char)(26));  //26 Ctrl+Z ascii码
+
+                        if (!tmp.Contains("OK"))
+                        {
+                            error = tmp;
+                            return false;
+                        }
+                    }
+                    return true;
                 }
+
             }
-            return true;
+            catch (Exception e)
+            {
+
+                throw;
+            }
+            finally
+            {
+                Status = GSMModemStatus.StandBy;
+            }
+
         }
 
         #endregion 发送短信
@@ -444,26 +472,44 @@ namespace GSMMODEM
         /// <returns>未读信息列表（中心号码，手机号码，发送时间，短信内容）</returns>
         public List<DecodedMessage> GetUnreadMsg()
         {
-            List<DecodedMessage> result = new List<DecodedMessage>();
-            string[] temp = null;
-            string tmp = string.Empty;
-
-            tmp = SendAT("AT+CMGL=0");
-            if (tmp.Contains("OK"))
+            try
             {
-                temp = tmp.Split('\r');
-            }
-
-            PDUEncoding pe = new PDUEncoding();
-            foreach (string str in temp)
-            {
-                if (str != null && str.Length > 18)   //短信PDU长度仅仅短信中心就18个字符
+                lock (this)
                 {
-                    result.Add(pe.PDUDecoder(str));
+
+                    Status = GSMModemStatus.Busy;
+                    List<DecodedMessage> result = new List<DecodedMessage>();
+                    string[] temp = null;
+                    string tmp = string.Empty;
+
+                    tmp = SendAT("AT+CMGL=0");
+                    if (tmp.Contains("OK"))
+                    {
+                        temp = tmp.Split('\r');
+                    }
+
+                    PDUEncoding pe = new PDUEncoding();
+                    foreach (string str in temp)
+                    {
+                        if (str != null && str.Length > 18)   //短信PDU长度仅仅短信中心就18个字符
+                        {
+                            result.Add(pe.PDUDecoder(str));
+                        }
+                    }
+
+                    return result;
                 }
             }
+            catch (Exception e)
+            {
+                throw;
+            }
+            finally
+            {
+                Status = GSMModemStatus.StandBy;
+            }
 
-            return result;
+           
         }
 
         /// <summary>
@@ -540,6 +586,12 @@ namespace GSMMODEM
         #endregion 删除短信
 
         #endregion
+    }
+
+
+    public enum GSMModemStatus
+    {
+        Unknown,Busy, StandBy,Pause
     }
 
 }

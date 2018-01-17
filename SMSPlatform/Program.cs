@@ -15,6 +15,7 @@ using System.Web.Http;
 using DataBaseAccessHelper;
 using GSMMODEM;
 using Logger;
+using Microsoft.AspNet.SignalR;
 using Microsoft.Owin;
 using Microsoft.Owin.Cors;
 using Microsoft.Owin.Hosting;
@@ -38,10 +39,14 @@ namespace SMSPlatform
         public static AutoResetEvent handle = new AutoResetEvent(false);
         public static Process process;
         public static GSMPool pool;
+
+
         static void Main(string[] args)
         {
 
             SMSPlatformLogger logger = new SMSPlatformLogger();
+
+            GSMTaskService taskService = new GSMTaskService();
 
 
             string url = "http://localhost:64453";
@@ -135,6 +140,7 @@ namespace SMSPlatform
 
 #endif
             builder
+
                 .UseNancy(options => options.PerformPassThrough =
                     context =>
                     {
@@ -142,6 +148,8 @@ namespace SMSPlatform
                         return values.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.ToLower() == "api";
                     }
                 )
+                .MapSignalR("/api/signalr", new HubConfiguration())
+
                 //                .UseCors()
                 .UseWebApi(config);
 

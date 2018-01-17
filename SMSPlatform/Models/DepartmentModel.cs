@@ -22,19 +22,19 @@ namespace SMSPlatform.Models
 
         public int? PDID
         {
-            get { return dataPool["PDID"] == null ? null : new int?((int)dataPool["PDID"]); }
+            get { return dataPool["PDID"] == DBNull.Value ? null : new int?((int)dataPool["PDID"]); }
             set { dataPool["PDID"] = value; }
         }
 
         public int? DIndex
         {
-            get { return dataPool["DIndex"] == null ? null : new int?((int)dataPool["DIndex"]); }
+            get { return dataPool["DIndex"] == DBNull.Value ? null : new int?((int)dataPool["DIndex"]); }
             set { dataPool["DIndex"] = value; }
         }
 
         public int? LevelIndex
         {
-            get { return dataPool["LevelIndex"] == null ? null : new int?((int)dataPool["LevelIndex"]); }
+            get { return dataPool["LevelIndex"] == DBNull.Value ? null : new int?((int)dataPool["LevelIndex"]); }
             set { dataPool["LevelIndex"] = value; }
         }
 

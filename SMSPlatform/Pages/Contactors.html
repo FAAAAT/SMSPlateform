@@ -426,14 +426,14 @@
 
                         $('#tagSelect').select2({ data: data.data.results });
                         setTimeout(function () {
-                            console.log($('#tagSelect').hasClass("select2-hidden-accessible"));
+//                            console.log($('#tagSelect').hasClass("select2-hidden-accessible"));
                             var selecteds = data.data.results.filter((e, i) => { return e.selected; });
                             var selectedIds = selecteds.map((e, i) => e.id);
-                            console.log('set values:' + selectedIds);
+//                            console.log('set values:' + selectedIds);
                             $('#tagSelect').val(selectedIds);
                             $('#tagSelect').trigger('change');
                         }, 300);
-                        console.log(data);
+//                        console.log(data);
 
                     } else {
                         $.notifyError(data.msg);

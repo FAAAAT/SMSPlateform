@@ -32,6 +32,12 @@ namespace SMSPlatform.Models
             set { dataPool["SIMsPhone"] = JsonConvert.SerializeObject(value); }
         }
 
+        public int Status
+        {
+            get { return (int)dataPool["Status"]; }
+            set { dataPool["Status"] = value; }
+        }
+
 
     }
 }

@@ -20,6 +20,24 @@ namespace SMSPlatform.Models
             set { dataPool["SMSContent"] = value; }
         }
 
+        public int TemplateID
+        {
+            get { return (int)dataPool["TemplateID"]; }
+            set { dataPool["TemplateID"] = value; }
+        }
+        public string TemplateContent
+        {
+            get { return dataPool["TemplateContent"] + ""; }
+            set { dataPool["TemplateContent"] = value; }
+        }
+
+        public string InnerTemplateContent
+        {
+            get { return dataPool["InnerTemplateContent"] + ""; }
+            set { dataPool["InnerTemplateContent"] = value; }
+        }
+
+
         public string ToPhoneNumber
         {
             get { return dataPool["ToPhoneNumber"] + ""; }

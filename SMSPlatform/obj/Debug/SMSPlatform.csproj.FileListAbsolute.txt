@@ -123,3 +123,9 @@ C:\projects\SMSPlateform\SMSPlatform\bin\Debug\System.Net.Http.Formatting.xml
 C:\projects\SMSPlateform\SMSPlatform\bin\Debug\System.Web.Http.xml
 C:\projects\SMSPlateform\SMSPlatform\bin\Debug\System.Web.Http.Owin.xml
 C:\projects\SMSPlateform\SMSPlatform\bin\Debug\log4net.xml
+F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Microsoft.AspNet.SignalR.Core.dll
+F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Microsoft.AspNet.SignalR.SystemWeb.dll
+F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Microsoft.Owin.Host.SystemWeb.dll
+F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Microsoft.AspNet.SignalR.Core.xml
+F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Microsoft.AspNet.SignalR.SystemWeb.xml
+F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Microsoft.Owin.Host.SystemWeb.xml

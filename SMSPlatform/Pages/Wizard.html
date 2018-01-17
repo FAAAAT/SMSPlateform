@@ -20,7 +20,7 @@
 
     <script type="text/javascript" src="/scripts/bootstrapTreeview/js/bootstrap-treeview.js"></script>
     <script type="text/javascript" src="/scripts/bootstrapTreeview/lymiTreeView_jquery.js"></script>
-
+    <script src="/scripts/URI.min.js"></script>
     <!--    <link href="/Content/bootstrap-select2-compatible.css" rel="stylesheet" />-->
 
     <script id="page1">
@@ -28,28 +28,33 @@
             window.vue$ = new Vue({
                 el: '#app',
                 data: {
-                    tagName: '', headerAndFooter: {}, datacollections: {}
-                    , name: '', phone: '', remark: '',
+                    tagName: '', headerAndFooter: {}, datacollections: {}, name: '', phone: '', remark: '',
                     queryData: { name: '', phone: '', tagIds: [], selectedDeps: [] },
                     querySelectedDeps: [],
                     modalData: { selectedDeps: [] },
                     contactorId: '',
-                    pagerData: { currentIndex: 0, pagerRange: 5, pageSize: 2, total: 30 },
-                    tabNav: { currentIndex: 0, pageNumber: 3 },
+                    pagerData: { currentIndex: 0, pagerRange: 5, pageSize: 8, total: 30 },
+                    tabNav: { currentIndex: 1, pageNumber: 3 },
                     templates: [],
                     templateContent: '',
-                    innerTemplateContent:'',
-                    updateData: { actualContent:'',selectedContactors: [], templateID: '', containerData: { containerName: '', simPhones: [] } }
+                    innerTemplateContent: '',
+                    updateData: {
+                        actualContent: '',
+                        selectedContactors: [],
+                        templateID: '',
+                        containerData: { containerName: '', simPhones: [] }
+                    },
+                    selectedContactorsDetail: [],
                 },
                 methods: {
                     //                    onRowDelete: rowDelete, on_edit: on_edit, on_delete: on_delete
-                    pageChangeClick: function(diff) {
-                        pageChange(null,this.pagerData.currentIndex+1+diff);
+                    pageChangeClick: function (diff) {
+                        pageChange(null, this.pagerData.currentIndex + 1 + diff);
                     }
                 },
 
                 computed: {
-                    totalPageNum: function() {
+                    totalPageNum: function () {
                         var pageNumber = Math.ceil(this.$data.pagerData.total / this.$data.pagerData.pageSize);
                         return pageNumber;
                     },
@@ -61,14 +66,10 @@
                         console.log(range);
                         var genebefore = Math.ceil((range - 1) / 2);
 
-                        var start = currentIndex > genebefore ? currentIndex - genebefore : 1;
-                        start = start >= pageNumber - range ? pageNumber - range : start;
+                        var start = currentIndex > genebefore ? currentIndex + 1 - genebefore : 1;
+                        start = start >= pageNumber - range + 1 ? pageNumber - range + 1 : start;
 
-                        return [...Array(range)].map((e, i, a) => i + start + 1);
-                    }
-
-                    , computedContactors: function () {
-                        return this.updateData.selectedContactors.map((e, i) => this.datacollections.find((ee, ii) => ee.ID == e));
+                        return [...Array(range)].map((e, i, a) => i + start);
                     }
 
                     , queryDNames: function () {
@@ -79,13 +80,14 @@
 
                     , computedTemplateContent: function () {
                         var temp = this.templateContent.replace('{通知内容}', this.innerTemplateContent);
-                        this.updateData.actualContent = temp;
+                        this.updateData.actualContent = this.innerTemplateContent;
                         return temp;
                     }
                 }
 
 
             });
+
             vue$.$watch('updateData.templateID', function (newv, oldv) {
                 $.ajax({
                     url: '/api/template/gettemplate', type: 'get', data: { id: newv }, success: function (data) {
@@ -94,6 +96,24 @@
                 });
 
             });
+            vue$.$watch('updateData.selectedContactors', function (newv, oldv) {
+                $.ajax({
+                    url: '/api/contactor/GetContactorDetails',
+                    type: 'get',
+                    data: { ids: newv }
+                    , success: function (d) {
+                        if (d.success) {
+                            console.log('selectedContactors changed');
+                            console.log(newv);
+                            console.log(d);
+                            vue$.selectedContactorsDetail = d.data;
+                        } else {
+                            $.notifyError(d.msg);
+                        }
+                    }
+                });
+            });
+
 
             function getData() {
 
@@ -108,22 +128,16 @@
                             vue$.$data.pagerData.total = data.total;
                             if (!window.tableSelector) {
                                 window.tableSelector = InitTableSelectable($('table')[0], {
-                                    dataHidden: '#tableSelectorData', AllData: data.allIds
+                                    dataHidden: '#tableSelectorData'
+                                    , AllData: data.allIds
+                                    , lazyCallback: vue$.$nextTick
                                     , onchange: function () {
                                         vue$.updateData.selectedContactors = window.tableSelector.GetIDs();
                                     }
                                 });
-
-                            } else {
-                                window.tableSelector = InitTableSelectable($('table')[0],
-                                    {
-                                        dataHidden: '#tableSelectorData', AllData: data.allIds, Data: window.tableSelector.Data
-                                        , onchange: function () {
-                                            vue$.updateData.selectedContactors = window.tableSelector.GetIDs();
-                                        }
-                                    });
-
+                                vue$.pagerData.totalPageNum = data.allIds.length;
                             }
+
 
                             vue$.$nextTick(function () {
                                 if (window.tableSelector) {
@@ -176,6 +190,7 @@
                 }
 
             });
+
             $.ajax({
                 url: '/api/template/getTemplates',
                 type: 'get',
@@ -185,6 +200,43 @@
                 }
             });
 
+            var uri = URI(window.location.href);
+            var querys = uri.search(true);
+            if (querys["containerId"]) {
+                var id = querys["containerId"];
+                window.containerId = id;
+                $.ajax({
+                    url: '/api/message/GetContainerDetail'
+                    , type: 'get'
+                    , data: { containerId: id }
+                    , success: function (data) {
+                        if (data.success) {
+                            if (window.tableSelector) {
+                                window.tableSelector.SetSelectedIDs(data.data.sendQueues.map((e, i) => e.ToContactorID));
+                                vue$.updateData.containerData.containerName = data.data.container.ContainerName;
+                                vue$.updateData.templateID = data.data.sendQueues[0]
+                                    ? data.data.sendQueues[0].TemplateID
+                                    : '';
+                                vue$.innerTemplateContent = data.data.sendQueues[0]
+                                    ? data.data.sendQueues[0].InnerTemplateContent
+                                    : '';
+                                $('#sel_simSelectorContainer').val(data.data.container.SIMsPhone);
+
+                            }
+                        } else {
+                            $.notifyError(data.msg);
+                        }
+                    },
+                    error: function (data) {
+                        $.notifyError(data);
+                    }
+
+                });
+
+
+
+            }
+
 
         });
     </script>
@@ -193,8 +245,6 @@
 
 </head>
 <body>
-
-
     <div id="app">
         <div class="navbar navbar-inverse navbar-fixed-top">
             <div class="container">
@@ -218,9 +268,9 @@
 
             <!-- Nav tabs -->
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#selectContactor" aria-controls="home" role="tab" data-toggle="tab">选择联系人</a></li>
-                <li role="presentation"><a href="#createContainer" aria-controls="profile" role="tab" data-toggle="tab">创建任务</a></li>
-                <li role="presentation"><a href="#confirm" aria-controls="messages" role="tab" data-toggle="tab">确认信息</a></li>
+                <li role="presentation" class="active"><a href="#selectContactor" aria-controls="home" role="tab" data-index="1" data-toggle="tab">选择联系人</a></li>
+                <li role="presentation"><a href="#createContainer" aria-controls="profile" role="tab" data-index="2" data-toggle="tab">创建任务</a></li>
+                <li role="presentation"><a href="#confirm" aria-controls="messages" role="tab" data-index="3" data-toggle="tab">确认信息</a></li>
             </ul>
 
 
@@ -290,19 +340,19 @@
                     <nav aria-label="Page navigation">
 
                         <ul class="pagination">
-                            <li  v-if="pagerData.currentIndex>0">
+                            <li v-if="pagerData.currentIndex>0">
                                 <a v-on:click="pageChangeClick(-1)" href="#" aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
-                          
+
                             <li v-for="index in indexes">
                                 <a v-if="index-1==pagerData.currentIndex" style="color: red" v-bind:href="'javascript:pageChange(event,'+index+')'">{{index}}</a>
                                 <a v-else v-bind:href="'javascript:pageChange(event,'+index+')'">{{index}}</a>
                             </li>
-                           
-                            
-                            <li  v-if="pagerData.currentIndex<totalPageNum-1">
+
+
+                            <li v-if="pagerData.currentIndex<totalPageNum-1">
                                 <a v-on:click="pageChangeClick(1)" href="#" aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
@@ -317,50 +367,64 @@
                 <div role="tabpanel" class="tab-pane fade" id="createContainer">
                     <h1>创建任务</h1>
                     <h3></h3>
-                    <div class="form" style="min-height: 65vh">
-                        <div class="form-group">
-                            <label class="control-label" for="txt_containerName">任务名称</label>
-                            <input id="txt_containerName" v-model="updateData.containerData.containerName" class="form-control" type="text" />
+                    <form id="form_task">
+                        <div class="form" style="min-height: 65vh">
+                            <div class="form-group">
+                                <label class="control-label" for="txt_containerName">任务名称</label>
+                                <input id="txt_containerName" required v-model="updateData.containerData.containerName" class="form-control" type="text" />
+                                <div class="hid help-block with-errors"></div>
+
+                            </div>
+
+                            <div id="sel_simSelectorContainer" class="form-group">
+                                <label class="control-label" for="sel_simSelector">选择sim卡</label>
+                                <select required multiple="multiple" id="sel_simSelector"></select>
+                                <div class="hid help-block with-errors"></div>
+
+                            </div>
+
+                            <div class="form-group">
+                                <label for="sel_template">选择模板</label>
+                                <select required v-model="updateData.templateID" id="sel_template" class="form-control">
+                                    <option disabled>请选择</option>
+                                    <option v-for="template in templates" v-bind:value="template.ID">{{template.TemplateName}}</option>
+                                </select>
+                                <div class="hid help-block with-errors"></div>
+
+                            </div>
+
+                            <div class="form-group">
+                                <label for="txt_templateContent">模板内容</label>
+                                <textarea required id="txt_templateContent" class="form-control" v-model="innerTemplateContent"></textarea>
+                                <div class="hid help-block with-errors"></div>
+
+                            </div>
+
                         </div>
 
-                        <div id="sel_simSelectorContainer" class="form-group">
-                            <label class="control-label" for="sel_simSelector">选择sim卡</label>
-                            <select multiple="multiple" id="sel_simSelector"></select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="sel_template">选择模板</label>
-                            <select v-model="updateData.templateID" id="sel_template" class="form-control">
-                                <option disabled>请选择</option>
-                                <option v-for="template in templates" v-bind:value="template.ID">{{template.TemplateName}}</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="txt_templateContent">模板内容</label>
-                            <textarea id="txt_templateContent" class="form-control" v-model="innerTemplateContent"></textarea>
-                        </div>
-
-                    </div>
+                    </form>
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="confirm">
                     <h1>最后确认一下</h1>
                     <h3></h3>
                     <div style="min-height: 65vh">
-                        <div style="min-height: 50vh">
+                        <div style="min-height:50vh; max-height: 50vh; overflow: auto;">
                             <table class="table table-striped table-hover table-bordered">
                                 <thead>
                                     <tr>
                                         <th>联系人名称</th>
                                         <th>联系人电话</th>
+                                        <th>部门</th>
+                                        <th>标签</th>
                                     </tr>
 
                                 </thead>
                                 <tbody>
-                                    <tr v-for="row in computedContactors">
-
-                                        <td>{{row.ContactorName}}</td>
-                                        <td>{{row.PhoneNumber}}</td>
+                                    <tr v-for="row in selectedContactorsDetail">
+                                        <td>{{row.contactor.ContactorName}}</td>
+                                        <td>{{row.contactor.PhoneNumber}}</td>
+                                        <td>{{row.departments.map((e,i)=>e.DName).join(',')}}</td>
+                                        <td>{{row.tags.map((e,i)=>e.TagName).join(',')}}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -372,8 +436,8 @@
                                 <span>使用SIM卡:{{updateData.containerData.simPhones.join(',')}}</span>
                                 <br />
                                 <span>使用模板:{{computedTemplateContent}}</span>
-                                
-                                
+
+
                             </div>
                         </div>
                     </div>
@@ -383,10 +447,17 @@
             </div>
 
 
+
+
             <nav>
                 <ul class="pager">
-                    <li v-if="tabNav.pageNumber!=0" class="previous"><a href="#"><span aria-hidden="true">&larr;</span>上一步</a></li>
-                    <li class="next"><a href="javascript:submit()">{{tabNav.currentIndex==tabNav.pageNumber?'完成':'下一步'}}<span aria-hidden="true">&rarr;</span></a></li>
+                    <li v-if="tabNav.currentIndex>1" class="previous"><a href="javascript:prevTab()"><span aria-hidden="true">&larr;</span>上一步</a></li>
+                    <li class="next">
+                        <a v-bind:href="tabNav.currentIndex==tabNav.pageNumber?'javascript:submit()':'javascript:nextTab()'">
+                            {{tabNav.currentIndex==tabNav.pageNumber?'完成':'下一步'}}
+                            <span aria-hidden="true">&rarr;</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
 
@@ -496,9 +567,10 @@
                         if (vue$.contactorId) {
                             $.ajax({
                                 url: '/api/contactor/updatecontactor',
-                                method: 'get',
+                                type: 'get',
+                                traditional: true,
                                 data: {
-                                    id: vue$.contracorId,
+                                    id: vue$.contactorId,
                                     phone: vue$.phone,
                                     name: vue$.name,
                                     remark: vue$.remark,
@@ -519,9 +591,10 @@
                             $.ajax({
                                 traditional: true,
                                 url: '/api/contactor/addcontactor',
-                                method: 'get',
+                                type: 'get',
                                 data: {
                                     phone: vue$.phone,
+                                    traditional: true,
                                     name: vue$.name,
                                     remark: vue$.remark,
                                     tagIds: $('#tagSelect').val(),
@@ -543,6 +616,45 @@
                     e.preventDefault();
                 });
         });
+
+        $(function () {
+            var validator2 = $('#form_task').validator().on('submit', function (e) {
+                if (!e.isDefaultPrevented()) {
+                    if (!window.containerId) {
+                        $.ajax({
+                            url: '/api/message/CreateSMSQueue', type: 'get', data: {
+                                json: JSON.stringify(vue$.updateData)
+                            },
+                            success: function (data) {
+                                if (data.success) {
+                                    $.notifySuccess(data.msg, '');
+                                } else {
+                                    $.notifyError(data.msg, '');
+                                }
+                            }
+                        });
+                    } else {
+                        $.ajax({
+                            url: '/api/message/UpdateHallContainer', type: 'get', data: {
+                                json: JSON.stringify(vue$.updateData)
+                            },
+                            success: function (data) {
+                                if (data.success) {
+                                    $.notifySuccess(data.msg, '');
+                                } else {
+                                    $.notifyError(data.msg, '');
+                                }
+                            }
+                        });
+                    }
+
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
 
 
         function on_add(event) {
@@ -607,21 +719,10 @@
             });
         }
 
-        function submit() {
 
-            $.ajax({
-                url: '/api/message/CreateSMSQueue', type: 'get', data: {
-                    json: JSON.stringify(vue$.updateData)
-                },
-                success: function (data) {
-                    //                    debugger;
-                    if (data.success) {
-                        $.notifySuccess(data.msg, '');
-                    } else {
-                        $.notifyError(data.msg, '');
-                    }
-                }
-            });
+
+        function submit() {
+            $('#form_task').submit();
         }
 
 
@@ -635,6 +736,14 @@
                     $('tagSelect').val(null);
                     if (data.success) {
                         $('#tagSelect').select2({ data: data.data.results });
+                        setTimeout(function () {
+                            //                            console.log($('#tagSelect').hasClass("select2-hidden-accessible"));
+                            var selecteds = data.data.results.filter((e, i) => { return e.selected; });
+                            var selectedIds = selecteds.map((e, i) => e.id);
+                            //                            console.log('set values:' + selectedIds);
+                            $('#tagSelect').val(selectedIds);
+                            $('#tagSelect').trigger('change');
+                        }, 300);
                     } else {
                         $.notifyError(data.msg);
                     }
@@ -644,7 +753,7 @@
 
         function pageChange(event, pageIndex, pageSize) {
             pageIndex = pageIndex ? pageIndex - 1 : 0;
-            pageSize = pageSize ? pageSize : 2;
+            pageSize = pageSize ? pageSize : vue$.pagerData.pageSize;
             vue$.queryData.pageIndex = pageIndex;
             vue$.pagerData.currentIndex = pageIndex;
             vue$.queryData.pageSize = pageSize;
@@ -679,6 +788,26 @@
                 vue$.querySelectedDeps = data;
             }
         });
+
+        $(function () {
+            $('a[data-toggle=tab]').on('shown.bs.tab',
+                function (e) {
+                    vue$.tabNav.currentIndex = e.target.getAttribute('data-index');
+                });
+        });
+
+        function nextTab() {
+            vue$.tabNav.currentIndex++;
+
+            $('a[data-Index=' + vue$.tabNav.currentIndex + ']').tab('show');
+        }
+
+        function prevTab() {
+            vue$.tabNav.currentIndex--;
+            $('a[data-Index=' + vue$.tabNav.currentIndex + ']').tab('show');
+
+        }
+
 
     </script>
 

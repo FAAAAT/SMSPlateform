@@ -52,7 +52,7 @@ namespace SMSPlatform.Controllers
                             $"select * from Tagcontactor where TagID in ({string.Join(",", tagIds)})").Select();
                     var groupedTags = tags.GroupBy(x => x["TagID"]);
                     var tagcontactorIDs = groupedTags.Select(x => x).ToList();
-                    if (tagIds.Except(groupedTags.Select(x=>x.Key+"")).Any())
+                    if (tagIds.Except(groupedTags.Select(x => x.Key + "")).Any())
                     {
                         whereStr += $" and 1=0";
 
@@ -89,7 +89,7 @@ namespace SMSPlatform.Controllers
                     var depContactors = helper.SelectDataTable($"select * from DepartmentContactor where DepartmentID in ({string.Join(",", selectedDeps)})").Select();
                     var groupedDepCon = depContactors.GroupBy(x => x["DepartmentID"]);
 
-                    if(selectedDeps.Except(groupedDepCon.Select(x => x.Key+"")).Any())
+                    if (selectedDeps.Except(groupedDepCon.Select(x => x.Key + "")).Any())
                         whereStr += $" and 1=0";
                     else
                     {
@@ -113,7 +113,7 @@ namespace SMSPlatform.Controllers
                         }
                     }
 
-                   
+
 
 
 
@@ -212,6 +212,7 @@ namespace SMSPlatform.Controllers
             finally
             {
                 helper.Dispose();
+                helper.ClearTransaction();
             }
 
         }
@@ -251,6 +252,7 @@ namespace SMSPlatform.Controllers
             finally
             {
                 helper.Dispose();
+                helper.ClearTransaction();
             }
         }
 
@@ -316,6 +318,7 @@ namespace SMSPlatform.Controllers
             }
             finally
             {
+                helper.ClearTransaction();
                 helper.Dispose();
             }
         }
@@ -361,7 +364,81 @@ namespace SMSPlatform.Controllers
             }
         }
 
+        [HttpGet]
+        public IHttpActionResult GetContactorDetails(int[] ids)
+        {
 
+            var queryDatas = new FormDataCollection(Request.RequestUri);
+            var temp = queryDatas["ids[]"]?.Split(',');
+
+            ids = temp?.Select(x => int.Parse(x)).ToArray();
+
+            try
+            {
+                var whereStr = ids == null || ids.Length == 0
+                    ? " where 1=0 "
+                    : $" where ID in ({string.Join(",", ids)})";
+
+                var contactors =
+                    helper.SelectDataTable($"select * from contactor {whereStr}")
+                        .Select()
+                        .Select(x => (contactorModel)new contactorModel().SetData(x))
+                        ;
+
+                whereStr = contactors == null || contactors.Count() == 0
+                    ? " 1=0 "
+                    : $" ContactorID in ({string.Join(",", contactors.Select(x => x.ID))})";
+
+
+                var tagIds = helper.SelectDataTable("select * from TagContactor where " + whereStr).Select();
+
+                var departemntIds = helper.SelectDataTable("select * from DepartmentContactor where " + whereStr).Select();
+
+                whereStr = tagIds == null || tagIds.Count() == 0
+                    ? " 1=0 "
+                    : $" ID in ({string.Join(",", tagIds.Select(x=>x["TagID"]+""))})";
+
+
+                var tags = helper.SelectDataTable("select * from Tag where " + whereStr).Select().Select(x => new TagModel().SetData(x) as TagModel);
+
+                whereStr = departemntIds == null || departemntIds.Count() == 0
+                ? " 1=0 "
+                    : $" ID in ({string.Join(",", departemntIds.Select(x=>x["DepartmentID"]+""))})";
+
+                var departments = helper.SelectDataTable("select * from Department where " + whereStr).Select()
+                    .Select(x => new DepartmentModel().SetData(x) as DepartmentModel);
+
+
+
+                var datas = contactors.Select(x => new
+                {
+                    contactor = x
+                    , tags = tagIds.Where(y=>(int)y["ContactorID"] == x.ID).Select(y=>tags.SingleOrDefault(z=>z.ID == (int)y["TagID"]))
+                    , departments = departemntIds.Where(y=>(int)y["ContactorID"] == x.ID).Select(y=>departments.SingleOrDefault(z=>z.ID == (int)y["DepartmentID"]))
+                });
+
+
+                return Json(new ReturnResult()
+                {
+                    data = datas,
+                    success = true,
+                    status = 200
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new ReturnResult()
+                {
+                    success = false,
+                    status = 500,
+                    msg = ex.ToString()
+                });
+            }
+            finally
+            {
+                helper.Dispose();
+            }
+        }
 
 
 

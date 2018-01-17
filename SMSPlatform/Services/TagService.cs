@@ -81,7 +81,6 @@ namespace SMSPlatform.Services
             finally
             {
                 helper.ClearTransaction();
-
             }
         }
 

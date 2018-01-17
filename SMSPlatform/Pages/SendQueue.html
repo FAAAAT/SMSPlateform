@@ -12,7 +12,40 @@
     <link href="/Content/Site.css" rel="stylesheet" />
     <script type="text/javascript" src="/Scripts/bootstrap-notify.js"></script>
     <script type="text/javascript" src="/Scripts/main.js"></script>
+    <script src="/Scripts/DateRangePicker/moment.js"></script>
+    <script src="/Scripts/DateRangePicker/daterangepicker.js"></script>
+    <script src="/Scripts/jquery.signalR-2.2.2.min.js"></script>
+    <script src="http://localhost:64453/api/signalr/hubs"></script>
 
+    
+
+    <script type="text/javascript">
+//        var stag = document.createElement('script');
+//       
+//        stag.setAttribute('src', '/api/signalr/hubs');
+
+
+        jQuery.support.cors = true;
+        $(function() {
+            $.connection.hub.url = "/api/signalr";
+            var hub = $.connection.messageHub;
+            hub.client.queueSuccess = signalrHandler;
+            hub.client.queueError = signalrHandler;
+        });
+
+        function signalrHandler(containerID, containerStatus, queueID, queueStatus) {
+            var container = dataContainers.find((e, i) => { return e.ID === containerID });
+            if (container) {
+                container.status = containerStatus;
+            }
+            var queue = datacollections.find((e, i) => e.ID === queueID);
+            if (queue) {
+                queue.sttus = queueStatus;
+            }
+        }
+    </script>
+    
+    
 
     <script>
         $(function () {
@@ -20,15 +53,48 @@
                 el: '#app',
                 data: {
                     tagName: '', headerAndFooter: {}, datacollections: {} 
+                    , dataContainers: {}
+                    , containerQueryData: { containerName: '' }
                     , queryData: { containerID: null, toName: '', toPhone: '', beginTime: null, endTime: null, smsContent: '' }
                     , sendContext: { status: 0 }
                     , updateData: {}
                     , smsQueueID: ''
+                    , detailPage:false
                 },
                 methods: {
-//                     onRowDelete: rowDelete
+                    on_delete: on_delete,
+                    deleteContainer: deleteContainer,
+                    on_edit: function(id) {
+                        window.location.href = '/pages/wizard.html?containerId='+id;
+                    },
+                    showDetail: function(id) {
+                        this.detailPage = true;
+                        this.queryData.containerID = id;
+                        getData();
+                    },
+                    returnContainer: function() {
+                        this.detailPage = false;
+                        this.queryData.cotnainerID = '';
+
+                    }
+
                 }
             });
+
+            window.getContainerData = function() {
+                $.ajax({
+                    url: '/api/message/GetRecordContainer', type: 'get', data: vue$.containerQueryData,
+                    success: function (data) {
+                        if (data.success) {
+                            console.log(data);
+                            vue$.dataContainers = data.data;
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
+
+                    } });
+            }
+            getContainerData();
 
             function getData() {
                 $.ajax({
@@ -51,6 +117,23 @@
                 method: 'get',
                 success: function (data) {
                     vue$.$data.headerAndFooter = Object.assign({}, vue$.$data.headerAndFooter, data.data);
+                }
+            });
+
+            $('#query_Date').daterangepicker({
+                format: 'yyyy-MM-dd',
+                startDate: new Date(),
+                endDate: new Date(),
+                locale: {
+                    format: 'YYYY年MM月DD日',
+                    applyLabel: '确认',
+                    cancelLabel: '取消',
+                    fromLabel: '从',
+                    toLabel: '到',
+                    weekLabel: 'W',
+                    customRangeLabel: 'Custom Range',
+                    daysOfWeek: ["日", "一", "二", "三", "四", "五", "六"],
+                    monthNames: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
                 }
             });
 
@@ -82,8 +165,8 @@
         <div class="container body-content">
             <h1>发送任务-{{sendContext.status==0?'等待':'发送中'}}</h1>
             <h3></h3>
-            <div id="container-parent">
-                <div class="form">
+            <div v-if="!detailPage" id="container-parent">
+                <div class="form-inline">
                     <div class="form-group">
                         <label>标签名称</label>
                         <input id="txt_tagName" v-model="tagName" name="txt_tagName" type="text" class="form-control" />
@@ -97,21 +180,26 @@
                     <table class="table table-striped table-hover table-bordered">
                         <thead>
                         <tr>
-                            <th>电话</th>
-                            <th>姓名</th>
-                            <th>内容</th>
+                            <th>名称</th>
+                            <th>时间</th>
+                            <th>使用电话卡</th>
                             <th>状态</th>
                             <th>操作</th>
                         </tr>
 
                         </thead>
-                        <tbody v-for="row in datacollections">
+                        <tbody v-for="row in dataContainers">
                         <tr>
-                            <td>{{row.ToPhoneNumber}}</td>
-                            <td>{{row.ToName}}</td>
-                            <td>{{row.SMSContent}}</td>
-                            <td>{{row.Status==0?'等待发送':''}}</td>
-                            <td><button class="btn btn-danger" v-on:click="on_delete(row.id)">删除</button></td>
+                            <td>{{row.ContainerName}}</td>
+                            <td>{{row.CreateTime}}</td>
+                            <td>{{row.SIMsPhone}}</td>
+                            <td>{{row.Status==0?'等待发送':row.Status==1?'发送中':row.Status==2?'发送完成':'已删除'}}</td>
+                            <td>
+                                <button v-if="row.Status!==3" v-on:click="deleteContainer(row.ID)" class="btn btn-danger">删除</button>
+                                <button v-if="row.Status==0" v-on:click="on_edit(row.ID)" class="btn btn-primary">编辑</button>
+                                <button v-if="row.Status!=3" v-on:click="showDetail(row.ID)" class="btn btn-warning">查看</button>
+                            </td>
+
                         </tr>
                         </tbody>
                     </table>
@@ -120,50 +208,57 @@
                 </div>
             </div>
        
-            <div id="container-children">
-                <div class="form">
+
+            <div v-if="detailPage" id="container-children">
+                <div class="form-inline">
                     <div class="form-group">
-                        <label>电话</label>
-                        <input id="txt_queryPhone" v-model="" name="txt_queryPhone" type="text" class="form-control" />
+                        <label for="txt_queryPhone">电话</label>
+                        <input id="txt_queryPhone" v-model="queryData.toName" name="txt_queryPhone" type="text" class="form-control" />
 
                     </div>
                     <div class="form-group">
-                        <label>姓名</label>
-                        <input id="txt_queryRecName" v-model="" name="txt_queryRecName" type="text" class="form-control" />
+                        <label for="txt_queryRecName">姓名</label>
+                        <input id="txt_queryRecName" v-model="queryData.toPhone" name="txt_queryRecName" type="text" class="form-control" />
 
                     </div>
                     <div class="form-group">
-                        <label>时间</label>
-                        
+                        <label for="query_Date">时间</label>
+                        <input id="query_Date" name="query_Date" type="text" class="form-control" />
                     </div>
+                    <div class="form-group">
+                        <label for="txt_smsContent">内容</label>
+                        <input type="text" id="txt_smsContent" name="txt_smsContent" class="form-control" v-model="queryData.smsContent"/>
+                    </div>
+
                 </div>
                 <!--            <asp:Button ID="btn_submit" ClientIDMode="static" OnClick="on_submit" UseSubmitBehavior="False" CssClass="btn btn-primary" Text="添加" runat="server" />-->
                 <!--            <asp:Button ID="btn_query" ClientIDMode="static" OnClick="btn_query_OnClick" UseSubmitBehavior="False" CssClass="btn btn-primary" Text="查询" runat="server" />-->
                 <!--            <button Class="btn btn-success" onclick="on_add(event)">添加</button>-->
                 <button Class="btn btn-primary" onclick="getData()">查询</button>
+                <button class="btn btn-warning" v-on:click="returnContainer()">返回</button>
                 <div style="min-height: 65vh">
                     <table class="table table-striped table-hover table-bordered">
                         <thead>
-                        <tr>
-                            <th>电话</th>
-                            <th>姓名</th>
-                            <th>内容</th>
-                            <th>状态</th>
-                            <th>操作</th>
-                        </tr>
+                            <tr>
+                                <th>电话</th>
+                                <th>姓名</th>
+                                <th>内容</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
 
                         </thead>
                         <tbody v-for="row in datacollections">
-                        <tr>
-                            <td>{{row.ToPhoneNumber}}</td>
-                            <td>{{row.ToName}}</td>
-                            <td>{{row.SMSContent}}</td>
-                            <td>{{row.Status==0?'等待发送':''}}</td>
-                            <td><button class="btn btn-danger" v-on:click="on_delete(row.id)">删除</button></td>
-                        </tr>
+                            <tr>
+                                <td>{{row.ToPhoneNumber}}</td>
+                                <td>{{row.ToName}}</td>
+                                <td>{{row.SMSContent}}</td>
+                                <td>{{row.Status==0?'等待发送':''}}</td>
+                                <td><button class="btn btn-danger" v-on:click="on_delete(row.id)">删除</button></td>
+                            </tr>
                         </tbody>
                     </table>
-                
+
 
                 </div>
             </div>
@@ -176,59 +271,59 @@
         </div>
 
 
+        <!--        <div class="modal fade" id="contactorModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">-->
+        <!--            <div class="modal-dialog" role="document">-->
+        <!--                <div class="modal-content">-->
+        <!--                    <div class="modal-header">-->
+        <!--                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
+        <!--                        <h4 class="modal-title" id="exampleModalLabel">{{contactorId?'编辑':'添加'}}</h4>-->
+        <!--                    </div>-->
+        <!--                    <div class="modal-body">-->
+        <!--                        <form role="form" id="addcontactor">-->
+        <!--                            <div class="form-group">-->
+        <!--                                <label for="name" class="control-label">姓名</label>-->
+        <!--                                <input type="text" v-model="name" class="form-control" required id="name">-->
+        <!--                                $1$                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>#1#-->
+        <!--                                <div class="hid help-block with-errors"></div>-->
+        <!--                            </div>-->
+        <!---->
+        <!--                            <div class="form-group">-->
+        <!--                                <label for="phone" class="control-label">电话</label>-->
+        <!--                                <input type="text" maxlength="14" v-model="phone" minlength="11" class="form-control" required id="phone">-->
+        <!--                                $1$                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>#1#-->
+        <!--                                <div class="hid help-block with-errors"></div>-->
+        <!--                            </div>-->
+        <!---->
+        <!---->
+        <!--                            <div class="form-group">-->
+        <!--                                <label for="remark" class="control-label">备注</label>-->
+        <!--                                <textarea class="form-control" v-model="remark" id="remark"></textarea>-->
+        <!--                            </div>-->
+        <!--                            <div class="form-group">-->
+        <!--                                <label for="tagSelect" class="control-label">标签</label>-->
+        <!--                                <select class="form-control" style="width: 100%" id="tagSelect" multiple="multiple" name="tagSelect"></select>-->
+        <!--                            </div>-->
+        <!--                        </form>-->
+        <!--                    </div>-->
+        <!--                    <div class="modal-footer">-->
+        <!--                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
+        <!--                        <button type="button" onclick="$('#addcontactor').submit()" class="btn btn-primary">Send message</button>-->
+        <!--                    </div>-->
+        <!--                </div>-->
+        <!--            </div>-->
+        <!--        </div>-->
 
-        <div class="modal fade" id="contactorModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" id="exampleModalLabel">{{contactorId?'编辑':'添加'}}</h4>
-                    </div>
-                    <div class="modal-body">
-                        <form role="form" id="addcontactor">
-                            <div class="form-group">
-                                <label for="name" class="control-label">姓名</label>
-                                <input type="text" v-model="name" class="form-control" required id="name">
-                                <!--                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>-->
-                                <div class="hid help-block with-errors"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="phone" class="control-label">电话</label>
-                                <input type="text" maxlength="14" v-model="phone" minlength="11" class="form-control" required id="phone">
-                                <!--                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>-->
-                                <div class="hid help-block with-errors"></div>
-                            </div>
-
-
-                            <div class="form-group">
-                                <label for="remark" class="control-label">备注</label>
-                                <textarea class="form-control" v-model="remark" id="remark"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="tagSelect" class="control-label">标签</label>
-                                <select class="form-control" style="width: 100%" id="tagSelect" multiple="multiple" name="tagSelect"></select>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" onclick="$('#addcontactor').submit()" class="btn btn-primary">Send message</button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
     </div>
     <script>
 
-//        function on_add() {
-//            vue$.smsQueueID = '';
+        function on_add() {
+            vue$.smsQueueID = '';
 //            vue$.updateData
-//            $('.modal').modal('show');
-//
-//
-//        }
+            $('.modal').modal('show');
+
+
+        }
 
         function on_delete(id) {
             $.ajax({ url: '/api/message/deletesmsqueue', type: 'get', data: { id: id }, success: function(data) {
@@ -238,8 +333,17 @@
                     $.notifyError(data.msg, '');
                 }
             }});
+        }
 
-
+        function deleteContainer(id) {
+            $.ajax({ url: '/api/message/deleterecordcontainer', type: 'get', data: { id: id }, success: function(data) {
+                if (data.success) {
+                    $.notifySuccess(data.msg, '');
+                    getContainerData();
+                } else {
+                    $.notifyError(data.msg, '');
+                }
+            }});
         }
 
     </script>

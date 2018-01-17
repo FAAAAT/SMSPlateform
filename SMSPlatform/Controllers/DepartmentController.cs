@@ -163,13 +163,13 @@ namespace SMSPlatform.Controllers
             helper.SetTransaction(tran);
             try
             {
-                
+
                 helper.Delete("Department", $"ID={id}");
                 helper.Delete("DepartmentContactor", $"DepartmentID = {id}");
                 tran.Commit();
                 return Json(new ReturnResult()
                 {
-                    msg="删除成功",
+                    msg = "删除成功",
                     success = true,
                     status = 200,
                 });
@@ -188,6 +188,10 @@ namespace SMSPlatform.Controllers
                     success = false,
                     status = 500,
                 });
+            }
+            finally
+            {
+                helper.ClearTransaction();
             }
         }
 

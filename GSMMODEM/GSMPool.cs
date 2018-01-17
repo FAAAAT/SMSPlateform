@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -23,7 +24,8 @@ namespace GSMMODEM
             var job = JobBuilder.Create<GSMDiscoverJob>().WithIdentity("SMSJob", "SMSGroup1").Build();
 
             var jobListener = new GSMDiscoverJobListener();
-            jobListener.poolReference = pool;
+            jobListener.poolDic = pool;
+            jobListener.poolReference = this;
             jobListener.logger = logger;
 
             var trigger = TriggerBuilder.Create().WithIdentity("SMStrigger", "SMSGroup1").WithSimpleSchedule(x => x.WithInterval(new TimeSpan(0, 0, 3))).StartNow().Build();
@@ -72,13 +74,39 @@ namespace GSMMODEM
         {
             return GetEnumerator();
         }
+
+        public event EventHandler OnModemOpen;
+
+        public event EventHandler OnModemClose;
+
+        public void FireOpen(GsmModem modem)
+        {
+            OnModemOpen?.Invoke(modem,new EventArgs());
+        }
+
+        public void FireClose(GsmModem modem)
+        {
+            OnModemClose?.Invoke(modem, new EventArgs());
+
+        }
+
+
+
+
+
+
+
     }
 
     public static class GSMModemExtension
     {
         public static Regex PhoneReg = new Regex("(\\+?86)?\\d{11}");
 
-
+        /// <summary>
+        /// 获取某卡的电话号码
+        /// </summary>
+        /// <param name="modem"></param>
+        /// <returns></returns>
         public static string GetPhoneNum(this GsmModem modem)
         {
             var result = modem.SendAT("AT+CPBS=\"SM\"");
@@ -97,6 +125,12 @@ namespace GSMMODEM
 
         }
 
+        /// <summary>
+        /// 设置卡的电话号码
+        /// </summary>
+        /// <param name="modem"></param>
+        /// <param name="phone"></param>
+        /// <returns></returns>
         public static bool SetPhoneNum(this GsmModem modem, string phone)
         {
             var result = modem.SendAT("AT+CPBS=\"" + phone + "\"");
@@ -122,13 +156,15 @@ namespace GSMMODEM
 
     public class GSMDiscoverJobListener : IJobListener
     {
-        public Dictionary<string, GsmModem> poolReference;
+        public Dictionary<string, GsmModem> poolDic;
         public SMSPlatformLogger logger;
+        public GSMPool poolReference;
 
         public void JobToBeExecuted(IJobExecutionContext context)
         {
-            context.JobDetail.JobDataMap.Add("execContext", poolReference);
+            context.JobDetail.JobDataMap.Add("execContext", poolDic);
             context.JobDetail.JobDataMap.Add("logger", logger);
+            context.JobDetail.JobDataMap.Add("pool",poolReference);
         }
 
         public void JobExecutionVetoed(IJobExecutionContext context)
@@ -153,6 +189,7 @@ namespace GSMMODEM
             var logger = context.JobDetail.JobDataMap.Get("logger") as SMSPlatformLogger;
             var dic = context.JobDetail.JobDataMap.Get("execContext") as Dictionary<string, GsmModem>;
             var ports = SerialPort.GetPortNames();
+            var pool = context.JobDetail.JobDataMap.Get("pool") as GSMPool;
             foreach (var port in ports)
             {
                 Console.WriteLine("opening port "+port);
@@ -165,6 +202,8 @@ namespace GSMMODEM
                         {
                             modem.Close();
                             dic.Remove(port);
+                            pool.FireClose(modem);
+
                         }
                     }
                     else
@@ -176,22 +215,30 @@ namespace GSMMODEM
                             if (!dic.ContainsKey(modem.ComPort))
                             {
                                 dic.Add(modem.ComPort, modem);
+                                pool.FireOpen(modem);
+
                             }
                         }
                         else
                         {
                             modem.Close();
+                            pool.FireClose(modem);
                         }
                     }
                 }
                 catch (Exception e)
                 {
                     logger.Error(e.ToString());
+                    if (dic.ContainsKey(port))
+                    {
+                        var modem = dic[port];
+                        modem.Close();
+                        dic.Remove(port);
+                        pool.FireClose(modem);
+
+                    }
                 }
             }
         }
-
-
-
     }
 }
