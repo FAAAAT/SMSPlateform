@@ -46,7 +46,7 @@ namespace SMSPlatform
 
             SMSPlatformLogger logger = new SMSPlatformLogger();
 
-            GSMTaskService taskService = new GSMTaskService();
+            GSMTaskService taskService = null;
 
 
             string url = "http://localhost:64453";
@@ -63,7 +63,9 @@ namespace SMSPlatform
 
                 AppDomain.CurrentDomain.SetData("Logger", logger);
                 AppDomain.CurrentDomain.SetData("Pool", pool);
-
+                taskService = new GSMTaskService();
+                TaskServiceStartUp taskServiceStartUp = new TaskServiceStartUp(taskService);
+                AppDomain.CurrentDomain.SetData("TaskService", taskService);
 
 
 
@@ -84,6 +86,7 @@ namespace SMSPlatform
                 host.Dispose();
                 handle.Close();
                 handle.Dispose();
+                taskService?.Dispose();
                 if (process != null)
                 {
                     process.Close();
@@ -93,6 +96,7 @@ namespace SMSPlatform
                 {
                     pool.Dispose();
                 }
+                
             }
 
         }
@@ -123,7 +127,7 @@ namespace SMSPlatform
                     id = RouteParameter.Optional
                 });
 
-            config.Formatters.Remove(config.Formatters.Where(x=>x.GetType() == typeof(JsonMediaTypeFormatter)).Single());
+            config.Formatters.Remove(config.Formatters.Where(x => x.GetType() == typeof(JsonMediaTypeFormatter)).Single());
             config.Formatters.Add(new NewtonFormatter());
 
             //            config.Routes.MapHttpRoute(
@@ -148,6 +152,8 @@ namespace SMSPlatform
                         return values.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.ToLower() == "api";
                     }
                 )
+                //                .Use(myhandle)
+                .UseCors(CorsOptions.AllowAll)
                 .MapSignalR("/api/signalr", new HubConfiguration())
 
                 //                .UseCors()
@@ -155,6 +161,41 @@ namespace SMSPlatform
 
         }
 
+
+        public Task myhandle(IOwinContext context, Func<Task> next)
+        {
+
+            //获取物理文件路径  
+            var path = GetFilePath(context.Request.Path.Value);
+
+            //验证路径是否存在  
+            if (File.Exists(path))
+            {
+                return SetResponse(context, path);
+            }
+
+            //不存在返回下一个请求  
+            return next();
+        }
+        public static string GetFilePath(string relPath)
+        {
+            return Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory
+                , "..\\..\\"
+                , relPath.TrimStart('/').Replace('/', '\\'));
+        }
+
+        public Task SetResponse(IOwinContext context, string path)
+        {
+            var perfix = Path.GetExtension(path);
+            if (perfix == ".html")
+                context.Response.ContentType = "text/html; charset=utf-8";
+            else if (perfix == ".js")
+                context.Response.ContentType = "application/x-javascript";
+            else if (perfix == ".css")
+                context.Response.ContentType = "atext/css";
+            return context.Response.WriteAsync(File.ReadAllText(path));
+        }
     }
 
     public class CustomerBootstrapper : DefaultNancyBootstrapper
@@ -213,7 +254,7 @@ namespace SMSPlatform
 
     public class NewtonFormatter : JsonMediaTypeFormatter
     {
-        
+
 
         public override object ReadFromStream(Type type, Stream readStream, Encoding effectiveEncoding, IFormatterLogger formatterLogger)
         {
@@ -236,7 +277,7 @@ namespace SMSPlatform
         public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger,
             CancellationToken cancellationToken)
         {
-//            var str = content.ReadAsStringAsync().GetAwaiter().GetResult();
+            //            var str = content.ReadAsStringAsync().GetAwaiter().GetResult();
             byte[] buffer = new byte[content.Headers.ContentLength.Value];
             readStream.Read(buffer, 0, buffer.Length);
             var str = Encoding.UTF8.GetString(buffer);

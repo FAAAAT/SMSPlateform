@@ -37,7 +37,7 @@ namespace SMSPlatform.Services
 
         public SMSSendQueueModel GetNextData(string phone)
         {
-            var container = helper.SelectDataTable($"select * from RecordContainer where SIMsPhone like '%{phone}%'").Select().Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
+            var container = helper.SelectDataTable($"select * from RecordContainer where ID = (select Min(ID) from RecordContainer where SIMsPhone like '%{phone}%' and (status = 0 or status = 1)) and (status = 0 or status = 1)").Select().Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
             if (container == null)
             {
                 return null;
@@ -46,6 +46,10 @@ namespace SMSPlatform.Services
             {
                 var model = helper.SelectDataTable(
                     $"select * from SMSSendQueue where ID = (select Min(ID) from SMSSendQueue where ContainerID = {container.ID}) and (status = 0)").Select().Select(x => new SMSSendQueueModel().SetData(x) as SMSSendQueueModel).SingleOrDefault();
+                if (model == null)
+                {
+                    return model;
+                }
                 model.Status = 1;
                 var dic = new Dictionary<string, object>();
                 model.GetValues(dic);
@@ -68,13 +72,18 @@ namespace SMSPlatform.Services
             {
                 model = helper.SelectDataTable($"select * from SMSSendQueue where ID = {smsID}").Select()
                     .Select(x => (SMSSendQueueModel)new SMSSendQueueModel().SetData(x)).SingleOrDefault();
-                helper.Delete("SMSSendQueue", $" ID = {model.ID}");
+                
                 var dic = new Dictionary<string, object>();
                 model.Status = success ? 2 : 3;
                 model.GetValues(dic);
                 dic.Remove("ID");
-                helper.Insert("SMSSendRecord", dic);
 
+                if (success)
+                {
+                    helper.Delete("SMSSendQueue", $" ID = {model.ID}");
+                    helper.Insert("SMSSendRecord", dic);
+                }
+                
                 tran.Commit();
             }
             catch (Exception)
@@ -87,23 +96,34 @@ namespace SMSPlatform.Services
             }
             if (model != null)
             {
-                var count =GetNotCompletedContainerQueueCount(model.ContainerID.Value);
+                var count = GetNotCompletedContainerQueueCount(model.ContainerID.Value);
+                var errCount = GetErrorContainerQueueCount(model.ContainerID.Value);
+
                 if (count == 0)
                 {
-                    var containerModel = helper.SelectDataTable($"select * from RecordContainer where ID = {model.ContainerID}").Select().Select(x=>new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
-                    var dic = new Dictionary<string,object>();
-                    containerModel.Status = 2;
+                    var containerModel = helper.SelectDataTable($"select * from RecordContainer where ID = {model.ContainerID}").Select().Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
+                    var dic = new Dictionary<string, object>();
+                    containerModel.Status = errCount==0?2:3;
                     containerModel.GetValues(dic);
                     dic.Remove("ID");
                     helper.Update("RecordContainer", dic, " ID = " + containerModel.ID.Value, new List<SqlParameter>());
                 }
+
+
+                
             }
         }
 
 
         public int GetNotCompletedContainerQueueCount(int id)
         {
-            var count = helper.SelectScalar<int>($"select count(1) from SMSSendQueue where ContainerID = {id} and (status =0 or satatus =1)");
+            var count = helper.SelectScalar<int>($"select count(1) from SMSSendQueue where ContainerID = {id} and (status =0 or status =1)");
+            return count;
+        }
+
+        public int GetErrorContainerQueueCount(int id)
+        {
+            var count = helper.SelectScalar<int>($"select count(1) from SMSSendQueue where ContainerID = {id} and status = 3");
             return count;
         }
 

@@ -105,6 +105,7 @@
     <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Controllers\SMSManagementController.cs" />
     <Compile Include="Controllers\TagController.cs" />
+    <Compile Include="Controllers\TaskServiceController.cs" />
     <Compile Include="Controllers\TemplateController.cs" />
     <Compile Include="Filters\AuthenticationFilter.cs" />
     <Compile Include="Models\BaseModelcs.cs" />

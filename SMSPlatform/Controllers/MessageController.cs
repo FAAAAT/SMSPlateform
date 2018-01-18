@@ -19,6 +19,7 @@ namespace SMSPlatform.Controllers
         private SqlHelper helper;
         private GSMPool pool;
         private SMSPlatformLogger logger;
+        private GSMTaskService taskService;
 
         public MessageController()
         {
@@ -26,6 +27,7 @@ namespace SMSPlatform.Controllers
             try
             {
                 pool = AppDomain.CurrentDomain.GetData("Pool") as GSMPool;
+                taskService = AppDomain.CurrentDomain.GetData("TaskService") as GSMTaskService;
                 var conn = new SqlConnection(ConnectionStringUtility.DefaultConnectionStrings);
                 helper = new SqlHelper();
                 conn.Open();
@@ -90,7 +92,7 @@ namespace SMSPlatform.Controllers
             try
             {
 
-                helper.Update("RecordContainer", new Dictionary<string, object>() {{"Status", 3}}, $" ID={id} ",
+                helper.Update("RecordContainer", new Dictionary<string, object>() {{"Status", 4}}, $" ID={id} ",
                     new List<SqlParameter>());
                 helper.Delete("SMSSendQueue", $"ContainerID ={id}");
                 tran.Commit();
@@ -203,6 +205,14 @@ namespace SMSPlatform.Controllers
         [HttpGet]
         public IHttpActionResult GetSIMPhones()
         {
+            var task = Task.Run(() => { });
+            task.ContinueWith((x) =>
+            {
+                if (x.Exception == null)
+                {
+                    int i = 1;
+                }
+            });
             try
             {
                 return Json(new ReturnResult()
@@ -280,6 +290,10 @@ namespace SMSPlatform.Controllers
                     service.AddSMSSendQueue(smsmodel);
                 }
                 tran.Commit();
+                foreach (var item in container.SIMsPhone)
+                {
+                    taskService.Start(item);
+                }
                 return Json(new ReturnResult()
                 {
                     msg = "创建成功",
