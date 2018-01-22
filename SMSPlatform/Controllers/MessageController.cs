@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -42,8 +43,12 @@ namespace SMSPlatform.Controllers
         }
 
         [HttpGet]
-        public IHttpActionResult GetRecordContainer(string containerName)
+        public IHttpActionResult GetRecordContainer(string containerName, DateTime? beginTime ,DateTime? endTime, int? pageSize,int? pageIndex)
         {
+            var dcs = new FormDataCollection(this.Request.RequestUri);
+            var status = dcs["status[]"]?.Split(',');
+            var queryStatus = dcs["queryStatus[]"]?.Split(',');
+
             try
             {
                 var whereStr = " where 1=1 ";
@@ -51,13 +56,42 @@ namespace SMSPlatform.Controllers
                 {
                     whereStr += $" and ContainerName like '%{containerName}%'";
                 }
-                var datas = helper.SelectDataTable("select * from RecordContainer " + whereStr).Select().Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel);
 
+                if (beginTime.HasValue)
+                {
+                    whereStr += $" and CreateTime >= '{beginTime.Value:yyyy-MM-dd}'";
+                }
+
+                if (endTime.HasValue)
+                {
+                    whereStr += $" and CreateTime < '{endTime.Value.AddDays(1):yyyy-MM-dd}'";
+                }
+
+                if (status != null && status.Length != 0)
+                {
+                    whereStr += $" and Status in ({string.Join(",", status)})";
+                }
+
+                if (queryStatus != null && queryStatus.Length != 0)
+                {
+                    whereStr += $" and Status in ({string.Join(",",queryStatus)})";
+                }
+
+
+
+
+                var datas = helper.SelectDataTable("select * from RecordContainer " + whereStr).Select().Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel);
+                var total = datas.Count();
+                if (pageSize.HasValue&&pageIndex.HasValue)
+                {
+                    datas = datas.Skip(pageIndex.Value * pageSize.Value).Take(pageSize.Value);
+                }
                 return Json(new ReturnResult()
                 {
                     data = datas,
                     success = true,
                     status = 200,
+                    total = total
                 });
 
             }
@@ -218,7 +252,7 @@ namespace SMSPlatform.Controllers
                 return Json(new ReturnResult()
                 {
                     success = true,
-                    data = pool.PhoneComDic.Select(x=>new {text=x.Value,id=x.Value,disabled = false,selected = false}),
+                    data = pool.PhoneComDic.Select(x=>new {com=x.Key,text=x.Value,id=x.Value,disabled = false,selected = false}),
                     status = 200,
                 });
             }
@@ -238,6 +272,44 @@ namespace SMSPlatform.Controllers
                 });
             }
 
+        }
+        
+
+        [HttpGet]
+        public IHttpActionResult SetPhoneNumberByComPort(string comport,string phone)
+        {
+            var modem = pool[comport];
+            if (modem!=null)
+            {
+                if (modem.SetPhoneNum(phone))
+                {
+                    return Json(new ReturnResult()
+                    {
+                        msg = "号码更新成功",
+                        success = true,
+                        status = 200
+                    });
+                }
+                else
+                {
+                    return Json(new ReturnResult()
+                    {
+                        msg = "号码有误或SIM卡错误。请先确定号码是否正确，如无误请联管理员",
+                        success = false,
+                        status = 500,
+                    });
+                }
+            }
+            else
+            {
+                return Json(new ReturnResult()
+                {
+                    msg = "您选择的COM端口不存在",
+                    success = false,
+                    status = 500,
+
+                });
+            }
         }
 
         [HttpGet]

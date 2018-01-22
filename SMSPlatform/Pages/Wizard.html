@@ -435,7 +435,7 @@
                                 <br />
                                 <span>使用SIM卡:{{updateData.containerData.simPhones.join(',')}}</span>
                                 <br />
-                                <span>使用模板:{{computedTemplateContent}}</span>
+                                <span>使用模板:<textarea class="form-control" style="min-height: 15vh" readonly v-model="computedTemplateContent"></textarea></span>
 
 
                             </div>
@@ -611,6 +611,8 @@
                                 }
                             });
                         }
+                    } else {
+                
                     }
                     console.log('prevented');
                     e.preventDefault();
@@ -622,10 +624,12 @@
                 if (!e.isDefaultPrevented()) {
                     if (!window.containerId) {
                         $.ajax({
-                            url: '/api/message/CreateSMSQueue', type: 'get', data: {
+                            url: '/api/message/CreateSMSQueue',
+                            type: 'get',
+                            data: {
                                 json: JSON.stringify(vue$.updateData)
                             },
-                            success: function (data) {
+                            success: function(data) {
                                 if (data.success) {
                                     $.notifySuccess(data.msg, '');
                                 } else {
@@ -635,10 +639,12 @@
                         });
                     } else {
                         $.ajax({
-                            url: '/api/message/UpdateHallContainer', type: 'get', data: {
+                            url: '/api/message/UpdateHallContainer',
+                            type: 'get',
+                            data: {
                                 json: JSON.stringify(vue$.updateData)
                             },
-                            success: function (data) {
+                            success: function(data) {
                                 if (data.success) {
                                     $.notifySuccess(data.msg, '');
                                 } else {
@@ -648,8 +654,11 @@
                         });
                     }
 
+                } else {
+                    $('a[data-Index=2]').tab('show');
+                    $.notifyError('请检查必填项必填项','');
                 }
-                
+
                 e.preventDefault();
                 e.stopPropagation();
             });

@@ -73,7 +73,7 @@ namespace SMSPlatform.Services
             var waitHandle = contextDic["waitHandle"] as WaitHandle;
             var normalLoopContinues = contextDic["normalLoopContinues"] as Dictionary<string, bool>;
 
-            while (normalLoopContinues.ContainsKey(modem.PhoneNumber)&&normalLoopContinues[modem.PhoneNumber])
+            while (normalLoopContinues.ContainsKey(modem.PhoneNumber) && normalLoopContinues[modem.PhoneNumber])
             {
                 if (OnGetNextData != null)
                 {
@@ -170,7 +170,7 @@ namespace SMSPlatform.Services
 
                     }
 
-                    normalLoopContinues.Add(gsmModem.PhoneNumber,true);
+                    normalLoopContinues.Add(gsmModem.PhoneNumber, true);
 
 
                     var task = new Task(x => ProceedSMSSendQueue(x), new Dictionary<string, object>()
@@ -178,7 +178,7 @@ namespace SMSPlatform.Services
                     { "modem",gsmModem},
                     { "waitHandle",waitHandle},
                     { "normalLoopContinues",normalLoopContinues },
-                   
+
 
 
                 }, tokenSource.Token);
@@ -190,15 +190,23 @@ namespace SMSPlatform.Services
                 pool.OnModemOpen += OnFireOpen;
                 Status = GSMTaskServiceStatus.Running;
             }
-            if (OnStart!=null)
+            if (OnStart != null)
             {
-                OnStart(this,new EventArgs());
+                OnStart(this, new EventArgs());
             }
         }
 
         public void Start(string phone)
         {
-            (handles[phone] as EventWaitHandle).Set();
+            if (handles.ContainsKey(phone))
+            {
+                (handles[phone] as EventWaitHandle).Set();
+
+            }
+            else
+            {
+                logger.Error("给定的phone找不到对应handle");
+            }
         }
 
         public void Stop()
@@ -215,9 +223,9 @@ namespace SMSPlatform.Services
 
                 foreach (var token in tokens)
                 {
-//                    force cancel
-//                    token.Value.Cancel();
-//                    normal cancel
+                    //                    force cancel
+                    //                    token.Value.Cancel();
+                    //                    normal cancel
                     normalLoopContinues[token.Key] = false;
                     (handles[token.Key] as EventWaitHandle).Set();
                     tasks.Remove(token.Key);
@@ -231,7 +239,7 @@ namespace SMSPlatform.Services
                 OnStop(this, new EventArgs());
             }
         }
-        
+
         public void Dispose()
         {
             Stop();

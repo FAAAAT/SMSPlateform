@@ -1,0 +1,274 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>发送任务</title>
+
+    <script type="text/javascript" src="/Scripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="/Scripts/bootstrap.js"></script>
+    <link href="/Content/bootstrap.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/vue.js"></script>
+    <link href="/Content/Site.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/bootstrap-notify.js"></script>
+    <script type="text/javascript" src="/Scripts/main.js"></script>
+
+
+    <script id="vue">
+        $(function () {
+            window.vue$ = new Vue({
+                el: '#app',
+                data: {
+                    tagName: '', headerAndFooter: {}, datacollections: {}
+                    , dataContainers: {}
+                    , containerQueryData: { containerName: '', pageIndex: 0, pageSize: 8 }
+                    , queryData: { containerID: null, toName: '', toPhone: '', beginTime: null, endTime: null, smsContent: '', pageIndex: 0, pageSize: 8 }
+                    , sendContext: { status: 0 }
+                    , updateData: {}
+                    , smsQueueID: ''
+                    , detailPage: false
+                    , pagerData: { currentIndex: 0, pagerRange: 5, pageSize: 8, total: 30 }
+                    , phoneNumber: ''
+                    , comPort: ''
+
+                },
+                methods: {
+                    on_delete: on_delete,
+                    deleteContainer: deleteContainer,
+                    on_edit: function (id) {
+                        window.location.href = '/pages/wizard.html?containerId=' + id;
+                    },
+                    showDetail: function (id) {
+                        this.detailPage = true;
+                        this.queryData.containerID = id;
+                        getData();
+                    },
+                    returnContainer: function () {
+                        this.detailPage = false;
+                        this.queryData.cotnainerID = '';
+
+                    }
+                    , totalPageNum: function () {
+                        var pageNumber = Math.ceil(this.$data.pagerData.total / this.$data.pagerData.pageSize);
+                        return pageNumber;
+                    }
+                    , indexes: function () {
+                        var currentIndex = this.$data.pagerData.currentIndex;
+                        var range = this.$data.pagerData.pagerRange;
+                        var pageNumber = Math.ceil(this.$data.pagerData.total / this.$data.pagerData.pageSize);
+                        range = pageNumber > range ? range : pageNumber;
+                        console.log(range);
+                        var genebefore = Math.ceil((range - 1) / 2);
+
+                        var start = currentIndex > genebefore ? currentIndex + 1 - genebefore : 1;
+                        start = start >= pageNumber - range + 1 ? pageNumber - range + 1 : start;
+
+                        return [...Array(range)].map((e, i, a) => i + start);
+                    }
+
+                }
+            });
+
+            $.ajax({
+                url: '/api/taskservice/getservicestatus', type: 'get', success: function (data) {
+                    if (data.success) {
+                        vue$.sendContext.status = data.data.status;
+                        console.log(data);
+                    }
+                },
+                error: function (data) {
+                    $.notifyError(data);
+                }
+            });
+
+
+
+            window.getContainerData = function () {
+                $.ajax({
+                    url: '/api/message/GetRecordContainer', type: 'get', data: vue$.containerQueryData,
+                    success: function (data) {
+                        if (data.success) {
+                            console.log(data);
+                            vue$.dataContainers = data.data;
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
+
+                    }
+                });
+            }
+            getContainerData();
+
+            function getData() {
+                $.ajax({
+                    url: '/api/message/getsimphones'
+                    , data: vue$.queryData
+                    , type: 'get'
+                    , success: function (data) {
+                        if (data.success) {
+                            vue$.datacollections = data.data;
+                        } else {
+                            $.notifyError(data.msg, '');
+
+                        }
+                    }
+                });
+            }
+            window.getData = getData;
+            getData();
+
+            $.ajax({
+                url: '/api/DynamicTemplate/HeaderAndFooter',
+                method: 'get',
+                success: function (data) {
+                    vue$.$data.headerAndFooter = Object.assign({}, vue$.$data.headerAndFooter, data.data);
+                }
+            });
+
+
+
+
+        });
+    </script>
+
+
+
+</head>
+<body>
+    <div id="app">
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" runat="server" href="~/">{{headerAndFooter.applicationName}}</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul v-for="menu in headerAndFooter.menus" class="nav navbar-nav">
+                        <li><a runat="server" v-bind:href="menu.href">{{menu.name}}</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="container body-content">
+            <h1>SIM卡管理</h1>
+            <h3></h3>
+
+            <div style="min-height: 65vh">
+                <div class="form">
+                    <div class="form-group">
+                        <label for="sel_com">选择SIM卡</label>
+                        <select id="sel_com" onchange="sel_comChange(event)" v-model="comPort" v-for="row in datacollections" class="form-control">
+                            <option v-bind:value="row.com">{{row.com+'+'+row.id}}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_phone">修改号码</label>
+                        <input id="txt_phone" type="text" v-model="phoneNumber" placeholder="电话号码" class="form-control" />
+
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary" onclick="phoneSubmit()">提交</button>
+
+                    </div>
+
+                </div>
+                
+            </div>
+
+
+
+
+            <hr />
+            <footer>
+                <p>{{headerAndFooter.footer}}</p>
+            </footer>
+        </div>
+
+
+
+
+    </div>
+    <script>
+
+        function on_add() {
+            vue$.smsQueueID = '';
+            //            vue$.updateData
+            $('.modal').modal('show');
+
+
+        }
+
+        function on_delete(id) {
+            $.ajax({
+                url: '/api/message/deletesmsqueue', type: 'get', data: { id: id }, success: function (data) {
+                    if (data.success) {
+                        $.notifySuccess(data.msg, '');
+                    } else {
+                        $.notifyError(data.msg, '');
+                    }
+                }
+            });
+        }
+
+        function deleteContainer(id) {
+            $.ajax({
+                url: '/api/message/deleterecordcontainer', type: 'get', data: { id: id }, success: function (data) {
+                    if (data.success) {
+                        $.notifySuccess(data.msg, '');
+                        getContainerData();
+                    } else {
+                        $.notifyError(data.msg, '');
+                    }
+                }
+            });
+        }
+
+
+        function pageChange(event, pageIndex, pageSize) {
+            pageIndex = pageIndex ? pageIndex - 1 : 0;
+            pageSize = pageSize ? pageSize : vue$.pagerData.pageSize;
+            vue$.queryData.pageIndex = pageIndex;
+            vue$.pagerData.currentIndex = pageIndex;
+            vue$.queryData.pageSize = pageSize;
+            vue$.pagerData.pageSize = pageSize;
+
+            getData();
+
+
+
+        }
+
+        function sel_comChange(e) {
+            var target = e.currentTarget || e.target || e.srcElement;
+            console.log(target);
+            var model = vue$.datacollections.find((ele, i) => ele.com == target.value);
+            vue$.phoneNumber = model.text;
+
+        }
+
+        function phoneSubmit() {
+            $.ajax({
+                url: '/api/message/SetPhoneNumberByComPort'
+                , type: 'get'
+                , data: { comport: vue$.comPort, phone: vue$.phoneNumber }
+                , success: function (data) {
+                    if (data.success) {
+                        $.notifySuccess(data.msg, '');
+                    } else {
+                        $.notifyError(data.msg, '');
+
+                    }
+                }
+            });
+        }
+
+    </script>
+
+</body>
+</html>

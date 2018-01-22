@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
@@ -440,7 +441,26 @@ namespace SMSPlatform.Controllers
             }
         }
 
+        [HttpPost]
+        public IHttpActionResult UploadContactors()
+        {
+            var s =this.Request.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+            byte[] buffer = new byte[s.Length];
+            s.Read(buffer, 0, buffer.Length);
+            var fileName = this.Request.Content.Headers.ContentDisposition.FileName;
+#if DEBUG
+//            var finfo = new FileInfo(Path.Combine(Environment.CurrentDirectory,"..\\..\\",fileName));
+#else
+//            var finfo = new FileInfo(Path.Combine(Environment.CurrentDirectory,"..\\",fileName));
+#endif
+//            var fs = finfo.Open(FileMode.OpenOrCreate, FileAccess.ReadWrite,FileShare.Delete);
+//
+//            fs.Seek(0, SeekOrigin.Begin);
 
+            
+
+
+        }
 
     }
 }

@@ -30,7 +30,7 @@
                     phone: '',
                     remark: '',
                     queryData: { name: '', phone: '', tagIds: [], selectedDeps: [] },
-                    querySelectedDeps:[],
+                    querySelectedDeps: [],
                     modalData: { selectedDeps: [] },
                     contactorId: ''
                 },
@@ -42,19 +42,16 @@
                         });
                     }
                 },
-               
-
             });
 
             vue$.$watch('querySelectedDeps', (n, o) => {
-                
                 vue$.queryData.selectedDeps = n.map((e, i) => e.MID);
             });
 
             function getData() {
                 $.ajax({
                     url: '/api/contactor/getcontactor',
-                    traditional:true,
+                    traditional: true,
                     data: vue$.queryData, method: 'get', success: function (data) {
                         if (data.success) {
                             vue$.$data.datacollections = data.data;
@@ -84,7 +81,7 @@
                     $('#queryTagSelect').select2({ data: data.data.results });
                     $('#fuckStupidS2>.select2-container').css('width', '100%');
                     $('#fuckStupidS2>.select2-container').css('min-width', '200px');
-                    $('#queryTagSelect').on('change', function(e) {
+                    $('#queryTagSelect').on('change', function (e) {
                         vue$.queryData.tagIds = $('#queryTagSelect').val();
                     });
                 }
@@ -279,7 +276,24 @@
                 </div>
             </div>
         </div>
+        
+        
+        <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <input type="file" name="file_upload" id="file_upload1" />
+                    <div id="queue" style="max-height: 350px; width: 500px; overflow: hidden; overflow-y: auto;"></div>
+
+                    <div id="file_upload2"></div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    
+
+
+
 
 
 
@@ -372,7 +386,7 @@
                             vue$.remark = data.data.contactor.Remark;
                             initTagSelect2(contactorId);
                             modalTreeView.clearSelection();
-    
+
                             modalTreeView.selectNodes(data.data.depIds);
 
 
@@ -413,7 +427,7 @@
                 $('#tagSelect').val(null);
                 $('#tagSelect').trigger('change');
                 $('#tagSelect').select2('destroy');
-             
+
             }
             $.ajax({
                 traditional: true,
@@ -426,14 +440,14 @@
 
                         $('#tagSelect').select2({ data: data.data.results });
                         setTimeout(function () {
-//                            console.log($('#tagSelect').hasClass("select2-hidden-accessible"));
+                            //                            console.log($('#tagSelect').hasClass("select2-hidden-accessible"));
                             var selecteds = data.data.results.filter((e, i) => { return e.selected; });
                             var selectedIds = selecteds.map((e, i) => e.id);
-//                            console.log('set values:' + selectedIds);
+                            //                            console.log('set values:' + selectedIds);
                             $('#tagSelect').val(selectedIds);
                             $('#tagSelect').trigger('change');
                         }, 300);
-//                        console.log(data);
+                        //                        console.log(data);
 
                     } else {
                         $.notifyError(data.msg);
@@ -460,7 +474,7 @@
             treeviewOptions: { multiSelect: true, color: '#4280cd' },
             requestUrl: '/api/Department/GetDepartmentTreeData',
             onClientSelected: function (data) {
-                
+
                 vue$.querySelectedDeps = data;
             }
         });

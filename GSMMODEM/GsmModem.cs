@@ -152,6 +152,8 @@ namespace GSMMODEM
             }
         }
 
+    
+
         public string PhoneNumber
         {
             get
@@ -585,7 +587,15 @@ namespace GSMMODEM
 
         #endregion 删除短信
 
+
+        public void RefreshPhoneNumber()
+        {
+            this.phoneNumber = this.GetPhoneNum();
+        }
         #endregion
+
+
+
     }
 
 

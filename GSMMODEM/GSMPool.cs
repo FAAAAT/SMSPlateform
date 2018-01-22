@@ -38,15 +38,19 @@ namespace GSMMODEM
 
         }
 
-        public GsmModem this[string indexer]
+        public GsmModem this[string comport]
         {
             get
             {
-                pool.TryGetValue(indexer, out var gm);
+                pool.TryGetValue(comport, out var gm);
                 return gm;
             }
         }
 
+
+        /// <summary>
+        /// key:comportname value:phone
+        /// </summary>
         public Dictionary<string, string> PhoneComDic
         {
             get { return pool.Values.ToDictionary(x => x.ComPort, x => x.PhoneNumber); }
@@ -133,7 +137,12 @@ namespace GSMMODEM
         /// <returns></returns>
         public static bool SetPhoneNum(this GsmModem modem, string phone)
         {
-            var result = modem.SendAT("AT+CPBS=\"" + phone + "\"");
+            if (!PhoneReg.IsMatch(phone))
+            {
+                return false;
+            }
+
+            var result = modem.SendAT("AT+CPBS=\"SM\"");
 
             if (result.Contains("ERROR"))
             {
@@ -145,6 +154,8 @@ namespace GSMMODEM
             {
                 return false;
             }
+
+            modem.RefreshPhoneNumber();
 
             return true;
 

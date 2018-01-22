@@ -168,7 +168,7 @@ namespace SMSPlatform.Services
             }
             if (endTime.HasValue)
             {
-                whereStr += $" and CreateTime < '{endTime}'";
+                whereStr += $" and CreateTime < '{endTime.Value.AddDays(1)}'";
             }
             if (!string.IsNullOrWhiteSpace(smsContent))
             {
