@@ -16,7 +16,7 @@
     <script type="text/javascript" src="/Scripts/select2.full.min.js"></script>
     <script type="text/javascript" src="/scripts/bootstrapTreeview/js/bootstrap-treeview.js"></script>
     <script type="text/javascript" src="/scripts/bootstrapTreeview/lymiTreeView_jquery.js"></script>
-
+    <script type="text/javascript" src="/scripts/uploadifyloader.js"></script>
     <!--    <link href="/Content/bootstrap-select2-compatible.css" rel="stylesheet" />-->
     <script>
         $(function () {
@@ -160,6 +160,7 @@
 
             <button class="btn btn-primary" onclick="on_add(event)">添加</button>
             <button Class="btn btn-primary" onclick="getData(true)">查询</button>
+            <button class="btn btn-warning" onclick="$('#uploadModal').modal('show')">导入联系人</button>
             <div style="min-height: 65vh">
                 <table class="table table-striped table-hover table-bordered">
                     <thead>
@@ -464,6 +465,7 @@
             treeviewID: 'modalDepartmentTreeView',
             treeviewOptions: { color: '#4280cd' },
             requestUrl: '/api/Department/GetDepartmentTreeData',
+            multiSelect:true,
             onClientSelected: function (data) {
                 vue$.modalData.selectedDeps = data;
             }
@@ -473,6 +475,7 @@
             treeviewID: 'queryDepartmentTreeView',
             treeviewOptions: { multiSelect: true, color: '#4280cd' },
             requestUrl: '/api/Department/GetDepartmentTreeData',
+            multiSelect: true,
             onClientSelected: function (data) {
 
                 vue$.querySelectedDeps = data;

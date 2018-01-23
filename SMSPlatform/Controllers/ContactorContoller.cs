@@ -397,14 +397,14 @@ namespace SMSPlatform.Controllers
 
                 whereStr = tagIds == null || tagIds.Count() == 0
                     ? " 1=0 "
-                    : $" ID in ({string.Join(",", tagIds.Select(x=>x["TagID"]+""))})";
+                    : $" ID in ({string.Join(",", tagIds.Select(x => x["TagID"] + ""))})";
 
 
                 var tags = helper.SelectDataTable("select * from Tag where " + whereStr).Select().Select(x => new TagModel().SetData(x) as TagModel);
 
                 whereStr = departemntIds == null || departemntIds.Count() == 0
                 ? " 1=0 "
-                    : $" ID in ({string.Join(",", departemntIds.Select(x=>x["DepartmentID"]+""))})";
+                    : $" ID in ({string.Join(",", departemntIds.Select(x => x["DepartmentID"] + ""))})";
 
                 var departments = helper.SelectDataTable("select * from Department where " + whereStr).Select()
                     .Select(x => new DepartmentModel().SetData(x) as DepartmentModel);
@@ -414,8 +414,10 @@ namespace SMSPlatform.Controllers
                 var datas = contactors.Select(x => new
                 {
                     contactor = x
-                    , tags = tagIds.Where(y=>(int)y["ContactorID"] == x.ID).Select(y=>tags.SingleOrDefault(z=>z.ID == (int)y["TagID"]))
-                    , departments = departemntIds.Where(y=>(int)y["ContactorID"] == x.ID).Select(y=>departments.SingleOrDefault(z=>z.ID == (int)y["DepartmentID"]))
+                    ,
+                    tags = tagIds.Where(y => (int)y["ContactorID"] == x.ID).Select(y => tags.SingleOrDefault(z => z.ID == (int)y["TagID"]))
+                    ,
+                    departments = departemntIds.Where(y => (int)y["ContactorID"] == x.ID).Select(y => departments.SingleOrDefault(z => z.ID == (int)y["DepartmentID"]))
                 });
 
 
@@ -444,20 +446,160 @@ namespace SMSPlatform.Controllers
         [HttpPost]
         public IHttpActionResult UploadContactors()
         {
-            var s =this.Request.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
-            byte[] buffer = new byte[s.Length];
-            s.Read(buffer, 0, buffer.Length);
-            var fileName = this.Request.Content.Headers.ContentDisposition.FileName;
-#if DEBUG
-//            var finfo = new FileInfo(Path.Combine(Environment.CurrentDirectory,"..\\..\\",fileName));
-#else
-//            var finfo = new FileInfo(Path.Combine(Environment.CurrentDirectory,"..\\",fileName));
-#endif
-//            var fs = finfo.Open(FileMode.OpenOrCreate, FileAccess.ReadWrite,FileShare.Delete);
-//
-//            fs.Seek(0, SeekOrigin.Begin);
+            try
+            {
 
-            
+                var provider = this.Request.Content.ReadAsMultipartAsync().GetAwaiter().GetResult();
+
+
+
+//                foreach (HttpContent httpContent in provider.Contents)
+//                {
+//                    var s = httpContent.ReadAsStreamAsync().GetAwaiter().GetResult();
+//                    byte[] buffer = new byte[s.Length];
+//                    s.Read(buffer, 0, buffer.Length);
+//                    var fileName = httpContent.Headers.ContentDisposition.FileName;
+#if DEBUG
+//                    var finfo = new FileInfo(Path.Combine(Environment.CurrentDirectory, "..\\..\\Upload\\", fileName.Trim('\"')));
+#else
+//                    var finfo = new FileInfo(Path.Combine(Environment.CurrentDirectory,"..\\",fileName));
+#endif
+//                    var fs = finfo.Open(FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Delete);
+
+//                    fs.Seek(0, SeekOrigin.Begin);
+
+//                    fs.Write(buffer, 0, buffer.Length);
+//                    fs.Flush();
+//                    fs.Close();
+//                    s.Close();
+
+//                }
+
+
+
+                foreach (HttpContent httpContent in provider.Contents)
+                {
+                    var s = httpContent.ReadAsStreamAsync().GetAwaiter().GetResult();
+                    OpenXMLHelp help = new OpenXMLHelp();
+                    DataTable table = help.ReadExcel("Sheet1", s);
+
+                    foreach (var row in table.Select().Skip(1))
+                    {
+                        var phone = (row["电话"] + "").Trim();
+                        var name = (row["姓名"] + "").Trim();
+                        var level2DepName = (row["学院"] + "").Trim();
+                        var level3DepName = (row["二级名称"] + "").Trim();
+                        var tagName = (row["标签"] + "").Trim();
+                        var remark = (table.Columns.Contains("备注") ? row["备注"] + "" : "").Trim();
+                        var contactor = helper.SelectDataTable($"select * from contactor where PhoneNumber = '{phone}'")
+                            .Select().Select(x => new contactorModel().SetData(x) as contactorModel).SingleOrDefault();
+                        if (contactor == null)
+                        {
+                            var dic = new Dictionary<string, object>();
+                            contactor = new contactorModel();
+                            contactor.PhoneNumber = phone;
+                            contactor.ContactorName = name;
+                            contactor.Remark = remark;
+                            contactor.GetValues(dic);
+                            contactor.ID = (int)helper.Insert("Contactor", dic, " OUTPUT inserted.id ");
+                        }
+
+                        var level2Dep = helper
+                            .SelectDataTable($"select * from Department where DName = '{level2DepName}' and LevelIndex = 2")
+                            .Select().Select(x => new DepartmentModel().SetData(x) as DepartmentModel).SingleOrDefault();
+                        if (level2Dep == null)
+                        {
+                            var dic = new Dictionary<string, object>();
+                            level2Dep = new DepartmentModel();
+                            level2Dep.PDID = 0;
+                            level2Dep.DName = level2DepName;
+                            level2Dep.LevelIndex = 2;
+                            level2Dep.GetValues(dic);
+                            level2Dep.ID = (int)helper.Insert("Department", dic, " OUTPUT inserted.id ");
+
+                        }
+
+                        var level3Dep = helper
+                            .SelectDataTable($"select * from Department where PDID = {level2Dep.ID} and DName = '{level3DepName}' and LevelIndex = 3")
+                            .Select().Select(x => new DepartmentModel().SetData(x) as DepartmentModel).SingleOrDefault();
+                        if (level3Dep == null)
+                        {
+                            var dic = new Dictionary<string, object>();
+
+                            level3Dep = new DepartmentModel();
+                            level3Dep.PDID = level2Dep.ID;
+                            level3Dep.DName = level3DepName;
+                            level3Dep.LevelIndex = 3;
+                            level3Dep.GetValues(dic);
+                            level3Dep.ID = (int)helper.Insert("Department", dic, " OUTPUT inserted.id ");
+                        }
+
+                        var tag = helper.SelectDataTable($"select * from Tag where TagName = '{tagName}'").Select()
+                            .Select(x => new TagModel().SetData(x) as TagModel).SingleOrDefault();
+
+                        if (tag == null)
+                        {
+                            var dic = new Dictionary<string, object>();
+                            tag = new TagModel();
+                            tag.TagName = tagName;
+                            tag.GetValues(dic);
+                            tag.ID = (int)helper.Insert("Tag", dic, " OUTPUT inserted.id ");
+                        }
+
+
+                        var dc = helper.SelectDataTable(
+                                $"select * from DepartmentContactor where DepartmentID = {level2Dep.ID} and ContactorID={contactor.ID}")
+                            .Select().SingleOrDefault();
+                        if (dc == null)
+                        {
+                            helper.Insert("DepartmentContactor", new Dictionary<string, object>()
+                            {
+                                {"DepartmentID", level3Dep.ID},
+                                {"ContactorID", contactor.ID}
+                            });
+                        }
+
+
+                        var tc = helper.SelectDataTable(
+                                $"select * from TagContactor where ContactorID = {contactor.ID} and TagID = {tag.ID}")
+                            .Select()
+                            .SingleOrDefault();
+                        if (tc == null)
+                        {
+                            helper.Insert("TagContactor", new Dictionary<string, object>()
+                            {
+                                {"ContactorID", contactor.ID},
+                                {"TagID", tag.ID}
+                            });
+                        }
+                    }
+                }
+
+
+
+
+                //                return Json(new ReturnResult()
+                //                {
+                //                    msg = "导入成功",
+                //                    success = true,
+                //                    status = 200
+                //                });
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+
+                return Json(new ReturnResult()
+                {
+                    msg = ex.ToString(),
+                    success = false,
+                    status = 500
+                });
+            }
+            finally
+            {
+                helper.Dispose();
+            }
 
 
         }

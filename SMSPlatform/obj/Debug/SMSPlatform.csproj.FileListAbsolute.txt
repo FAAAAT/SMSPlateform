@@ -129,3 +129,9 @@ F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Microsoft.Owin.
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Microsoft.AspNet.SignalR.Core.xml
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Microsoft.AspNet.SignalR.SystemWeb.xml
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Microsoft.Owin.Host.SystemWeb.xml
+F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\DocumentFormat.OpenXml.dll
+F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\OpenXmlPowerTools.dll
+F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\System.IO.FileSystem.Primitives.dll
+F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\System.IO.Packaging.dll
+F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\System.Management.Automation.dll
+F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\DocumentFormat.OpenXml.xml

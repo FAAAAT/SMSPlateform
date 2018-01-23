@@ -28,7 +28,7 @@ namespace GSMMODEM
             jobListener.poolReference = this;
             jobListener.logger = logger;
 
-            var trigger = TriggerBuilder.Create().WithIdentity("SMStrigger", "SMSGroup1").WithSimpleSchedule(x => x.WithInterval(new TimeSpan(0, 0, 3))).StartNow().Build();
+            var trigger = TriggerBuilder.Create().WithIdentity("SMStrigger", "SMSGroup1").WithSimpleSchedule(x => x.WithInterval(new TimeSpan(0, 0,60)).RepeatForever()).StartNow().Build();
             
             scheduler = StdSchedulerFactory.GetDefaultScheduler();
 

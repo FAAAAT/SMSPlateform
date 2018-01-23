@@ -197,7 +197,7 @@ namespace SMSPlatform.Services
             }
             if (status.HasValue)
             {
-                whereStr += $" and Status = {status}";
+                whereStr += $" and Status <> {status}";
             }
             if (beginTime.HasValue)
             {
@@ -205,14 +205,15 @@ namespace SMSPlatform.Services
             }
             if (endTime.HasValue)
             {
-                whereStr += $" and CreateTime < '{endTime}'";
+                whereStr += $" and CreateTime < '{endTime.Value.AddDays(1)}'";
+                
             }
             if (!string.IsNullOrWhiteSpace(smsContent))
             {
                 whereStr += $" and SMSContent like '%{smsContent}%'";
             }
 
-            return helper.SelectDataTable("select * from SMSSendRecord " + whereStr + " union all select * from SMSSendRecord " + whereStr).Select().Select(x => (SMSSendQueueModel)new SMSSendQueueModel().SetData(x));
+            return helper.SelectDataTable(" select * from SMSSendRecord " + whereStr).Select().Select(x => (SMSSendQueueModel)new SMSSendQueueModel().SetData(x));
 
         }
 

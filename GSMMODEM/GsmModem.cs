@@ -57,7 +57,7 @@ namespace GSMMODEM
 
             _com.PortName = comPort;          //
             _com.BaudRate = baudRate;
-            _com.ReadTimeout = 10000;         //读超时时间 发送短信时间的需要
+            _com.ReadTimeout = 5000;         //读超时时间 发送短信时间的需要
             _com.RtsEnable = true;            //必须为true 这样串口才能接收到数据
 
             _com.DataReceived += new EventHandler(sp_DataReceived);

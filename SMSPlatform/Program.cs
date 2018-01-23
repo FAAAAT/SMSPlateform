@@ -96,7 +96,7 @@ namespace SMSPlatform
                 {
                     pool.Dispose();
                 }
-                
+
             }
 
         }
@@ -145,14 +145,14 @@ namespace SMSPlatform
 #endif
             builder
 
-                .UseNancy(options => options.PerformPassThrough =
-                    context =>
-                    {
-                        var values = context.Request.Url.Path.Split('/');
-                        return values.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.ToLower() == "api";
-                    }
-                )
-                //                .Use(myhandle)
+                                //                .UseNancy(options => options.PerformPassThrough =
+                                //                    context =>
+                                //                    {
+                                //                        var values = context.Request.Url.Path.Split('/');
+                                //                        return values.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.ToLower() == "api";
+                                //                    }
+                                //                )
+                                .Use(myhandle)
                 .UseCors(CorsOptions.AllowAll)
                 .MapSignalR("/api/signalr", new HubConfiguration())
 
@@ -193,8 +193,19 @@ namespace SMSPlatform
             else if (perfix == ".js")
                 context.Response.ContentType = "application/x-javascript";
             else if (perfix == ".css")
-                context.Response.ContentType = "atext/css";
-            return context.Response.WriteAsync(File.ReadAllText(path));
+                context.Response.ContentType = "text/css";
+            else if (perfix == ".eot")
+                context.Response.ContentType = "application/vnd.ms-fontobject";
+            else if (perfix == ".ttf")
+                context.Response.ContentType = "application/octet-stream";
+            else if (perfix == ".svg")
+                context.Response.ContentType = "mage/svg+xml";
+            else if (perfix == ".woff")
+                context.Response.ContentType = "application/font-woff";
+            else if (perfix == ".woff2")
+                context.Response.ContentType = "font/woff2";
+
+            return context.Response.WriteAsync(File.ReadAllBytes(path));
         }
     }
 

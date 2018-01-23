@@ -92,6 +92,12 @@ namespace SMSPlatform.Controllers
 
             try
             {
+                var pmodel = helper.SelectDataTable($"select * from Department where ID = {model.PDID.Value}").Select().Select(x=>new DepartmentModel().SetData(x) as DepartmentModel).SingleOrDefault();
+                if (pmodel!=null)
+                {
+                    model.LevelIndex = pmodel.LevelIndex + 1;
+                }
+
                 var dic = new Dictionary<string,object>();
                 model.GetValues(dic);
                 dic.Remove("ID");
@@ -128,6 +134,13 @@ namespace SMSPlatform.Controllers
         {
             try
             {
+
+                var pmodel = helper.SelectDataTable($"select * from Department where ID = {model.PDID.Value}").Select().Select(x => new DepartmentModel().SetData(x) as DepartmentModel).SingleOrDefault();
+                if (pmodel != null)
+                {
+                    model.LevelIndex = pmodel.LevelIndex + 1;
+                }
+
                 var dic = new Dictionary<string,object>();
                 model.GetValues(dic);
                 dic.Remove("ID");

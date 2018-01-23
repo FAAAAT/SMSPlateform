@@ -466,11 +466,17 @@ namespace SMSPlatform
         {
             // 读取算法：按行一一读取单位格,若是整行均是空数据
             // 则忽视改行(因为本人的工作内容不须要空行)-_-
+            
             DataRow dr = dt.NewRow();
+            var limit = dt.Columns.Count;
             int i = 0;
             int nullRowCount = i;
             foreach (Cell cell in row)
             {
+                if (i>=limit)
+                {
+                    break;
+                }
                 string cellVal = cell.GetValue(stringTable);
                 if (cellVal == string.Empty)
                 {

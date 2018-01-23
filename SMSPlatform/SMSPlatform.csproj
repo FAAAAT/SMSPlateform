@@ -163,6 +163,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="fonts\glyphicons-halflings-regular.eot" />
+    <None Include="fonts\glyphicons-halflings-regular.ttf" />
+    <None Include="fonts\glyphicons-halflings-regular.woff" />
+    <None Include="fonts\glyphicons-halflings-regular.woff2" />
     <None Include="packages.config" />
     <None Include="Scripts\bootstrapTreeview\css\bootstrap-theme.css.map" />
     <None Include="Scripts\bootstrapTreeview\css\bootstrap.css.map" />
@@ -184,6 +188,7 @@
     <Content Include="Content\select2.min.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\bootstrap-select2-compatible.css" />
+    <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Pages\SIMCardManagement.html" />
     <Content Include="Pages\MonthlyFeeRecord.html" />
     <Content Include="Pages\SendRecord.html" />

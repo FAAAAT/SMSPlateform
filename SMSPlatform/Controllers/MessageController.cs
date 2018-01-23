@@ -158,6 +158,7 @@ namespace SMSPlatform.Controllers
             }
         }
 
+
         [HttpGet]
         public IHttpActionResult GetSMSQueue(int? containerId, string toName, string toPhone,
             DateTime? beginTime, DateTime? endTime, string smsContent,int? pageIndex,int? pageSize)
@@ -196,6 +197,7 @@ namespace SMSPlatform.Controllers
             }
         }
 
+
         [HttpGet]
         public IHttpActionResult GetSMSRecord(int? containerId, string toName, string toPhone,
            DateTime? beginTime, DateTime? endTime, string smsContent, int? pageIndex, int? pageSize)
@@ -203,7 +205,7 @@ namespace SMSPlatform.Controllers
             try
             {
                 SMSSendQueueService service = new SMSSendQueueService(helper);
-                var datas = service.GetSMSSend(containerId, toName, toPhone, 0, beginTime, endTime, smsContent);
+                var datas = service.GetSMSRecord(containerId, toName, toPhone, 0, beginTime, endTime, smsContent);
                 int total = datas.Count();
                 if (pageIndex.HasValue && pageSize.HasValue)
                 {
@@ -676,6 +678,64 @@ namespace SMSPlatform.Controllers
 
         }
 
+        [HttpGet]
+        public IHttpActionResult ReSend(int smsRecordId)
+        {
+            var recordModel = helper.SelectDataTable($"select * from SMSSendRecord where ID = {smsRecordId}").Select().Select(x=>new SMSSendQueueModel().SetData(x) as SMSSendQueueModel).SingleOrDefault();
+            if (recordModel == null)
+            {
+                return Json(new ReturnResult()
+                {
+                    msg = "you can't resend a sms that not exists!",
+                    success = false,
+                    status = 500
+                });
+            }
+
+            var container = helper.SelectDataTable($"selec * from recordcontainer where ID = {recordModel.ContainerID} ").Select().Select(x=>new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
+
+
+            var conn = helper.GetOpendSqlConnection();
+            var tran = conn.BeginTransaction();
+            helper.SetTransaction(tran);
+            try
+            {
+                helper.Delete("smssendrecord", $"ID = {smsRecordId}");
+                var dic = new Dictionary<string, object>();
+                recordModel.Status = 0;
+                recordModel.GetValues(dic);
+                dic.Remove("ID");
+                helper.Insert("SMSSendQueue", dic);
+
+                helper.Update("recordContainer", new Dictionary<string, object>() {{"status", 0}},
+                    $" ID = {container.ID}", new List<SqlParameter>());
+
+                tran.Commit();
+
+                return Json(new ReturnResult()
+                {
+                    msg = "重新启用成功",
+                    success = true,
+                    status = 200,
+                });
+            }
+            catch (Exception e)
+            {
+                tran.Rollback();
+                return Json(new ReturnResult()
+                {
+                    msg = e+"",
+                    success = false,
+                    status = 500,
+
+                });
+            }
+          
+
+
+
+
+        }
 
 
         protected override void Dispose(bool disposing)

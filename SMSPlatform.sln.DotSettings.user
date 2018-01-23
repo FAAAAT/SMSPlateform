@@ -4,8 +4,9 @@
   &lt;Assembly Path="F:\Projects\商大短信平台\SMSPlatform\packages\Microsoft.Owin.Security.3.1.0\lib\net45\Microsoft.Owin.Security.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\System.Web.dll" /&gt;&#xD;
   &lt;Assembly Path="F:\Projects\商大短信平台\SMSPlatform\packages\Microsoft.Owin.Cors.4.0.0-preview1\lib\net451\Microsoft.Owin.Cors.dll" /&gt;&#xD;
+  &lt;Assembly Path="F:\Projects\商大短信平台\SMSPlatform\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:Boolean x:Key="/Default/Housekeeping/Bookmarks/NumberedBookmarks/=Bookmark9/@KeyIndexDefined">True</s:Boolean>
-	<s:String x:Key="/Default/Housekeeping/Bookmarks/NumberedBookmarks/=Bookmark9/Coords/@EntryValue">(Doc Ln 256 Col 14)</s:String>
+	<s:String x:Key="/Default/Housekeeping/Bookmarks/NumberedBookmarks/=Bookmark9/Coords/@EntryValue">(Doc Ln 257 Col 14)</s:String>
 	<s:String x:Key="/Default/Housekeeping/Bookmarks/NumberedBookmarks/=Bookmark9/FileId/@EntryValue">F48FA579-1739-4859-B696-E4F795323080/d:Pages/f:Contactors.html</s:String>
 	<s:String x:Key="/Default/Housekeeping/Bookmarks/NumberedBookmarks/=Bookmark9/Owner/@EntryValue">NumberedBookmarkManager</s:String></wpf:ResourceDictionary>
