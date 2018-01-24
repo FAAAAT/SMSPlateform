@@ -470,7 +470,7 @@
 
         var modalTreeView = $.lymiTreeSelector({
             treeviewID: 'modalDepartmentTreeView',
-            treeviewOptions: { color: '#4280cd' },
+            treeviewOptions: { multiSelect:true,color: '#4280cd' },
             requestUrl: '/api/Department/GetDepartmentTreeData',
             multiSelect: true,
             onClientSelected: function (data) {
