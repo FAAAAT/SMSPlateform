@@ -12,6 +12,7 @@
                 sendData: {},
                 selectedMIDs: [],
                 treeviewOptions: {},
+                done:null,
             };
             var finalOptions = $.extend({}, defaultOptions, options);
 
@@ -24,16 +25,16 @@
 function LymiTreeSelector(options) {
     //设置搜索框的placeholder
     $('#searchBox').attr('placeholder', '筛选部门名称');
-
-
-
-
+    
     this.options = options;
     this.instance = {};
     this.init = () => {
         this.oldData ? treeSelectorInit(this.oldData, this) : treeSelectorInit(null, this);
     }
     this.init();
+    if (options.done) {
+        options.done();
+    }
 
 }
 
@@ -191,7 +192,7 @@ function treeSelectorInit(initOptions, departmentSelector) {
                     //                    $('#btn_chooseDep').click();
                     var selected = DepartmentSelector.instacne.treeview('getSelected');
                     $(selected).each(function (index, ele) {
-                        var p = DepartmentSelector.instance.treeview('getParent', ele);
+                        var p = DepartmentSelector.instance.treeview('getParent', ele.nodeId);
 
                         if (p.state) {
                             p.state.expanded = true;
@@ -272,11 +273,17 @@ function treeSelectorInit(initOptions, departmentSelector) {
     }
 
     DepartmentSelector.clearSelection = function () {
-        $(DepartmentSelector.instance.treeview('getSelected')).each(function (i, e) {
-            DepartmentSelector.instance.treeview('unselectNode', e);
-        });;
+        if (DepartmentSelector.instance.treeview) {
+            $(DepartmentSelector.instance.treeview('getSelected')).each(function (i, e) {
+                DepartmentSelector.instance.treeview('unselectNode', e);
+            });
+        }
+       
     }
     DepartmentSelector.selectNodes = function (mids) {
+        if (!DepartmentSelector.instance.treeview) {
+            return;
+        }
         if (mids) {
             var nodes = DepartmentSelector.instance.treeview('getNodes');
 
@@ -284,9 +291,11 @@ function treeSelectorInit(initOptions, departmentSelector) {
                 var node = nodes.find((e, i) => e.MID == element);
                 console.log(node);
                 DepartmentSelector.instance.treeview('selectNode', node);
+                var parent = DepartmentSelector.instance.treeview('getParent', node);
+                DepartmentSelector.instance.treeview('expandNode', parent);
+//                DepartmentSelector.instance.treeview('expandNode', node, { levels: node.level});
 
 
-                DepartmentSelector.instance.treeview('expandNode', node, { levels: node.level });
             });
         }
     }

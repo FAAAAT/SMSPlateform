@@ -167,17 +167,21 @@
                         <tr>
                             <th>联系人名称</th>
                             <th>联系人电话</th>
+                            <th>标签</th>
+                            <th>部门</th>
                             <th>操作</th>
                         </tr>
 
                     </thead>
                     <tbody v-for="row in datacollections">
                         <tr>
-                            <td>{{row.ContactorName}}</td>
-                            <td>{{row.PhoneNumber}}</td>
+                            <td>{{row.contactor.ContactorName}}</td>
+                            <td>{{row.contactor.PhoneNumber}}</td>
+                            <td>{{row.tags.map((e,i)=>e.TagName).join()}}</td>
+                            <td>{{row.departments.map((e,i)=>e.DName).join()}}</td>
                             <td>
-                                <button class="btn btn-danger" v-on:click="on_delete(row.ID)">删除</button>
-                                <button class="btn btn-primary" v-on:click="on_edit(row.ID)">编辑</button>
+                                <button class="btn btn-danger" v-on:click="on_delete(row.contactor.ID)">删除</button>
+                                <button class="btn btn-primary" v-on:click="on_edit(row.contactor.ID)">编辑</button>
 
                             </td>
                         </tr>
@@ -277,8 +281,8 @@
                 </div>
             </div>
         </div>
-        
-        
+
+
         <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -291,7 +295,7 @@
         </div>
     </div>
 
-    
+
 
 
 
@@ -439,7 +443,10 @@
 
                     if (data.success) {
 
-                        $('#tagSelect').select2({ data: data.data.results });
+                        $('#tagSelect').select2({
+                            data: data.data.results,
+                           
+                        });
                         setTimeout(function () {
                             //                            console.log($('#tagSelect').hasClass("select2-hidden-accessible"));
                             var selecteds = data.data.results.filter((e, i) => { return e.selected; });
@@ -465,7 +472,7 @@
             treeviewID: 'modalDepartmentTreeView',
             treeviewOptions: { color: '#4280cd' },
             requestUrl: '/api/Department/GetDepartmentTreeData',
-            multiSelect:true,
+            multiSelect: true,
             onClientSelected: function (data) {
                 vue$.modalData.selectedDeps = data;
             }

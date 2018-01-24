@@ -39,6 +39,7 @@
                     templateContent: '',
                     innerTemplateContent: '',
                     updateData: {
+                        id: null,
                         actualContent: '',
                         selectedContactors: [],
                         templateID: '',
@@ -223,6 +224,7 @@
                                 $('#sel_simSelectorContainer').val(data.data.container.SIMsPhone);
 
                             }
+
                         } else {
                             $.notifyError(data.msg);
                         }
@@ -232,7 +234,7 @@
                     }
 
                 });
-
+                vue$.updateData.id = id;
 
 
             }
@@ -269,7 +271,7 @@
             <!-- Nav tabs -->
             <ul class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#selectContactor" aria-controls="home" role="tab" data-index="1" data-toggle="tab">选择联系人</a></li>
-                <li role="presentation"><a href="#createContainer" aria-controls="profile" role="tab" data-index="2" data-toggle="tab">创建任务</a></li>
+                <li role="presentation"><a href="#createContainer" aria-controls="profile" role="tab" data-index="2" data-toggle="tab">{{updateData.id?'修改':'创建'}}任务</a></li>
                 <li role="presentation"><a href="#confirm" aria-controls="messages" role="tab" data-index="3" data-toggle="tab">确认信息</a></li>
             </ul>
 
@@ -316,6 +318,8 @@
                                     <th><input type="checkbox" data-id="all" v-bind:onchange="'tableSelector.OnSelectChange(event, { pageIndex:'+pagerData.currentIndex+'})'" />全选</th>
                                     <th>联系人名称</th>
                                     <th>联系人电话</th>
+                                    <th>标签</th>
+                                    <th>部门</th>
                                     <th>操作</th>
                                 </tr>
 
@@ -323,11 +327,13 @@
                             <tbody>
                                 <tr v-for="row in datacollections">
                                     <td><input type="checkbox" v-bind:data-id="row.ID" v-bind:onchange="'tableSelector.OnSelectChange(event, { pageIndex:'+pagerData.currentIndex+'})'" /></td>
-                                    <td>{{row.ContactorName}}</td>
-                                    <td>{{row.PhoneNumber}}</td>
+                                    <td>{{row.contactor.ContactorName}}</td>
+                                    <td>{{row.contactor.PhoneNumber}}</td>
+                                    <td>{{row.tags.map((e,i)=>e.TagName).join()}}</td>
+                                    <td>{{row.departments.map((e,i)=>e.DName).join()}}</td>
                                     <td>
-                                        <button class="btn btn-danger" v-bind:onclick="'on_delete('+row.ID+')'">删除</button>
-                                        <button class="btn btn-danger" v-bind:onclick="'on_edit('+row.ID+')'">编辑</button>
+                                        <button class="btn btn-danger" v-bind:onclick="'on_delete('+row.contactor.ID+')'">删除</button>
+                                        <button class="btn btn-danger" v-bind:onclick="'on_edit('+row.contactor.ID+')'">编辑</button>
 
                                     </td>
                                 </tr>
@@ -365,7 +371,7 @@
 
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="createContainer">
-                    <h1>创建任务</h1>
+                    <h1>{{updateData.id?'修改':'创建'}}任务</h1>
                     <h3></h3>
                     <form id="form_task">
                         <div class="form" style="min-height: 65vh">
@@ -612,7 +618,7 @@
                             });
                         }
                     } else {
-                
+
                     }
                     console.log('prevented');
                     e.preventDefault();
@@ -629,7 +635,7 @@
                             data: {
                                 json: JSON.stringify(vue$.updateData)
                             },
-                            success: function(data) {
+                            success: function (data) {
                                 if (data.success) {
                                     $.notifySuccess(data.msg, '');
                                 } else {
@@ -644,7 +650,7 @@
                             data: {
                                 json: JSON.stringify(vue$.updateData)
                             },
-                            success: function(data) {
+                            success: function (data) {
                                 if (data.success) {
                                     $.notifySuccess(data.msg, '');
                                 } else {
@@ -656,7 +662,7 @@
 
                 } else {
                     $('a[data-Index=2]').tab('show');
-                    $.notifyError('请检查必填项必填项','');
+                    $.notifyError('请检查必填项必填项', '');
                 }
 
                 e.preventDefault();
@@ -689,11 +695,9 @@
                             vue$.phone = data.data.contactor.PhoneNumber;
                             vue$.remark = data.data.contactor.Remark;
                             initTagSelect2(contactorId);
+
                             modalTreeView.clearSelection();
-
                             modalTreeView.selectNodes(data.data.depIds);
-
-
 
                             $('#contactorModal').modal('show');
                         } else {
@@ -735,7 +739,7 @@
         }
 
 
-        function initTagSelect2(contactorId) {
+        function initTagSelect2(contactorId, callback) {
             $.ajax({
                 traditional: true,
                 url: '/api/tag/Select2GetTags',
@@ -753,6 +757,10 @@
                             $('#tagSelect').val(selectedIds);
                             $('#tagSelect').trigger('change');
                         }, 300);
+                        if (callback) {
+                            callback();
+                        }
+
                     } else {
                         $.notifyError(data.msg);
                     }
@@ -781,7 +789,8 @@
 
         var modalTreeView = $.lymiTreeSelector({
             treeviewID: 'modalDepartmentTreeView',
-            treeviewOptions: { color: '#4280cd' },
+            treeviewOptions: { multiSelect: true,color: '#4280cd' },
+         
             requestUrl: '/api/Department/GetDepartmentTreeData',
             onClientSelected: function (data) {
                 vue$.modalData.selectedDeps = data;
@@ -792,6 +801,7 @@
             treeviewID: 'queryDepartmentTreeView',
             treeviewOptions: { multiSelect: true, color: '#4280cd' },
             requestUrl: '/api/Department/GetDepartmentTreeData',
+         
             onClientSelected: function (data) {
 
                 vue$.querySelectedDeps = data;

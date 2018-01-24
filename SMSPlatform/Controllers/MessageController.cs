@@ -537,6 +537,9 @@ namespace SMSPlatform.Controllers
                             {"日期", DateTime.Now.ToString("yyyy年MM月dd日")},
                             {"通知内容", model.actualContent}
                         });
+                    smsmodel.TemplateID = model.templateID;
+                    smsmodel.TemplateContent = template.TemplateContent;
+                    smsmodel.InnerTemplateContent = model.actualContent;
                     smsmodel.ToContactorID = contactorID;
                     smsmodel.ToName = cmodel.ContactorName;
                     smsmodel.ToPhoneNumber = cmodel.PhoneNumber;
@@ -692,7 +695,7 @@ namespace SMSPlatform.Controllers
                 });
             }
 
-            var container = helper.SelectDataTable($"selec * from recordcontainer where ID = {recordModel.ContainerID} ").Select().Select(x=>new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
+            var container = helper.SelectDataTable($"select * from recordcontainer where ID = {recordModel.ContainerID} ").Select().Select(x=>new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
 
 
             var conn = helper.GetOpendSqlConnection();

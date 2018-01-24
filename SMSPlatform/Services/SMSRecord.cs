@@ -72,18 +72,17 @@ namespace SMSPlatform.Services
             {
                 model = helper.SelectDataTable($"select * from SMSSendQueue where ID = {smsID}").Select()
                     .Select(x => (SMSSendQueueModel)new SMSSendQueueModel().SetData(x)).SingleOrDefault();
-                
+
                 var dic = new Dictionary<string, object>();
                 model.Status = success ? 2 : 3;
                 model.GetValues(dic);
                 dic.Remove("ID");
 
-                if (success)
-                {
-                    helper.Delete("SMSSendQueue", $" ID = {model.ID}");
-                    helper.Insert("SMSSendRecord", dic);
-                }
-                
+
+                helper.Delete("SMSSendQueue", $" ID = {model.ID}");
+                helper.Insert("SMSSendRecord", dic);
+
+
                 tran.Commit();
             }
             catch (Exception)
@@ -103,14 +102,14 @@ namespace SMSPlatform.Services
                 {
                     var containerModel = helper.SelectDataTable($"select * from RecordContainer where ID = {model.ContainerID}").Select().Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
                     var dic = new Dictionary<string, object>();
-                    containerModel.Status = errCount==0?2:3;
+                    containerModel.Status = errCount == 0 ? 2 : 3;
                     containerModel.GetValues(dic);
                     dic.Remove("ID");
                     helper.Update("RecordContainer", dic, " ID = " + containerModel.ID.Value, new List<SqlParameter>());
                 }
 
 
-                
+
             }
         }
 
@@ -123,13 +122,13 @@ namespace SMSPlatform.Services
 
         public int GetErrorContainerQueueCount(int id)
         {
-            var count = helper.SelectScalar<int>($"select count(1) from SMSSendQueue where ContainerID = {id} and status = 3");
+            var count = helper.SelectScalar<int>($"select count(1) from SMSSendRecord where ContainerID = {id} and status = 3");
             return count;
         }
 
         public int? GetContainerStatus(int id)
         {
-             return helper.SelectScalar<int?>($"select status from recordcontainer where ID = {id}");
+            return helper.SelectScalar<int?>($"select status from recordcontainer where ID = {id}");
         }
 
 
@@ -206,7 +205,7 @@ namespace SMSPlatform.Services
             if (endTime.HasValue)
             {
                 whereStr += $" and CreateTime < '{endTime.Value.AddDays(1)}'";
-                
+
             }
             if (!string.IsNullOrWhiteSpace(smsContent))
             {

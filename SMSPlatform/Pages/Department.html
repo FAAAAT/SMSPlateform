@@ -200,7 +200,7 @@
                     vue$.updateData.DName = '';
 
                 } else {
-                    var pdata = mainTreeView.instance.treeview('getParent', data[0].MID);
+                    var pdata = mainTreeView.instance.treeview('getParent', data[0].nodeId);
                     if (pdata) {
                         vue$.updateData.PDID = pdata.MID;
                         vue$.displayData.PDName = pdata.text;

@@ -83,21 +83,21 @@
 
 
 
-            window.getContainerData = function () {
-                $.ajax({
-                    url: '/api/message/GetRecordContainer', type: 'get', data: vue$.containerQueryData,
-                    success: function (data) {
-                        if (data.success) {
-                            console.log(data);
-                            vue$.dataContainers = data.data;
-                        } else {
-                            $.notifyError(data.msg, '');
-                        }
-
-                    }
-                });
-            }
-            getContainerData();
+//            window.getContainerData = function () {
+//                $.ajax({
+//                    url: '/api/message/GetRecordContainer', type: 'get', data: vue$.containerQueryData,
+//                    success: function (data) {
+//                        if (data.success) {
+//                            console.log(data);
+//                            vue$.dataContainers = data.data;
+//                        } else {
+//                            $.notifyError(data.msg, '');
+//                        }
+//
+//                    }
+//                });
+//            }
+//            getContainerData();
 
             function getData() {
                 $.ajax({
@@ -107,6 +107,9 @@
                     , success: function (data) {
                         if (data.success) {
                             vue$.datacollections = data.data;
+                            if (!data.data||!data.data.length) {
+                                $.notifyError('未找到任何sim卡','');
+                            }
                         } else {
                             $.notifyError(data.msg, '');
 

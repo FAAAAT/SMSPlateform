@@ -47,10 +47,23 @@ namespace SMSPlatform.Services
                 { "normalLoopContinues",normalLoopContinues },
 
             }, tokenSource.Token);
-            tasks.Add(gsmModem.PhoneNumber, task);
-            tokens.Add(gsmModem.PhoneNumber, tokenSource);
-            handles.Add(gsmModem.PhoneNumber, waitHandle);
-            task.Start();
+            if (!tasks.ContainsKey(gsmModem.PhoneNumber))
+            {
+                tasks.Add(gsmModem.PhoneNumber, task);
+                task.Start();
+
+            }
+            if (!tokens.ContainsKey(gsmModem.PhoneNumber))
+            {
+                tokens.Add(gsmModem.PhoneNumber, tokenSource);
+
+            }
+            if (!tokens.ContainsKey(gsmModem.PhoneNumber))
+            {
+                handles.Add(gsmModem.PhoneNumber, waitHandle);
+
+            }
+
         }
 
         public void OnFireClose(object sender, EventArgs e)

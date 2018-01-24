@@ -57,6 +57,10 @@ namespace SMSPlatform.Controllers
                 {
                     name="资费列表",href = "/pages/MonthlyFeeRecord.html",
                 });
+                model.menus.Add(new MenuItem()
+                {
+                    name="SIM卡设置",href= "/pages/SIMCardManagement.html",
+                });
 
                 model.applicationName = "天津商业大学短信平台";
                 return Json(new ReturnResult()

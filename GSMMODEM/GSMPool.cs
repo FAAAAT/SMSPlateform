@@ -233,7 +233,7 @@ namespace GSMMODEM
                         else
                         {
                             modem.Close();
-//                            pool.FireClose(modem);
+                            pool.FireClose(modem);
                         }
                     }
                 }
@@ -245,7 +245,7 @@ namespace GSMMODEM
                         var modem = dic[port];
                         modem.Close();
                         dic.Remove(port);
-//                        pool.FireClose(modem);
+                        pool.FireClose(modem);
 
                     }
                 }

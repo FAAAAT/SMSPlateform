@@ -130,13 +130,45 @@ namespace SMSPlatform.Controllers
                     datas = datas.Skip(pageIndex.Value * pageSize.Value).Take(pageSize.Value).ToArray();
                 }
 
+                whereStr = datas == null || datas.Count() == 0
+                    ? " 1=0 "
+                    : $" ContactorID in ({string.Join(",", datas.Select(x => x.ID))})";
 
+
+                var tagIdsRow = helper.SelectDataTable("select * from TagContactor where " + whereStr).Select();
+
+                var departemntIds = helper.SelectDataTable("select * from DepartmentContactor where " + whereStr).Select();
+
+                whereStr = tagIdsRow == null || tagIdsRow.Count() == 0
+                    ? " 1=0 "
+                    : $" ID in ({string.Join(",", tagIdsRow.Select(x => x["TagID"] + ""))})";
+
+
+                var ttags = helper.SelectDataTable("select * from Tag where " + whereStr).Select().Select(x => new TagModel().SetData(x) as TagModel);
+
+                whereStr = departemntIds == null || departemntIds.Count() == 0
+                    ? " 1=0 "
+                    : $" ID in ({string.Join(",", departemntIds.Select(x => x["DepartmentID"] + ""))})";
+
+                var departments = helper.SelectDataTable("select * from Department where " + whereStr).Select()
+                    .Select(x => new DepartmentModel().SetData(x) as DepartmentModel);
+
+
+
+                var results = datas.Select(x => new
+                {
+                    contactor = x
+                    ,
+                    tags = tagIdsRow.Where(y => (int)y["ContactorID"]+"" == x.ID).Select(y => ttags.SingleOrDefault(z => z.ID == (int)y["TagID"]))
+                    ,
+                    departments = departemntIds.Where(y => (int)y["ContactorID"]+"" == x.ID).Select(y => departments.SingleOrDefault(z => z.ID == (int)y["DepartmentID"]))
+                });
 
 
                 return Json(new ReturnResult()
                 {
                     success = true,
-                    data = datas,
+                    data = results,
                     status = 200,
                     total = total,
                     allIds = allIds.ToArray()

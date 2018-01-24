@@ -58,6 +58,8 @@
                     , formatDate: function (date) {
                         return moment(date).format('YYYY-MM-DD');
                     }
+                    ,on_resend:on_resend
+
                 }
                 , computed: {
                     totalPageNum: function () {
@@ -294,7 +296,6 @@
                                     <button v-if="row.Status!==4" v-on:click="deleteContainer(row.ID)" class="btn btn-danger">删除</button>
                                     <button v-if="row.Status==0" v-on:click="on_edit(row.ID)" class="btn btn-primary">编辑</button>
                                     <button v-if="row.Status!==4" v-on:click="showDetail(row.ID)" class="btn btn-warning">查看</button>
-                                    <button v-if="row.Status==3" v-on:click="on_resend(row.ID)">重新发送</button>
                                 </td>
 
                             </tr>
@@ -374,7 +375,10 @@
                                 <td>{{row.ToName}}</td>
                                 <td>{{row.SMSContent}}</td>
                                 <td>{{row.Status==0?'等待发送':''}}</td>
-                                <td><button class="btn btn-danger" v-on:click="on_delete(row.id)">删除</button></td>
+                                <td>
+                                    <button class="btn btn-danger" v-on:click="on_delete(row.id)">删除</button>
+                                    <button v-if="row.Status==3" v-on:click="on_resend(row.ID)" class="btn btn-primary">重新发送</button>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -502,7 +506,21 @@
         }
 
         function on_resend(rowid) {
-            $.ajax({url:'/api/message/'});
+            $.ajax({
+                url:'/api/message/resend',type:'get',data: {smsRecordId:rowid},
+                success: function(data) {
+                    if (data.success) {
+                        getContainerData();
+                        getData();
+                    } else {
+                        $.notifyError(data.msg,'');
+                    }
+                },
+                error: function(data) {
+                    $.notifyError(data.msg,'');
+
+                }
+            });
         }
 
 
