@@ -25,7 +25,7 @@
 function LymiTreeSelector(options) {
     //设置搜索框的placeholder
     $('#searchBox').attr('placeholder', '筛选部门名称');
-    
+   
     this.options = options;
     this.instance = {};
     this.init = () => {
@@ -46,6 +46,7 @@ function LymiTreeSelector(options) {
 function treeSelectorInit(initOptions, departmentSelector) {
     var inited = false;
     var DepartmentSelector = departmentSelector;
+    DepartmentSelector.lazyCallbackPool = [];
     var doptions = departmentSelector.options;
     var treeViewID = doptions.treeviewID;
     ///window.DepartmentSelector<%=this.ParentID%>.<%=this.ClientID%>
@@ -204,6 +205,14 @@ function treeSelectorInit(initOptions, departmentSelector) {
                     });
                 }
                 inited = true;
+
+                if (DepartmentSelector.lazyCallbackPool) {
+                    $(DepartmentSelector.lazyCallbackPool).each((i, e) => {
+                        e.proxy.apply(e.that, e.args);
+                    });
+                }
+                DepartmentSelector.lazyCallbackPool = undefined;
+
                 $(".loadimg-div").hide();
             },
             error: function (err) {
@@ -215,7 +224,12 @@ function treeSelectorInit(initOptions, departmentSelector) {
         var options = doptions;
         //        options.data = data;
         DepartmentSelector.instance = $('#' + treeViewID).treeview(options);
-
+        if (DepartmentSelector.lazyCallbackPool) {
+            $(DepartmentSelector.lazyCallbackPool).each((i, e) => {
+                e.proxy.apply(e.that,e.args);
+            });
+        }
+        DepartmentSelector.lazyCallbackPool = undefined;
     }
 
 
@@ -277,11 +291,14 @@ function treeSelectorInit(initOptions, departmentSelector) {
             $(DepartmentSelector.instance.treeview('getSelected')).each(function (i, e) {
                 DepartmentSelector.instance.treeview('unselectNode', e);
             });
+        } else {
+            DepartmentSelector.lazyCallbackPool.push({ proxy: DepartmentSelector.clearSelection,args:arguments,that:this});
         }
        
     }
     DepartmentSelector.selectNodes = function (mids) {
         if (!DepartmentSelector.instance.treeview) {
+            DepartmentSelector.lazyCallbackPool.push({ proxy: DepartmentSelector.selectNodes, args: arguments, that: this });
             return;
         }
         if (mids) {
