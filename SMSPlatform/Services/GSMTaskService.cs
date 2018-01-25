@@ -21,16 +21,14 @@ namespace SMSPlatform.Services
         private Dictionary<string, CancellationTokenSource> tokens = new Dictionary<string, CancellationTokenSource>();
         private Dictionary<string, WaitHandle> handles = new Dictionary<string, WaitHandle>();
         private Dictionary<string, bool> normalLoopContinues = new Dictionary<string, bool>();
-
-
+        
         public GSMTaskService()
         {
             pool = AppDomain.CurrentDomain.GetData("Pool") as GSMPool;
             logger = AppDomain.CurrentDomain.GetData("Logger") as SMSPlatformLogger;
 
         }
-
-
+        
         public void OnFireOpen(object sender, EventArgs e)
         {
             var tokenSource = new CancellationTokenSource();

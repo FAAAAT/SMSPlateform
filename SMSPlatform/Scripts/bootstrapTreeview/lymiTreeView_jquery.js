@@ -169,8 +169,7 @@ function treeSelectorInit(initOptions, departmentSelector) {
                         item.parents = [];
                     }
                 });
-
-
+                
                 options.data = items;
 
                 var tree = DepartmentSelector.instance = $('#' + treeViewID).treeview(options);

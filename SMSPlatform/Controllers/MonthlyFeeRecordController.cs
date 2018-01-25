@@ -24,12 +24,12 @@ namespace SMSPlatform.Controllers
         }
 
         [HttpGet]
-        public IHttpActionResult GetFeeRecords(string phone, int? month, int? year)
+        public IHttpActionResult GetFeeRecords(string phone, DateTime? date)
         {
             try
             {
-                MonthlyFeeService service = new MonthlyFeeService(helper);
-                var datas = service.GetRecords(phone, month, year);
+                FeeService service = new FeeService(helper);
+                var datas = service.GetRecords(phone, date);
                 return Json(new ReturnResult()
                 {
                     data = datas,

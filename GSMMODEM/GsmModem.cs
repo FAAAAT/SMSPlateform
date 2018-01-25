@@ -531,40 +531,57 @@ namespace GSMMODEM
         /// <returns>信息字符串 (中心号码，手机号码，发送时间，短信内容)</returns>
         public DecodedMessage ReadMsgByIndex(int index)
         {
-            string temp = string.Empty;
-            //string msgCenter, phone, msg, time;
-            PDUEncoding pe = new PDUEncoding();
             try
             {
-                temp = SendAT("AT+CMGR=" + index.ToString());
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-
-            if (temp.Trim() == "ERROR")
-            {
-                throw new Exception("没有此短信");
-            }
-            temp = temp.Split((char)(13))[2];       //取出PDU串(char)(13)为0x0a即\r 按\r分为多个字符串 第3个是PDU串
-
-            //pe.PDUDecoder(temp, out msgCenter, out phone, out msg, out time);
-
-            if (AutoDelMsg)
-            {
-                try
+                lock (this)
                 {
-                    DeleteMsgByIndex(index);
-                }
-                catch
-                {
+                    Status = GSMModemStatus.Busy;
+                    string temp = string.Empty;
+                    //string msgCenter, phone, msg, time;
+                    PDUEncoding pe = new PDUEncoding();
+                    try
+                    {
+                        temp = SendAT("AT+CMGR=" + index.ToString());
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
 
+                    if (temp.Trim() == "ERROR")
+                    {
+                        throw new Exception("没有此短信");
+                    }
+                    temp = temp.Split((char)(13))[2];       //取出PDU串(char)(13)为0x0a即\r 按\r分为多个字符串 第3个是PDU串
+
+                    //pe.PDUDecoder(temp, out msgCenter, out phone, out msg, out time);
+
+                    if (AutoDelMsg)
+                    {
+                        try
+                        {
+                            DeleteMsgByIndex(index);
+                        }
+                        catch
+                        {
+
+                        }
+                    }
+
+                    return pe.PDUDecoder(temp);
+                    //return msgCenter + "," + phone + "," + time + "," + msg;
                 }
             }
-
-            return pe.PDUDecoder(temp);
-            //return msgCenter + "," + phone + "," + time + "," + msg;
+            catch (Exception e)
+            {
+           
+                throw;
+            }
+            finally
+            {
+                Status = GSMModemStatus.StandBy;
+            }
+            
         }
 
         #endregion 读取短信

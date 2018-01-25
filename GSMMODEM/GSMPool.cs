@@ -6,6 +6,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Logger;
 using Quartz;
 using Quartz.Impl;
@@ -83,6 +84,8 @@ namespace GSMMODEM
 
         public event EventHandler OnModemClose;
 
+        public event EventHandler OnModemReceivedSMS;
+
         public void FireOpen(GsmModem modem)
         {
             OnModemOpen?.Invoke(modem,new EventArgs());
@@ -94,7 +97,19 @@ namespace GSMMODEM
 
         }
 
+        public void FireReceived(GsmModem modem)
+        {
+            OnModemReceivedSMS?.Invoke(modem,new EventArgs());
+        }
 
+        public void EH(object sender,EventArgs args)
+        {
+            Task.Run(() =>
+            {
+                this.FireReceived(sender as GsmModem);
+            });
+
+        }
 
 
 
@@ -226,6 +241,7 @@ namespace GSMMODEM
                             if (!dic.ContainsKey(modem.ComPort))
                             {
                                 dic.Add(modem.ComPort, modem);
+                                modem.SmsRecieved += pool.EH;
                                 pool.FireOpen(modem);
 
                             }
@@ -244,6 +260,7 @@ namespace GSMMODEM
                     {
                         var modem = dic[port];
                         modem.Close();
+                        modem.SmsRecieved -= pool.EH;
                         dic.Remove(port);
                         pool.FireClose(modem);
 
@@ -251,5 +268,7 @@ namespace GSMMODEM
                 }
             }
         }
+
+       
     }
 }

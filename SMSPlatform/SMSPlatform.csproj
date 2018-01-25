@@ -117,6 +117,7 @@
     <Compile Include="Controllers\DynamicTemplateController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\MessageController.cs" />
+    <Compile Include="Controllers\MessageHandler.cs" />
     <Compile Include="Controllers\MessageHub.cs" />
     <Compile Include="Controllers\MonthlyFeeRecordController.cs" />
     <Compile Include="Controllers\SettingsController.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="Models\ContectorModel.cs" />
     <Compile Include="Models\ContractorModel.cs" />
     <Compile Include="Models\CookieModels.cs" />
+    <Compile Include="Models\DailyFeeRecordModel.cs" />
     <Compile Include="Models\DepartmentModel.cs" />
     <Compile Include="Models\menuTemplate.cs" />
     <Compile Include="Models\MonthlyFeeRecordModel.cs" />
