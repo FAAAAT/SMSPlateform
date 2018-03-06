@@ -19,6 +19,8 @@ namespace SMSPlatform.Models
     {
         public string name { get; set; }
         public string href { get; set; }
-    }
+        public IEnumerable<MenuItem> children { get; set; }
+    
+}
 }
 

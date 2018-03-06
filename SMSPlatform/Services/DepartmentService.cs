@@ -12,7 +12,7 @@ namespace SMSPlatform.Services
     {
         private SqlHelper helper;
 
-        private int rootID = 0;
+        public static readonly int rootID = 656;
 
         public DepartmentService(SqlHelper helper)
         {

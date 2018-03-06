@@ -87,7 +87,7 @@ namespace SMSPlatform.Services
         public IEnumerable<TagModel> GetTagsBycontactorID(string id)
         {
             var tagIds = helper.SelectDataTable($"select * from Tagcontactor where contactorID = {id}").Select().Select(x => (int)x["TagID"]);
-            var tags = helper.SelectDataTable($"select * from Tag where ID in ({string.Join(",", tagIds)})").Select().Select(x=>(TagModel)new TagModel().SetData(x));
+            var tags = helper.SelectDataTable($"select * from Tag where ID in ({string.Join(",", tagIds)})").Select().Select(x => (TagModel)new TagModel().SetData(x));
             return tags;
         }
 
@@ -96,7 +96,7 @@ namespace SMSPlatform.Services
 
             var tagIds = helper.SelectDataTable($"select * from Tagcontactor where contactorID = {id}").Select().Select(x => (int)x["TagID"]);
             //TODO:Searh .ToDictinoary how to work out
-            var tags = this.GetTags("").Select(x=>new Select2Item(){id=x.ID,text = x.TagName}).ToDictionary(x => x.id, x => x);
+            var tags = this.GetTags("").Select(x => new Select2Item() { id = x.ID, text = x.TagName }).ToDictionary(x => x.id, x => x);
 
             foreach (var tagId in tagIds)
             {
@@ -107,11 +107,73 @@ namespace SMSPlatform.Services
 
             }
 
-            return new Select2Model() {results = tags.Values};
+            return new Select2Model() { results = tags.Values };
 
 
         }
 
+        public Select2Model GetDepartmentTagsByContactorID(string id)
+        {
+            Select2Model model = new Select2Model();
+
+
+
+            //            var dt = helper.SelectDataTable($"select * from ContactorDepartmentTag");
+            var selectedDTID =string.IsNullOrWhiteSpace(id)?new int[0]: helper.SelectDataTable($"select * from ContactorDepartmentTag where ContactorID = {id}")
+                .Select().Select(x => (int)x["DepartmentTagID"]);
+
+
+
+
+
+            //
+            //            var dtId = (int?)dt.Select().SingleOrDefault()?["DepartmentTagID"];
+
+
+            var departments = helper.SelectDataTable("select * from Department").Select()
+                .Select(x => new DepartmentModel().SetData(x) as DepartmentModel).ToDictionary(x=>x.ID,x=>x);
+
+            var tags = helper.SelectDataTable("select * from Tag").Select()
+                .Select(x => new TagModel().SetData(x) as TagModel);
+
+            var dt = helper.SelectDataTable($"select * from DepartmentTag");
+
+            var rows = dt.Select();
+
+
+
+            var items =
+                rows.Select(x =>
+                {
+                    var dep = departments[(int) x["DepartmentID"]];
+                    var parentDep = dep.PDID.HasValue?departments[dep.PDID]:null;
+
+                    return new Select2Item()
+                    {
+                        id = (int)x["ID"],
+                        text = parentDep?.DName+"->"+dep.DName+"->"+tags.SingleOrDefault(y=>y.ID == (int)x["TagID"])?.TagName,
+                        selected = selectedDTID.Any(y=>y == (int)x["iD"])
+                    };
+                });
+
+            model.results = items;
+
+            return model;
+
+
+
+
+
+
+        }
+
+
+
+        public void AddDepartmentTag(int departmentId, int tagId)
+        {
+            helper.Insert("DepartmentTag", new Dictionary<string, object>() { { "DepartmentID", departmentId }, { "TagID", tagId } });
+
+        }
 
 
     }

@@ -305,7 +305,7 @@ function treeSelectorInit(initOptions, departmentSelector) {
 
             $(mids).each(function (index, element) {
                 var node = nodes.find((e, i) => e.MID == element);
-                console.log(node);
+//                console.log(node);
                 DepartmentSelector.instance.treeview('selectNode', node);
                 var parent = DepartmentSelector.instance.treeview('getParent', node);
                 DepartmentSelector.instance.treeview('expandNode', parent);

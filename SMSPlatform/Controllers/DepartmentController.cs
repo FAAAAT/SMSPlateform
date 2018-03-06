@@ -37,15 +37,23 @@ namespace SMSPlatform.Controllers
             JArray json = new JArray();
             foreach (var item in depList)
             {
+                Dictionary<string,object> context = null;
                 JObject node = new JObject();
                 node.Add(new JProperty("text", item.Dep.DName));
                 node.Add(new JProperty("href", "###"));
                 node.Add(new JProperty("tags", "[0]"));
                 node.Add(new JProperty("MID", item.Dep.ID));
+                if (source != "DepartmentManagement")
+                {
+                    node.Add(new JProperty("selectable", false));
+                    context = new Dictionary<string, object>() {{"notLeafSelectable",false}
+                }
+                ;
+                }
                 node.Add(new JProperty("level",0));
                 if (item.children != null)
                 {
-                    node.Add(new JProperty("nodes", RecursionTree(item.children,1)));
+                    node.Add(new JProperty("nodes", RecursionTree(item.children,1,context)));
                     //var ss = ;
                 }
                 json.Insert(0, node);
@@ -177,8 +185,19 @@ namespace SMSPlatform.Controllers
             try
             {
 
+                var rowDeps = helper.SelectDataTable($"select * from DepartmentTag where DepartmentID = {id}").Select();
+
+                if (rowDeps.Length!=0)
+                {
+                    helper.Delete("ContactorDepartmentTag",
+                        $"DepartmentTagID in ({string.Join(",", rowDeps.Select(x => x["ID"] + ""))})", new List<SqlParameter>());
+                }
+
+                helper.Delete("DepartmentTag", $"DepartmentID ={id}", new List<SqlParameter>());
+
+
                 helper.Delete("Department", $"ID={id}");
-                helper.Delete("DepartmentContactor", $"DepartmentID = {id}");
+                
                 tran.Commit();
                 return Json(new ReturnResult()
                 {
@@ -221,8 +240,15 @@ namespace SMSPlatform.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        private static JArray RecursionTree(List<DepartmentService.DepModel> model,int level)
+        private static JArray RecursionTree(List<DepartmentService.DepModel> model,int level,Dictionary<string,object> context = null)
         {
+            bool notLeafSelectable = true;
+            if (context!=null)
+            {
+                notLeafSelectable = (bool)context["notLeafSelectable"];
+            }
+
+
             JArray json = new JArray();
             foreach (var item in model)
             {
@@ -234,7 +260,9 @@ namespace SMSPlatform.Controllers
                 node.Add(new JProperty("level",level));
                 if (item.children != null)
                 {
-                    node.Add(new JProperty("nodes", RecursionTree(item.children,level+1)));
+                    node.Add(new JProperty("nodes", RecursionTree(item.children,level+1,context)));
+                    node.Add(new JProperty("selectable", notLeafSelectable));
+
                 }
                 json.Add(node);
             }

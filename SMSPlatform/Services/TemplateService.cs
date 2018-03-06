@@ -42,7 +42,7 @@ namespace SMSPlatform.Services
             var valueDIc = new Dictionary<string, object>();
             model.GetValues(valueDIc);
             valueDIc.Remove("ID");
-            helper.Update("Template", valueDIc,"",new List<SqlParameter>());
+            helper.Update("Template", valueDIc,$" ID = {model.ID}",new List<SqlParameter>());
         }
 
         public void DeleteTemplate(int id)

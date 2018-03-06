@@ -150,8 +150,22 @@
                     <a class="navbar-brand" runat="server" href="~/">{{headerAndFooter.applicationName}}</a>
                 </div>
                 <div class="navbar-collapse collapse">
-                    <ul v-for="menu in headerAndFooter.menus" class="nav navbar-nav">
-                        <li><a runat="server" v-bind:href="menu.href">{{menu.name}}</a></li>
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown" v-for="menu in headerAndFooter.menus" v-if="menu.children">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-sexpanded="true" aria-expanded="false">{{menu.name}}<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li v-for="menuChild in menu.children">
+                                    <a v-bind:href="menuChild.href">{{menuChild.name}}</a>
+                                </li>
+                            </ul>
+
+                        </li>
+                        <li v-else>
+                            <a runat="server" v-bind:href="menu.href">{{menu.name}}</a>
+                        </li>
+
+
+
                     </ul>
                 </div>
             </div>

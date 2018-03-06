@@ -191,6 +191,7 @@
     <Content Include="Content\Site.css" />
     <Content Include="Content\bootstrap-select2-compatible.css" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="Pages\DepartmentTag.html" />
     <Content Include="Pages\SIMCardManagement.html" />
     <Content Include="Pages\MonthlyFeeRecord.html" />
     <Content Include="Pages\SendRecord.html" />

@@ -1,0 +1,415 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>模板</title>
+
+    <script type="text/javascript" src="/Scripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="/Scripts/bootstrap.js"></script>
+    <link href="/Content/bootstrap.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/vue.js"></script>
+    <link href="/Content/Site.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/bootstrap-notify.js"></script>
+    <script type="text/javascript" src="/Scripts/main.js"></script>
+    <script type="text/javascript" src="/scripts/bootstrapTreeview/js/bootstrap-treeview.js"></script>
+    <script type="text/javascript" src="/scripts/bootstrapTreeview/lymiTreeView_jquery.js"></script>
+    <script>
+
+
+        $(function () {
+            window.vue$ = new Vue({
+                el: '#app',
+                data: {
+                    headerAndFooter: {},
+                    datacollections: [],
+                    queryData: {},
+                    modalDataCollections: [],
+                    modalData: {},
+                    updateModalData: {
+                        updateDepTagID: undefined,
+                        model: { tagId: '' }
+                    },
+                    allTags: [],
+
+
+                },
+                methods: {
+                    on_showContactor: on_showContactor,
+                    on_edit: on_edit,
+                    on_rowDelete:on_rowDelete,
+                }
+
+            });
+
+            vue$.$watch('updateModalData.model',
+                (n, o) => {
+                    console.log('depId Change');
+                    if (n.depId) {
+                        modalTreeView.selectNodes([n.depId]);
+                        
+                    } else {
+                        modalTreeView.clearSelection();
+                    }
+                });
+
+
+
+            window.getData = function (query) {
+                $.ajax({
+                    url: '/api/tag/GetDepartmentTags',
+                    type: 'post',
+                    data: query ? vue$.queryData : {},
+                    success: function (data) {
+                        vue$.datacollections = data.data;
+                    },
+                    error: function (data) {
+                        vue$.datacollections = data.data;
+                    }
+
+                });
+            }
+            getData(true);
+
+            $.ajax({
+                url: '/api/DynamicTemplate/HeaderAndFooter',
+                method: 'get',
+                success: function (data) {
+                    vue$.$data.headerAndFooter = Object.assign({}, vue$.$data.headerAndFooter, data.data);
+                }
+            });
+
+            $.ajax({
+                url: '/api/Tag/GetTags', type: 'get',
+                success: function (data) {
+                    if (data.success) {
+                        vue$.allTags = data.data;
+                    } else {
+                        $.notifyError(data.msg, '');
+                    }
+                }, error: function (data) {
+                    $.notifyError(data, '');
+                }
+            });
+
+        });
+
+
+
+
+    </script>
+
+</head>
+<body>
+    <div id="app">
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" runat="server" href="~/">{{headerAndFooter.applicationName}}</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown" v-for="menu in headerAndFooter.menus" v-if="menu.children">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-sexpanded="true" aria-expanded="false">{{menu.name}}<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li v-for="menuChild in menu.children">
+                                    <a v-bind:href="menuChild.href">{{menuChild.name}}</a>
+                                </li>
+                            </ul>
+
+                        </li>
+                        <li v-else>
+                            <a runat="server" v-bind:href="menu.href">{{menu.name}}</a>
+                        </li>
+
+
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container body-content">
+            <h1>部门标签管理</h1>
+            <h3></h3>
+
+
+            <button class="btn btn-primary" onclick="on_add(event)">添加</button>
+            <div style="min-height: 65vh">
+                <table class="table table-striped table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th>部门名称</th>
+                            <th>标签名称</th>
+                            <th>用户数量</th>
+                            <th>操作</th>
+                        </tr>
+
+                    </thead>
+                    <tbody v-for="row in datacollections">
+                        <tr>
+                            <td>{{row.dep.parent.DName+'->'+row.dep.self.DName}}</td>
+                            <td>{{row.tag.TagName}}</td>
+                            <td>{{row.count}}</td>
+                            <td>
+                                <button class="btn btn-danger" v-on:click="on_showContactor(row.id,row.dep.DName,row.tag.TagName)">查看联系人</button>
+                                <button class="btn btn-danger" v-on:click="on_rowDelete(row.id,row.count)">删除</button>
+                                <button class="btn btn-primary" v-on:click="on_edit(row.id)">编辑</button>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+
+
+            <br />
+
+        </div>
+
+
+
+        <div class="modal fade" id="ContactorsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel">用户列表-{{modalData.depName}}-{{modalData.tagName}}</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <table class="table table-striped table-hover table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>联系人名称</th>
+                                </tr>
+                            </thead>
+                            <tbody v-for="row in modalDataCollections">
+                                <tr>
+                                    <td>{{row.ContactorName}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel">{{updateModalData.updateDepTagID?'编辑':'添加'}}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form role="form" id="addcontactor">
+
+
+                            <!--双单选--用于确定部门和标签的对应关系 标签和部门必须有对应关系-->
+                            <div class="form-group">
+                                <label for="tagSelect" class="control-label">标签</label>
+                                <select class="form-control" v-model="updateModalData.model.tagId" style="width: 100%" id="tagSelect" name="tagSelect">
+                                    <option v-for="row in allTags" v-bind:value="row.id">{{row.name}}</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <h3 class="treetitle">选择部门</h3>
+                                <input type="text" class="form-control" onchange="modalTreeView.treeOnSearch(event)" onkeydown="modalTreeView.searchOnKeypress(event)" />
+                                <div id="modalDepartmentTreeView" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll;"></div>
+                                <div style="text-align: center; height: 60px; margin-top: 10px;" class="loadimg-div">
+                                    <img src="/Content/Images/loading.gif" style="width: 30px;" class="loadimg" />
+                                </div>
+                            </div>
+
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" onclick="on_submit()" class="btn btn-primary">提交</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+
+
+
+
+        function on_showContactor(id, depName, tagName) {
+            $.ajax({
+                url: "/api/tag/GetContactorsByDepartmentTagID", type: "Get", data: { depTagId: id }, dataType: "json"
+                , success: function (data) {
+                    if (data.success) {
+                        vue$.modalCollections = data.data;
+                        vue$.modalData.depName = depName;
+                        vue$.modalData.tagName = tagName;
+                        $('#ContactorsModal').modal('show');
+
+                    }
+                    else {
+                        $.notifyError(data.msg);
+                    }
+                }
+                , error: function (data) {
+                    $.notifyError(data);
+                }
+            }
+            );
+
+        }
+
+
+        function on_rowDelete(id, count) {
+            var confirmed = true;
+            if (count) {
+                confirmed = confirm("当前标签已经绑定了联系人,是否仍然还要删除该标签？（不会删除联系人）");
+
+            }
+            if (confirm) {
+                $.ajax({
+                    url: "/api/tag/DeleteDepartemntTag"
+                    , type: "get"
+                    , data: { depTagId: id }
+                    , dataType: "json"
+                    , success: function (data) {
+                        if (data.success) {
+                            $.notifySuccess("删除成功");
+                            getData(true);
+                        }
+                        else {
+                            $.notifyError(data.msg)
+                        }
+                    }
+                    , error: function (data) {
+                        $.notifyError(data);
+                    }
+                }
+                );
+            }
+        }
+
+        function on_add() {
+            vue$.updateModalData.updateDepTagID = undefined;
+
+            $('#tagSelect').val('');
+            vue$.updateModalData.model = {};
+            $('#updateModal').modal('show');
+
+        }
+
+        function on_add_submit() {
+            $.ajax({
+                url: '/api/tag/AddDepartmentTag',
+                type: 'post',
+                data: { depId: vue$.updateModalData.model.depId, tagId: vue$.updateModalData.model.tagId }
+                , success: function (data) {
+                    if (data.success) {
+                        getData(true);
+                        $.notifySuccess("添加成功", "");
+                    }
+                    else {
+                        $.notifyError(data.msg, "");
+                    }
+
+                }
+                , error: function (data) {
+                    $.notifyError(data, "");
+                }
+            });
+        }
+
+        function on_edit(id) {
+            $.ajax({
+                url: "/api/tag/GetDepartmentTagById",
+                type: "post",
+                contentType: "application/json",
+                data: JSON.stringify({ id: id }),
+                success: function (data) {
+                    if (data.success) {
+                        vue$.updateModalData.updateDepTagID = id;
+                        vue$.updateModalData.model = data.data;
+                        $("#updateModal").modal('show');
+                    } else {
+                        $.notifyError(data.msg, "");
+                    }
+                },
+                error: function (data) {
+                    $.notifyError(data, "");
+                }
+
+            });
+
+        }
+
+        function on_edit_submit() {
+            $.ajax({
+                url: '/api/tag/UpdateDepartmentTag',
+                type: 'get',
+                data: { depTagId: vue$.updateModalData.updateDepTagID, depId: vue$.updateModalData.model.depId, tagId: vue$.updateModalData.model.tagId }
+                , success: function (data) {
+                    if (data.success) {
+                        getData(true);
+                        $.notifySuccess("修改成功", "");
+                    }
+                    else {
+                        $.notifyError(data.msg, "");
+                    }
+
+                }
+                , error: function (data) {
+                    $.notifyError(data, "");
+                }
+            });
+
+        }
+
+
+        function on_submit() {
+            if (vue$.updateModalData.updateDepTagID) {
+                on_edit_submit();
+            } else {
+                on_add_submit();
+            }
+        }
+
+
+        var modalTreeView = $.lymiTreeSelector({
+            treeviewID: 'modalDepartmentTreeView',
+            treeviewOptions: { multiSelect: false, color: '#4280cd' },
+            requestUrl: '/api/Department/GetDepartmentTreeData',
+            multiSelect: true,
+            onClientSelected: function (data) {
+                if (data&&data.length) {
+                    vue$.updateModalData.model.depId = data[0].MID;
+
+                }
+            }
+        });
+
+
+    </script>
+</body>
+
+
+
+
+
+</html>

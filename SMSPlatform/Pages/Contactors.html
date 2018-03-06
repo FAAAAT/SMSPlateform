@@ -32,7 +32,17 @@
                     queryData: { name: '', phone: '', tagIds: [], selectedDeps: [] },
                     querySelectedDeps: [],
                     modalData: { selectedDeps: [] },
-                    contactorId: ''
+                    contactorId: '',
+                    allTags: [],
+                    //DepTag{
+                    //  id:(ServerBaseID if is clientBase no ID),
+                    //  selected:(true false),
+                    //  status:(0 notmodified 1 created 2modified),
+                    //  dep:({name,parentName,id}),
+                    //  tag:({name,id}),
+                    //
+                    //}
+                    DepTags:[]
                 },
                 methods: { onRowDelete: rowDelete, on_edit: on_edit, on_delete: on_delete },
                 computed: {
@@ -45,8 +55,20 @@
             });
 
             vue$.$watch('querySelectedDeps', (n, o) => {
-                vue$.queryData.selectedDeps = n.map((e, i) => e.MID);
+                if (n) {
+                    vue$.queryData.selectedDeps = n.map((e, i) => e.MID);
+                    
+                }
             });
+
+            vue$.$watch('DepTags', (n, o) => {
+                if (n) {
+                    var datas = n.map((e, i) => { return { id: e.id, text: e.dep.parentName + '->' + e.dep.name + '->' + e.tag.name, selected: e.selected } });
+                }
+
+
+            });
+
 
             function getData() {
                 $.ajax({
@@ -54,6 +76,7 @@
                     traditional: true,
                     data: vue$.queryData, method: 'get', success: function (data) {
                         if (data.success) {
+//                            debugger;
                             vue$.$data.datacollections = data.data;
 
                         } else {
@@ -87,6 +110,19 @@
                 }
             });
 
+            // get all tags
+            $.ajax({
+                url: '/api/Tag/GetTags', type: 'get',
+                success: function (data) {
+                if (data.success) {
+                    vue$.allTags = data.data;
+                } else {
+                    $.notifyError(data.msg, '');
+                }
+            },error: function(data) {
+                $.notifyError(data,'');
+            } });
+            
 
             function rowDelete(id) {
                 $.ajax({
@@ -124,8 +160,22 @@
                     <a class="navbar-brand" runat="server" href="~/">{{headerAndFooter.applicationName}}</a>
                 </div>
                 <div class="navbar-collapse collapse">
-                    <ul v-for="menu in headerAndFooter.menus" class="nav navbar-nav">
-                        <li><a runat="server" v-bind:href="menu.href">{{menu.name}}</a></li>
+                    <ul  class="nav navbar-nav">
+                        <li class="dropdown" v-for="menu in headerAndFooter.menus" v-if="menu.children">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-sexpanded="true" aria-expanded="false">{{menu.name}}<span class="caret"></span></a>
+                            <ul  class="dropdown-menu">
+                                <li v-for="menuChild in menu.children">
+                                    <a v-bind:href="menuChild.href">{{menuChild.name}}</a>
+                                </li>
+                            </ul>
+                            
+                        </li>
+                        <li v-else>
+                            <a runat="server" v-bind:href="menu.href">{{menu.name}}</a>
+                        </li>
+                        
+
+                       
                     </ul>
                 </div>
             </div>
@@ -167,8 +217,8 @@
                         <tr>
                             <th>联系人名称</th>
                             <th>联系人电话</th>
-                            <th>标签</th>
-                            <th>部门</th>
+                            <th>部门->标签</th>
+                      
                             <th>操作</th>
                         </tr>
 
@@ -177,13 +227,12 @@
                         <tr>
                             <td>{{row.contactor.ContactorName}}</td>
                             <td>{{row.contactor.PhoneNumber}}</td>
-                            <td>{{row.tags.map((e,i)=>e.TagName).join()}}</td>
-                            <td>{{row.departments.map((e,i)=>e.DName).join()}}</td>
+                            <td>{{row.depTags?row.depTags.map((e,i)=>e.department.parent.DName+'->'+e.department.child.DName+'->'+e.tag.TagName).join():''}}</td>
                             <td>
                                 <button class="btn btn-danger" v-on:click="on_delete(row.contactor.ID)">删除</button>
                                 <button class="btn btn-primary" v-on:click="on_edit(row.contactor.ID)">编辑</button>
 
-                            </td>
+                            </td> 
                         </tr>
                     </tbody>
                 </table>
@@ -228,28 +277,23 @@
                                 <label for="remark" class="control-label">备注</label>
                                 <textarea class="form-control" v-model="remark" id="remark"></textarea>
                             </div>
-
+                           
+<!--                            用于选择已确定的对应关系-->
                             <div class="form-group">
-                                <label for="tagSelect" class="control-label">标签</label>
-                                <select class="form-control" style="width: 100%" id="tagSelect" multiple="multiple" name="tagSelect"></select>
+                                <label for="depTagSelect" class="control-label">标签</label>
+                                <select class="form-control" style="width: 100%" id="depTagSelect" multiple name="tagSelect"></select>
                             </div>
+                            
 
-                            <div class="form-group">
-                                <h3 class="treetitle">选择部门</h3>
-                                <input type="text" class="form-control" onchange="modalTreeView.treeOnSearch(event)" onkeydown="modalTreeView.searchOnKeypress(event)" />
-                                <div id="modalDepartmentTreeView" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll;"></div>
-                                <div style="text-align: center; height: 60px; margin-top: 10px;" class="loadimg-div">
-                                    <img src="/Content/Images/loading.gif" style="width: 30px;" class="loadimg" />
-                                </div>
-                            </div>
+                           
 
 
 
                         </form>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" onclick="$('#addcontactor').submit()" class="btn btn-primary">Send message</button>
+                    <div class="modal-footer"> 
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" onclick="$('#addcontactor').submit()" class="btn btn-primary">提交</button>
                     </div>
                 </div>
             </div>
@@ -267,7 +311,7 @@
                     </div>
                     <div class="modal-body">
                         <h3 class="treetitle">选择部门</h3>
-                        <input type="text" class="form-control" onchange="queryTreeView.treeOnSearch(event)" onkeydown="modalTreeView.searchOnKeypress(event)" />
+                        <input type="text" class="form-control" onchange="queryTreeView.treeOnSearch(event)" onkeydown="queryTreeView.searchOnKeypress(event)" />
                         <div id="queryDepartmentTreeView" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll;"></div>
                         <div style="text-align: center; height: 60px; margin-top: 10px;" class="loadimg-div">
                             <img src="/Content/Images/loading.gif" style="width: 30px;" class="loadimg" />
@@ -281,6 +325,9 @@
                 </div>
             </div>
         </div>
+        
+        
+        
 
 
         <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
@@ -323,8 +370,9 @@
                                     phone: vue$.phone,
                                     name: vue$.name,
                                     remark: vue$.remark,
-                                    tagIds: $('#tagSelect').val(),
-                                    selectedDeps: vue$.modalData.selectedDeps.map((me, mi) => me.MID),
+                                    selectedDepTags: $('#depTagSelect').val(),
+//                                    tagIds: $('#tagSelect').val(),
+//                                    selectedDeps: vue$.modalData.selectedDeps.map((me, mi) => me.MID),
                                 },
                                 success: function (data) {
                                     if (data.success) {
@@ -365,13 +413,12 @@
                 });
         });
 
-
         function on_add(event) {
             vue$.contactorId = '';
 
             initTagSelect2('');
 
-            modalTreeView.clearSelection();
+//            modalTreeView.clearSelection();
 
 
 
@@ -390,9 +437,9 @@
                             vue$.phone = data.data.contactor.PhoneNumber;
                             vue$.remark = data.data.contactor.Remark;
                             initTagSelect2(contactorId);
-                            modalTreeView.clearSelection();
-
-                            modalTreeView.selectNodes(data.data.depIds);
+//                            modalTreeView.clearSelection();
+//
+//                            modalTreeView.selectNodes(data.data.depIds);
 
 
 
@@ -436,24 +483,23 @@
             }
             $.ajax({
                 traditional: true,
-                url: '/api/tag/Select2GetTags', method: 'get', data: { id: contactorId }, success: function (data) {
+                url: '/api/tag/Select2GetDepartmentTags', method: 'get', data: { id: contactorId }, success: function (data) {
                     //                    $('#tagSelect').val(null);
                     //                    $('#tagSelect').trigger('change');
 
 
                     if (data.success) {
 
-                        $('#tagSelect').select2({
+                        $('#depTagSelect').select2({
                             data: data.data.results,
-                           
                         });
                         setTimeout(function () {
                             //                            console.log($('#tagSelect').hasClass("select2-hidden-accessible"));
                             var selecteds = data.data.results.filter((e, i) => { return e.selected; });
                             var selectedIds = selecteds.map((e, i) => e.id);
                             //                            console.log('set values:' + selectedIds);
-                            $('#tagSelect').val(selectedIds);
-                            $('#tagSelect').trigger('change');
+                            $('#depTagSelect').val(selectedIds);
+                            $('#depTagSelect').trigger('change');
                         }, 300);
                         //                        console.log(data);
 
@@ -468,15 +514,41 @@
             $('#departemntModal').modal('show');
         }
 
-        var modalTreeView = $.lymiTreeSelector({
-            treeviewID: 'modalDepartmentTreeView',
-            treeviewOptions: { multiSelect:true,color: '#4280cd' },
-            requestUrl: '/api/Department/GetDepartmentTreeData',
-            multiSelect: true,
-            onClientSelected: function (data) {
-                vue$.modalData.selectedDeps = data;
-            }
-        });
+//        function on_createDepTag() {
+//            var depId = modalTreeView.instance.treeview('getSelected')[0];
+//            var tagId = $('#tagSelect').val();
+//            if (depId && tagId) {
+//                //depIds中的元素只能有一个
+//                $.ajax({
+//                    url:'/api/tag/adddepartmenttag',
+//                    type: 'post', data: { tagId: $('#tagSelect').val(), depIds: vue$.modalData.selectedDeps}, contentType: 'application/json', dataType: 'json'
+//                    , success: function(data) {
+//                        if (data.succes) {
+//                            
+//                        }
+//                        else {
+//                            $.notifyError(data.msg, '');
+//                        }
+//                    }
+//                    , error:function(data) {
+//                        $.notifyError(data, '');
+//                    }
+//                });
+//            } else {
+//                $.notifyWarn('请选择部门和标签');
+//            }
+//        }
+
+
+//        var modalTreeView = $.lymiTreeSelector({
+//            treeviewID: 'modalDepartmentTreeView',
+//            treeviewOptions: { multiSelect:false,color: '#4280cd' },
+//            requestUrl: '/api/Department/GetDepartmentTreeData',
+//            multiSelect: true,
+//            onClientSelected: function (data) {
+//                vue$.modalData.selectedDeps = data;
+//            }
+//        });
 
         var queryTreeView = $.lymiTreeSelector({
             treeviewID: 'queryDepartmentTreeView',
@@ -489,6 +561,7 @@
             }
         });
 
+        
 
 
     </script>
