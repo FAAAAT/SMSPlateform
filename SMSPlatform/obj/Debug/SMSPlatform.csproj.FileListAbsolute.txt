@@ -135,3 +135,15 @@ F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\System.IO.FileS
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\System.IO.Packaging.dll
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\System.Management.Automation.dll
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\DocumentFormat.OpenXml.xml
+C:\projects\SMSPlateform\SMSPlatform\bin\Debug\DocumentFormat.OpenXml.dll
+C:\projects\SMSPlateform\SMSPlatform\bin\Debug\Microsoft.AspNet.SignalR.Core.dll
+C:\projects\SMSPlateform\SMSPlatform\bin\Debug\Microsoft.AspNet.SignalR.SystemWeb.dll
+C:\projects\SMSPlateform\SMSPlatform\bin\Debug\Microsoft.Owin.Host.SystemWeb.dll
+C:\projects\SMSPlateform\SMSPlatform\bin\Debug\OpenXmlPowerTools.dll
+C:\projects\SMSPlateform\SMSPlatform\bin\Debug\System.IO.FileSystem.Primitives.dll
+C:\projects\SMSPlateform\SMSPlatform\bin\Debug\System.IO.Packaging.dll
+C:\projects\SMSPlateform\SMSPlatform\bin\Debug\System.Management.Automation.dll
+C:\projects\SMSPlateform\SMSPlatform\bin\Debug\DocumentFormat.OpenXml.xml
+C:\projects\SMSPlateform\SMSPlatform\bin\Debug\Microsoft.AspNet.SignalR.Core.xml
+C:\projects\SMSPlateform\SMSPlatform\bin\Debug\Microsoft.AspNet.SignalR.SystemWeb.xml
+C:\projects\SMSPlateform\SMSPlatform\bin\Debug\Microsoft.Owin.Host.SystemWeb.xml

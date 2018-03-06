@@ -9,8 +9,8 @@ C:\projects\SMSPlateform\Logger\bin\Debug\Logger.dll
 C:\projects\SMSPlateform\Logger\bin\Debug\Logger.pdb
 C:\projects\SMSPlateform\Logger\bin\Debug\log4net.dll
 C:\projects\SMSPlateform\Logger\bin\Debug\log4net.xml
-C:\projects\SMSPlateform\Logger\obj\Debug\Logger.csprojResolveAssemblyReference.cache
 C:\projects\SMSPlateform\Logger\obj\Debug\Logger.csproj.CoreCompileInputs.cache
 C:\projects\SMSPlateform\Logger\obj\Debug\Logger.dll
 C:\projects\SMSPlateform\Logger\obj\Debug\Logger.pdb
 F:\Projects\商大短信平台\SMSPlatform\Logger\obj\Debug\Logger.csprojResolveAssemblyReference.cache
+C:\projects\SMSPlateform\Logger\obj\Debug\Logger.csprojResolveAssemblyReference.cache

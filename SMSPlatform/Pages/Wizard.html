@@ -200,7 +200,7 @@
                     vue$.templates = data.data;
                 }
             });
-
+          
             var uri = URI(window.location.href);
             var querys = uri.search(true);
             if (querys["containerId"]) {
@@ -211,6 +211,7 @@
                     , type: 'get'
                     , data: { containerId: id }
                     , success: function (data) {
+                        console.log(data);
                         if (data.success) {
                             if (window.tableSelector) {
                                 window.tableSelector.SetSelectedIDs(data.data.sendQueues.map((e, i) => e.ToContactorID));
@@ -340,7 +341,7 @@
                             </thead>
                             <tbody>
                                 <tr v-for="row in datacollections">
-                                    <td><input type="checkbox" v-bind:data-id="row.ID" v-bind:onchange="'tableSelector.OnSelectChange(event, { pageIndex:'+pagerData.currentIndex+'})'" /></td>
+                                    <td><input type="checkbox" v-bind:data-id="row.contactor.ID" v-bind:onchange="'tableSelector.OnSelectChange(event, { pageIndex:'+pagerData.currentIndex+'})'" /></td>
                                     <td>{{row.contactor.ContactorName}}</td>
                                     <td>{{row.contactor.PhoneNumber}}</td>
                                     <td>{{row.tags.map((e,i)=>e.TagName).join()}}</td>

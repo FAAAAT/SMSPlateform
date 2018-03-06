@@ -338,13 +338,12 @@ namespace SMSPlatform.Controllers
                         .SingleOrDefault();
                 var cDepTags = helper.SelectDataTable($"select * from ContactorDepartmentTag where ContactorID = {contactor.ID}").Select();
                 var depTags =
-                    cDepTags.Length==0?:
+                    cDepTags.Length==0?helper.SelectDataTable("select * from DepartmentTag where 1=0").Select():
                     helper.SelectDataTable(
                         $"select * from DepartmentTag where ID in ({string.Join(",", cDepTags.Select(x => (int)x["DepartmentTagID"]))})").Select();
                 //获取 一级 二级 department 和tag
 
-                var departmentIds = helper.SelectList<int>("DepartmentTag", "DepartmentID", $"ID in ({string.Join(",",depTags.Select(x=>x["DepartmentID"]+""))})");
-
+                var departmentIds = depTags.Select(x => (int) x["DepartmentID"]);
                 var allDeps = helper.SelectDataTable($"select * from Department").Select().Select(x=>new DepartmentModel().SetData(x) as DepartmentModel);
 
                 var deps = allDeps.Where(x=>departmentIds.Contains(x.ID.Value)).Select(x => new
@@ -354,9 +353,11 @@ namespace SMSPlatform.Controllers
                 });
 
 
-                var tagIds = helper.SelectList<int>("DepartmentTag", "TagID", $"DepartmentTagID in ({string.Join(",", depTags.Select(x => x["TagID"] + ""))})");
-
-                var tags = helper.SelectDataTable($"select * from Tag where TagID in ({string.Join(",",tagIds.Select(x=>x+""))})");
+                var tagIds = depTags.Select(x => (int) x["TagID"]);
+                var tags = 
+                    tagIds.Any()?
+                    helper.SelectDataTable($"select * from Tag where ID in ({string.Join(",",tagIds.Select(x=>x+""))})"):
+                    helper.SelectDataTable($"select * from Tag where 1=0");
 
 
 
