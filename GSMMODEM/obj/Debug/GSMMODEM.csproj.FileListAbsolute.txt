@@ -46,3 +46,12 @@ C:\projects\SMSPlateform\GSMMODEM\obj\Debug\GSMMODEM.csprojResolveAssemblyRefere
 C:\projects\SMSPlateform\GSMMODEM\obj\Debug\GSMMODEM.csproj.CoreCompileInputs.cache
 C:\projects\SMSPlateform\GSMMODEM\obj\Debug\GSMMODEM.dll
 C:\projects\SMSPlateform\GSMMODEM\obj\Debug\GSMMODEM.pdb
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\Common.Logging.Core.dll
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\Common.Logging.dll
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\Quartz.dll
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\Common.Logging.pdb
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\Common.Logging.xml
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\Common.Logging.Core.pdb
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\Common.Logging.Core.xml
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\Quartz.pdb
+C:\projects\SMSPlateform\GSMMODEM\bin\Debug\Quartz.xml

@@ -254,3 +254,9 @@ F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Content\Images\
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Content\select2.min.css
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\Content\Site.css
 F:\Projects\商大短信平台\SMSPlatform\SMSPlatform\bin\Debug\log4net.xml
+C:\projects\SMSPlateform\SMSPlatform\obj\Debug\SMSPlatform.csprojResolveAssemblyReference.cache
+C:\projects\SMSPlateform\SMSPlatform\obj\Debug\SMSPlatform.csproj.GenerateResource.Cache
+C:\projects\SMSPlateform\SMSPlatform\obj\Debug\SMSPlatform.exe
+C:\projects\SMSPlateform\SMSPlatform\obj\Debug\SMSPlatform.pdb
+C:\projects\SMSPlateform\SMSPlatform\obj\Debug\SMSPlatform.Properties.Resources.resources
+C:\projects\SMSPlateform\SMSPlatform\obj\Debug\SMSPlatform.csproj.CoreCompileInputs.cache
