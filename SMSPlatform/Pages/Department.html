@@ -51,23 +51,26 @@
 
 
             function rowDelete(id) {
-                $.ajax({
-                    url: '/api/tag/DeleteTag', method: 'get', data: { tagID: id }, success: function (data) {
-                        if (data.success) {
-                            if (data.status == 200) {
-                                $.notifySuccess(data.msg, '');
-                            } else if (data.status == 500) {
+                if (confirm('即将删除一个部门 删除部门会删除所有该部门关联的部门标签 删除前请仔细确认部门状态')) {
+                    $.ajax({
+                        url: '/api/tag/DeleteTag', method: 'get', data: { tagID: id }, success: function (data) {
+                            if (data.success) {
+                                if (data.status == 200) {
+                                    $.notifySuccess(data.msg, '');
+                                } else if (data.status == 500) {
 
-                            } else if (data.status == 302) {
-                                window.location.href = data.data;
+                                } else if (data.status == 302) {
+                                    window.location.href = data.data;
+                                }
+
+                                getData();
+                            } else {
+                                $.notifyError(data.msg, '');
                             }
-
-                            getData();
-                        } else {
-                            $.notifyError(data.msg, '');
                         }
-                    }
-                });
+                    });
+
+                }
             }
 
         });

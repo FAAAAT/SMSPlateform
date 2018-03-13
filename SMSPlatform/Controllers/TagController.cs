@@ -34,7 +34,7 @@ namespace SMSPlatform.Controllers
                 {
                     name = x.TagName,
                     id = x.ID,
-                    count = helper.SelectScalar<int>($"select *,ContactorDepartmentTag.ID as CDTID,ContactorID from DepartmentTag inner join ContactorDepartmentTag on DepartmentTag.ID = ContactorDepartmentTag.DepartmentTagID where TagID = {x.ID}")
+                    count = helper.SelectDataTable($"select *,ContactorDepartmentTag.ID as CDTID,ContactorID from DepartmentTag inner join ContactorDepartmentTag on DepartmentTag.ID = ContactorDepartmentTag.DepartmentTagID where TagID = {x.ID}").Select().Length
                 }).ToList();
 
                 return Json(new ReturnResult()
@@ -396,6 +396,22 @@ namespace SMSPlatform.Controllers
 
                 }
 
+                var depTags = helper.SelectDataTable($"select * from DepartmentTag where DepartmentID = {depId} and TagID = {tagId}").Select();
+                
+                if (depTags.Length !=0)
+                {
+
+                    return Json(new ReturnResult()
+                    {
+                        success =  false,
+                        msg = "已经存在该标签",
+                        status = 200,
+                    });
+
+                }
+
+
+
                 TagService service = new TagService(helper);
                 service.AddDepartmentTag(depId.Value, tagId.Value);
                 return Json(new ReturnResult()
@@ -502,10 +518,10 @@ namespace SMSPlatform.Controllers
 
                 var contactorIds =
                     helper.SelectDataTable(
-                        $"select ContactorID from ContactorDepartmentTag where ID = {depTagID}").Select();
+                        $"select ContactorID from ContactorDepartmentTag where DepartmentTagID = {depTagID}").Select();
                 var contactors = helper.SelectDataTable(
                     contactorIds.Any() ?
-                    $"select * from Contactor where ID in ({string.Join(",", contactorIds.Select(x => x["ContactorID"] + ""))})" : "select * from Contactor wher 1=0").Select().Select(x => new contactorModel().SetData(x) as contactorModel);
+                    $"select * from Contactor where ID in ({string.Join(",", contactorIds.Select(x => x["ContactorID"] + ""))})" : "select * from Contactor where 1=0").Select().Select(x => new contactorModel().SetData(x) as contactorModel);
 
                 
 

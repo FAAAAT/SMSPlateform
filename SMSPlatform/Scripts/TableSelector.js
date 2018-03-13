@@ -195,6 +195,14 @@ function InitTableSelectable(table, options) {
         onSelectChange(innerTable);
     }
 
+    function setAllData(data) {
+        allDatas = data;
+        if (isAll)
+            selectedIDs = selectedIDs.filter((e, i) => {
+                return data.find((ee, ii) => ee === e) !== undefined;
+            });
+
+    }
 
     return {
         //获取数据源所有数据
@@ -215,7 +223,8 @@ function InitTableSelectable(table, options) {
         OnPageChange: onPageChange,
         //行选中事件
         TrSelector: trSelector,
-        SetSelectedIDs: setSelectedIDs
+        SetSelectedIDs: setSelectedIDs,
+        SetAllData: setAllData,
     };
 
 

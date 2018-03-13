@@ -1,1 +1,0 @@
-                          ¡ª¡ª¡ª¡ª¡ª¡ª¡ªapplication startup¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª-                                                    ¡ª¡ª¡ª¡ª¡ª¡ª¡ª-application shutdown¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¨C                          

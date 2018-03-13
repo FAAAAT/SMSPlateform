@@ -70,7 +70,7 @@ namespace SMSPlatform
 
 
                 process = new Process();
-                process.StartInfo = new ProcessStartInfo(url);
+                process.StartInfo = new ProcessStartInfo(url+"/pages/login.html");
 
 
                 process.Start();

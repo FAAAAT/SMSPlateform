@@ -17,18 +17,22 @@ namespace SMSPlatform.Services
 
         public GSMTaskServiceStatus Status = GSMTaskServiceStatus.Stop;
 
+        public NoTaskMode NoTaskMode;
+
         private Dictionary<string, Task> tasks = new Dictionary<string, Task>();
         private Dictionary<string, CancellationTokenSource> tokens = new Dictionary<string, CancellationTokenSource>();
         private Dictionary<string, WaitHandle> handles = new Dictionary<string, WaitHandle>();
         private Dictionary<string, bool> normalLoopContinues = new Dictionary<string, bool>();
-        
+
         public GSMTaskService()
         {
             pool = AppDomain.CurrentDomain.GetData("Pool") as GSMPool;
             logger = AppDomain.CurrentDomain.GetData("Logger") as SMSPlatformLogger;
 
+            pool.OnModemReceivedSMS += OnFireReceived;
+
         }
-        
+
         public void OnFireOpen(object sender, EventArgs e)
         {
             var tokenSource = new CancellationTokenSource();
@@ -77,6 +81,15 @@ namespace SMSPlatform.Services
             }
         }
 
+        public void OnFireReceived(object sender, EventArgs e)
+        {
+            var modem = sender as GSMMODEM.GsmModem;
+            var msgs = modem.GetUnreadMsg();
+            //TODO:需要处理长短信
+            var dics = msgs.Select(x => new Dictionary<string, object>() { { "SMSContent", x.SmsContent }, { "PhoneNumber", x.PhoneNumber }, { "SendTime", x.SendTime }, { "ReceivedTime", DateTime.Now } });
+            OnSMSReceived?.Invoke(modem, dics.ToList());
+        }
+
         private void ProceedSMSSendQueue(object context)
         {
             var contextDic = context as Dictionary<string, object>;
@@ -111,17 +124,30 @@ namespace SMSPlatform.Services
                         {
                             model.Msg = e.ToString();
                             OnError?.Invoke(modem, model);
+                            logger.Error(e + "");
                         }
 
                     }
                     else
                     {
-                        logger.Debug("locked by no task");
-                        modem.Status = GSMModemStatus.Pause;
-                        waitHandle.WaitOne();
-                        modem.Status = GSMModemStatus.StandBy;
-                        logger.Debug("unlock by new start(phone)");
+                        switch (NoTaskMode)
+                        {
+                            case NoTaskMode.Pause:
+                                logger.Debug("locked by no task");
+                                modem.Status = GSMModemStatus.Pause;
 
+                                waitHandle.WaitOne();
+
+                                modem.Status = GSMModemStatus.StandBy;
+                                logger.Debug("unlock by new start(phone)");
+                                break;
+                            case NoTaskMode.Stop:
+                                Task.Run(() =>
+                                {
+                                    Stop();
+                                });
+                                break;
+                        }
                     }
 
                 }
@@ -143,7 +169,7 @@ namespace SMSPlatform.Services
 
         public event EventHandler OnStop;
 
-
+        public event EventHandler<List<Dictionary<string, object>>> OnSMSReceived;
 
 
 
@@ -152,6 +178,10 @@ namespace SMSPlatform.Services
         {
             if (Status == GSMTaskServiceStatus.Running)
             {
+                foreach (KeyValuePair<string, WaitHandle> keyValuePair in handles)
+                {
+                    (keyValuePair.Value as EventWaitHandle).Set();
+                }
                 return;
             }
             lock (this)
@@ -181,7 +211,11 @@ namespace SMSPlatform.Services
 
                     }
 
-                    normalLoopContinues.Add(gsmModem.PhoneNumber, true);
+                    if (!normalLoopContinues.ContainsKey(gsmModem.PhoneNumber))
+                    {
+                        normalLoopContinues.Add(gsmModem.PhoneNumber, true);
+
+                    }
 
 
                     var task = new Task(x => ProceedSMSSendQueue(x), new Dictionary<string, object>()
@@ -199,6 +233,7 @@ namespace SMSPlatform.Services
                 }
                 pool.OnModemClose += OnFireClose;
                 pool.OnModemOpen += OnFireOpen;
+
                 Status = GSMTaskServiceStatus.Running;
             }
             if (OnStart != null)
@@ -276,9 +311,16 @@ namespace SMSPlatform.Services
         public int SendCount { get; set; }
     }
 
+
+
     public enum GSMTaskServiceStatus
     {
         Running, StandBy, Stop
+    }
+
+    public enum NoTaskMode
+    {
+        Stop, Pause,
     }
 
 }

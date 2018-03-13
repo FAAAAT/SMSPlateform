@@ -10,6 +10,7 @@ using GSMMODEM;
 using Logger;
 using Microsoft.AspNet.SignalR;
 using SMSPlatform.Controllers;
+using SMSPlatform.Models;
 using SMSPlatform.Services;
 
 namespace SMSPlatform
@@ -26,6 +27,7 @@ namespace SMSPlatform
             this.service.OnError += Service_OnError;
             this.service.OnStart += Service_OnStart;
             this.service.OnStop += Service_OnStop;
+            this.service.OnSMSReceived += Service_OnReceivedSMS;
 
 
             this.logger = AppDomain.CurrentDomain.GetData("Logger") as SMSPlatformLogger;
@@ -54,7 +56,7 @@ namespace SMSPlatform
             {
                 SMSSendQueueService queueService = new SMSSendQueueService(helper);
                 var phoneNumber = (sender as GsmModem).PhoneNumber;
-                queueService.CompleteSMS(e.Value.ID.Value, false);
+                queueService.CompleteSMS(e.Value.ID.Value,phoneNumber, false,e.SendCount);
                 GlobalHost.ConnectionManager.GetHubContext<MessageHub>().Clients.All.QueueError(e.Value.ContainerID, queueService.GetContainerStatus(e.Value.ContainerID.Value), e.Value.ID.Value, 3);
             }
             catch (Exception ex)
@@ -76,9 +78,10 @@ namespace SMSPlatform
             helper.SetConnection(conn);
             try
             {
+                
                 SMSSendQueueService queueService = new SMSSendQueueService(helper);
                 var phoneNumber = (sender as GsmModem).PhoneNumber;
-                queueService.CompleteSMS(e.Value.ID.Value, true);
+                queueService.CompleteSMS(e.Value.ID.Value,phoneNumber, true,e.SendCount);
 
 
 
@@ -125,5 +128,29 @@ namespace SMSPlatform
             }
         }
 
+        private void Service_OnReceivedSMS(object sender, List<Dictionary<string, object>> e)
+        {
+            SqlConnection con = new SqlConnection(ConnectionStringUtility.DefaultConnectionStrings);
+            con.Open();
+            SqlHelper helper = new SqlHelper();
+            helper.SetConnection(con);
+            try
+            {
+                ReceivedSMSService service = new ReceivedSMSService(helper);
+                var msgIds = service.RestoreReceivedSMS(e);
+
+                //存储并通知
+//                GlobalHost.ConnectionManager.GetHubContext<MessageHub>().Clients.All.NewMsg(msgIds);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex + "");
+            }
+            finally
+            {
+                helper.Dispose();
+            }
+
+        }
     }
 }

@@ -194,11 +194,6 @@
                     <input class="form-control" id="queryPhone" name="queryName" v-model="queryData.phone" type="text" />
                 </div>
 
-                <div id="fuckStupidS2" class="form-group">
-                    <label class="control-label" for="queryTagSelect">标签</label>
-                    <select multiple="multiple" id="queryTagSelect"></select>
-                </div>
-
                 <div class="form-group">
                     <label class="control-label">
                         部门
@@ -206,11 +201,19 @@
                     <input type="text" v-model="queryDNames" onclick="openQueryDepModal(event)" readonly="readonly" class="form-control" />
                 </div>
 
+                <div id="fuckStupidS2" class="form-group">
+                    <label class="control-label" for="queryTagSelect">标签</label>
+                    <select multiple="multiple" id="queryTagSelect"></select>
+                </div>
+
+
+
             </div>
 
             <button class="btn btn-primary" onclick="on_add(event)">添加</button>
             <button Class="btn btn-primary" onclick="getData(true)">查询</button>
             <button class="btn btn-warning" onclick="$('#uploadModal').modal('show')">导入联系人</button>
+            <a href="/download/导入模板.xls" class="btn btn-success">下载模板</a>
             <div style="min-height: 65vh">
                 <table class="table table-striped table-hover table-bordered">
                     <thead>
@@ -370,7 +373,7 @@
                                     phone: vue$.phone,
                                     name: vue$.name,
                                     remark: vue$.remark,
-                                    selectedDepTags: $('#depTagSelect').val(),
+                                    selectedDepTagIds: $('#depTagSelect').val(),
 //                                    tagIds: $('#tagSelect').val(),
 //                                    selectedDeps: vue$.modalData.selectedDeps.map((me, mi) => me.MID),
                                 },
@@ -393,8 +396,8 @@
                                     phone: vue$.phone,
                                     name: vue$.name,
                                     remark: vue$.remark,
-                                    tagIds: $('#tagSelect').val(),
-                                    selectedDeps: vue$.modalData.selectedDeps.map((me, mi) => me.MID),
+                                    selectedDepTagIds: $('#depTagSelect').val(),
+//                                    selectedDeps: vue$.modalData.selectedDeps.map((me, mi) => me.MID),
 
                                 },
                                 success: function (data) {
@@ -415,6 +418,11 @@
 
         function on_add(event) {
             vue$.contactorId = '';
+
+            vue$.name = '';
+            vue$.phone = '';
+            vue$.remark = '';
+
 
             initTagSelect2('');
 
@@ -459,17 +467,22 @@
         }
 
         function on_delete(contactorId) {
-            $.ajax({
-                traditional: true,
-                url: '/api/contactor/deletecontactor', method: 'get', data: { id: contactorId }, success: function (data) {
-                    if (data.success) {
-                        $.notifySuccess(data.msg);
-                        getData();
-                    } else {
-                        $.notifyError(data.msg);
+
+            if (confirm('您将删除一个联系人，您确定要这么做吗？')) {
+                $.ajax({
+                    traditional: true,
+                    url: '/api/contactor/deletecontactor', method: 'get', data: { id: contactorId }, success: function (data) {
+                        if (data.success) {
+                            $.notifySuccess(data.msg);
+                            getData(true);
+                        } else {
+                            $.notifyError(data.msg);
+                        }
                     }
-                }
-            });
+                });
+            }
+
+          
         }
 
         function initTagSelect2(contactorId) {

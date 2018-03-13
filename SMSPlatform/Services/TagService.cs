@@ -68,7 +68,12 @@ namespace SMSPlatform.Services
 
             try
             {
-                helper.Delete("TagContactor", "TagID=" + model.ID);
+                var DepIDs =  helper.SelectDataTable($"select * from DepartmentTag where TagID = {model.ID}").Select().Select(x=>x["ID"]+"");
+                if (DepIDs!=null&&DepIDs.Any())
+                {
+                    helper.Delete("ContactorDepartmentTag", $"DepartmentTagID in ({string.Join(",",DepIDs)})");
+                }
+                helper.Delete("DepartmentTag", "TagID=" + model.ID);
                 helper.Delete("Tag", " ID=" + model.ID);
                 tran.Commit();
             }

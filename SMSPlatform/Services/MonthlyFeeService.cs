@@ -19,22 +19,59 @@ namespace SMSPlatform.Services
             this.helper = helper;
         }
 
-        public IEnumerable<DailyFeeRecordModel> GetRecords(string phone, DateTime? date)
+        public IEnumerable<MonthlyFeeRecordModel> GetMonthlyFeeRecordModels(string phone, DateTime? startTime,DateTime? endTime)
         {
-            var whereStr = " where 1=1 ";
+            var initWhere = " where ";
+            var whereStr = initWhere;
             if (!string.IsNullOrWhiteSpace(phone))
             {
-                whereStr += $" and PhoneNumber like '%{phone}%' ";
+                whereStr += (initWhere == whereStr?"":" and ") + $" PhoneNumber like '%{phone}%' ";
             }
 
-            if (date.HasValue)
+            if (startTime.HasValue)
             {
-                whereStr += $" and RecordDate = '{date:yyyy-MM-dd}'";
+                whereStr += (initWhere == whereStr ? "" : " and ") + $" Year >= {startTime.Value.Year} and Month >= {startTime.Value.Month}";
             }
 
+            if (endTime.HasValue)
+            {
+                whereStr += (initWhere == whereStr ? "" : " and ") + $" Year <={endTime.Value.Year} and Month <= {endTime.Value.Month}";
+            }
+
+            return helper.SelectDataTable("select * from MonthlyFeeRecord " + (whereStr==initWhere?"":whereStr)).Select().Select(x=>new MonthlyFeeRecordModel().SetData(x) as MonthlyFeeRecordModel);
 
             //            return helper.SelectDataTable("select * from MonthlyFeeRecord " + whereStr).Select().Select(x => new MonthlyFeeRecordModel().SetData(x) as MonthlyFeeRecordModel);
-            return null;
+//            return null;
+
+        }
+
+        public IEnumerable<DailyFeeRecordModel> GetDailyFeeRecordModels(string phone, DateTime? startTime,
+            DateTime? endTime,int? monthlyFeeId)
+        {
+            var initWhere = " where ";
+            var whereStr = initWhere;
+            if (!string.IsNullOrWhiteSpace(phone))
+            {
+                whereStr += (initWhere == whereStr ? "" : " and ") + $" PhoneNumber like '%{phone}%' ";
+            }
+
+            if (startTime.HasValue)
+            {
+                whereStr += (initWhere == whereStr ? "" : " and ") + $" Date >='{startTime.Value.Date:yyyy-MM-dd}'";
+            }
+
+            if (endTime.HasValue)
+            {
+                whereStr += (initWhere == whereStr ? "" : " and ") + $" Date <='{endTime.Value.Date:yyyy-MM-dd}'";
+
+            }
+
+            if (monthlyFeeId.HasValue)
+            {
+                whereStr += (initWhere == whereStr ? "" : " and ") + $" MonthlyID = {monthlyFeeId}";
+            }
+
+            return helper.SelectDataTable("select * from DailyFeeRecord " + (whereStr == initWhere ? "" : whereStr)).Select().Select(x => new DailyFeeRecordModel().SetData(x) as DailyFeeRecordModel);
 
         }
 

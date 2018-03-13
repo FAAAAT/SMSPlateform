@@ -43,7 +43,8 @@ namespace SMSPlatform.Controllers
         }
 
         [HttpGet]
-        public IHttpActionResult GetRecordContainer(string containerName, DateTime? beginTime ,DateTime? endTime, int? pageSize,int? pageIndex)
+        public IHttpActionResult GetRecordContainer(string containerName, DateTime? beginTime, DateTime? endTime,
+            int? pageSize, int? pageIndex)
         {
             var dcs = new FormDataCollection(this.Request.RequestUri);
             var status = dcs["status[]"]?.Split(',');
@@ -74,15 +75,18 @@ namespace SMSPlatform.Controllers
 
                 if (queryStatus != null && queryStatus.Length != 0)
                 {
-                    whereStr += $" and Status in ({string.Join(",",queryStatus)})";
+                    whereStr += $" and Status in ({string.Join(",", queryStatus)})";
                 }
 
 
 
 
-                var datas = helper.SelectDataTable("select * from RecordContainer " + whereStr).Select().Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel);
+                var datas =
+                    helper.SelectDataTable("select * from RecordContainer " + whereStr)
+                        .Select()
+                        .Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel);
                 var total = datas.Count();
-                if (pageSize.HasValue&&pageIndex.HasValue)
+                if (pageSize.HasValue && pageIndex.HasValue)
                 {
                     datas = datas.Skip(pageIndex.Value * pageSize.Value).Take(pageSize.Value);
                 }
@@ -113,6 +117,7 @@ namespace SMSPlatform.Controllers
 
 
         }
+
         [HttpGet]
         public IHttpActionResult DeleteRecordContainer(int id)
         {
@@ -126,7 +131,7 @@ namespace SMSPlatform.Controllers
             try
             {
 
-                helper.Update("RecordContainer", new Dictionary<string, object>() {{"Status", 4}}, $" ID={id} ",
+                helper.Update("RecordContainer", new Dictionary<string, object>() { { "Status", 4 } }, $" ID={id} ",
                     new List<SqlParameter>());
                 helper.Delete("SMSSendQueue", $"ContainerID ={id}");
                 tran.Commit();
@@ -161,16 +166,16 @@ namespace SMSPlatform.Controllers
 
         [HttpGet]
         public IHttpActionResult GetSMSQueue(int? containerId, string toName, string toPhone,
-            DateTime? beginTime, DateTime? endTime, string smsContent,int? pageIndex,int? pageSize)
+            DateTime? beginTime, DateTime? endTime, string smsContent, int? pageIndex, int? pageSize)
         {
             try
             {
                 SMSSendQueueService service = new SMSSendQueueService(helper);
                 var datas = service.GetSMSSend(containerId, toName, toPhone, 0, beginTime, endTime, smsContent);
                 int total = datas.Count();
-                if (pageIndex.HasValue&&pageSize.HasValue)
+                if (pageIndex.HasValue && pageSize.HasValue)
                 {
-                    datas = datas.Skip(pageIndex.Value*pageSize.Value).Take(pageSize.Value);
+                    datas = datas.Skip(pageIndex.Value * pageSize.Value).Take(pageSize.Value);
 
                 }
                 return Json(new ReturnResult()
@@ -178,7 +183,8 @@ namespace SMSPlatform.Controllers
                     success = true,
                     data = datas,
                     status = 200
-                    ,total = total
+                    ,
+                    total = total
                 });
 
             }
@@ -200,7 +206,7 @@ namespace SMSPlatform.Controllers
 
         [HttpGet]
         public IHttpActionResult GetSMSRecord(int? containerId, string toName, string toPhone,
-           DateTime? beginTime, DateTime? endTime, string smsContent, int? pageIndex, int? pageSize)
+            DateTime? beginTime, DateTime? endTime, string smsContent, int? pageIndex, int? pageSize)
         {
             try
             {
@@ -251,10 +257,39 @@ namespace SMSPlatform.Controllers
             });
             try
             {
+                var date = DateTime.Now;
+                var models =
+                    helper.SelectDataTable($"select * from MonthlyFeeRecord")
+                        .Select()
+                        .Select(x => new MonthlyFeeRecordModel().SetData(x) as MonthlyFeeRecordModel);
+
+
                 return Json(new ReturnResult()
                 {
                     success = true,
-                    data = pool.PhoneComDic.Select(x=>new {com=x.Key,text=x.Value,id=x.Value,disabled = false,selected = false}),
+                    data = pool.PhoneComDic.Select(x =>
+
+
+
+                    {
+
+                        var model = models.SingleOrDefault(y => x.Value == y.PhoneNumber);
+                        var setting =
+                            helper.SelectDataTable($"select * from SystemSettings where PhoneNumber = '{x.Value}'")
+                                .Select()
+                                .SingleOrDefault();
+                        return new
+                        {
+                            com = x.Key,
+                            text = x.Value + "  资费情况:" + (model == null
+                                       ? setting == null ? "暂无数据" : "0/" + setting["MonthLimitRecord"]
+                                       : (model.SendCount + "/" +
+                                          model.MonthLimitRecord)),
+                            id = x.Value,
+                            disabled = false,
+                            selected = false
+                        };
+                    }),
                     status = 200,
                 });
             }
@@ -275,13 +310,13 @@ namespace SMSPlatform.Controllers
             }
 
         }
-        
+
 
         [HttpGet]
-        public IHttpActionResult SetPhoneNumberByComPort(string comport,string phone)
+        public IHttpActionResult SetPhoneNumberByComPort(string comport, string phone)
         {
             var modem = pool[comport];
-            if (modem!=null)
+            if (modem != null)
             {
                 if (modem.SetPhoneNum(phone))
                 {
@@ -340,7 +375,7 @@ namespace SMSPlatform.Controllers
                     var cmodel =
                         helper.SelectDataTable("select * from Contactor where ID = " + contactorID)
                             .Select()
-                            .Select(x => (contactorModel) new contactorModel().SetData(x))
+                            .Select(x => (contactorModel)new contactorModel().SetData(x))
                             .SingleOrDefault();
 
                     SMSSendQueueModel smsmodel = new SMSSendQueueModel();
@@ -482,7 +517,11 @@ namespace SMSPlatform.Controllers
 
             }
 
-            var containerExists = helper.SelectDataTable("select * from RecordContainer where ID = " + model.ID).Select().Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
+            var containerExists =
+                helper.SelectDataTable("select * from RecordContainer where ID = " + model.ID)
+                    .Select()
+                    .Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel)
+                    .SingleOrDefault();
             if (containerExists != null && containerExists.Status != 0)
             {
                 return Json(new ReturnResult()
@@ -524,7 +563,7 @@ namespace SMSPlatform.Controllers
                     var cmodel =
                         helper.SelectDataTable("select * from Contactor where ID = " + contactorID)
                             .Select()
-                            .Select(x => (contactorModel) new contactorModel().SetData(x))
+                            .Select(x => (contactorModel)new contactorModel().SetData(x))
                             .SingleOrDefault();
 
                     SMSSendQueueModel smsmodel = new SMSSendQueueModel();
@@ -645,20 +684,28 @@ namespace SMSPlatform.Controllers
             try
             {
                 var container = helper.SelectDataTable(
-                    $"select * from RecordContainer where ID = {containerId}").Select().Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
+                        $"select * from RecordContainer where ID = {containerId}")
+                    .Select()
+                    .Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel)
+                    .SingleOrDefault();
                 IEnumerable<SMSSendQueueModel> sendQueues = null;
                 if (container != null)
                 {
-                    sendQueues = helper.SelectDataTable($"select * from SMSSendQueue where ContainerID = {container.ID}").Select().Select(x => new SMSSendQueueModel().SetData(x) as SMSSendQueueModel);
+                    sendQueues =
+                        helper.SelectDataTable($"select * from SMSSendQueue where ContainerID = {container.ID}")
+                            .Select()
+                            .Select(x => new SMSSendQueueModel().SetData(x) as SMSSendQueueModel);
                 }
 
-               
+
 
                 return Json(new ReturnResult()
                 {
-                    data = new {container = container,sendQueues = sendQueues}
-                    ,success = true
-                    ,status = 200
+                    data = new { container = container, sendQueues = sendQueues }
+                    ,
+                    success = true
+                    ,
+                    status = 200
                 });
 
             }
@@ -673,7 +720,7 @@ namespace SMSPlatform.Controllers
 #else
                         msg = "内部错误 请联系管理员",
 #endif
-                        success =  false,
+                        success = false,
                         status = 500,
                     });
             }
@@ -682,35 +729,63 @@ namespace SMSPlatform.Controllers
         }
 
         [HttpGet]
-        public IHttpActionResult ReSend(int smsRecordId)
+        public IHttpActionResult ReSend(int containerId)
         {
-            var recordModel = helper.SelectDataTable($"select * from SMSSendRecord where ID = {smsRecordId}").Select().Select(x=>new SMSSendQueueModel().SetData(x) as SMSSendQueueModel).SingleOrDefault();
-            if (recordModel == null)
+            //            var recordModel = helper.SelectDataTable($"select * from SMSSendRecord where ID = {smsRecordId}").Select().Select(x=>new SMSSendQueueModel().SetData(x) as SMSSendQueueModel).SingleOrDefault();
+            //            if (recordModel == null)
+            //            {
+            //                return Json(new ReturnResult()
+            //                {
+            //                    msg = "you can't resend a sms that not exists!",
+            //                    success = false,
+            //                    status = 500
+            //                });
+            //            }
+
+            var container =
+                helper.SelectDataTable($"select * from recordcontainer where ID = {containerId} ")
+                    .Select()
+                    .Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel)
+                    .SingleOrDefault();
+            var errorSMSs =
+                helper.SelectDataTable($"select * from SMSSendRecord where Status = 3 and containerID = {containerId}")
+                    .Select()
+                    .Select(x => new SMSSendRecordModel().SetData(x) as SMSSendRecordModel);
+            if (container == null)
             {
                 return Json(new ReturnResult()
                 {
-                    msg = "you can't resend a sms that not exists!",
+                    msg = "未找到对应任务!",
                     success = false,
                     status = 500
                 });
             }
-
-            var container = helper.SelectDataTable($"select * from recordcontainer where ID = {recordModel.ContainerID} ").Select().Select(x=>new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
-
-
+            if (!errorSMSs.Any())
+            {
+                return Json(new ReturnResult()
+                {
+                    msg = "可重发任务为空!",
+                    success = false,
+                    status = 500
+                });
+            }
             var conn = helper.GetOpendSqlConnection();
             var tran = conn.BeginTransaction();
             helper.SetTransaction(tran);
             try
             {
-                helper.Delete("smssendrecord", $"ID = {smsRecordId}");
-                var dic = new Dictionary<string, object>();
-                recordModel.Status = 0;
-                recordModel.GetValues(dic);
-                dic.Remove("ID");
-                helper.Insert("SMSSendQueue", dic);
+                helper.Delete("smssendrecord", $"containerID = {containerId}");
+                foreach (var item in errorSMSs)
+                {
+                    var dic = new Dictionary<string, object>();
+                    item.Status = 0;
+                    item.GetValues(dic);
+                    dic.Remove("ID");
+                    helper.Insert("SMSSendQueue", dic);
+                }
 
-                helper.Update("recordContainer", new Dictionary<string, object>() {{"status", 0}},
+
+                helper.Update("recordContainer", new Dictionary<string, object>() { { "status", 0 } },
                     $" ID = {container.ID}", new List<SqlParameter>());
 
                 tran.Commit();
@@ -727,17 +802,147 @@ namespace SMSPlatform.Controllers
                 tran.Rollback();
                 return Json(new ReturnResult()
                 {
-                    msg = e+"",
+                    msg = e + "",
                     success = false,
                     status = 500,
 
                 });
             }
-          
 
 
 
 
+
+        }
+
+        [HttpGet]
+        public IHttpActionResult CalcMessageCount(int containerId)
+        {
+            try
+            {
+                var containerModel =
+                    helper.SelectDataTable($"select * from RecordContainer where ID = {containerId}")
+                        .Select()
+                        .Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel)
+                        .SingleOrDefault();
+
+                if (containerModel == null)
+                {
+                    throw new Exception("ContainerID未找到");
+                }
+
+
+                var smss = helper.SelectDataTable(
+                        $"select * from SMSSendQueue where ContainerID = {containerModel.ID}")
+                    .Select()
+                    .Select(x => new SMSSendQueueModel().SetData(x) as SMSSendQueueModel);
+
+
+                var selectedPhones = containerModel.SIMsPhone;
+
+                var count = smss.Select(x => GsmModem.CalcMsgLong(x.SMSContent, "0000000000"))
+                    .Aggregate(0, (o, n) => o + n);
+                var date = DateTime.Now;
+
+                var monthlyFeeModels = helper.SelectDataTable(
+                        $"select * from MonthlyFeeRecord where PhoneNumber in ('{string.Join("','", selectedPhones)}') and Month = '{date.Month}' and Year = '{date.Year}'")
+                    .Select()
+                    .Select(x => new MonthlyFeeRecordModel().SetData(x) as MonthlyFeeRecordModel);
+
+                var monthlyExcept = selectedPhones.Except(monthlyFeeModels.Select(x => x.PhoneNumber));
+
+                var settings = monthlyExcept.Any()
+                    ? helper.SelectDataTable(
+                            $"select * from SystemSettings where PhoneNumber in ('{string.Join("','", monthlyExcept)}') ")
+                        .Select()
+                        .Select(x => new SystemSettingsModel().SetData(x) as SystemSettingsModel)
+                    : new List<SystemSettingsModel>();
+
+                var totalRest =
+                    monthlyFeeModels.Where(x => x.MonthLimitRecord != 0)
+                        .Select(x => x.MonthLimitRecord - x.SendCount)
+                        .Aggregate(0, (o, n) => o + n) +
+                    settings.Aggregate(0, (o, n) => o + n.MonthTotalCountLimit.Value);
+
+
+                return Json(new ReturnResult()
+                {
+                    success = true,
+                    data = new { totalRest, count },
+                    status = 200
+                });
+            }
+            catch (Exception e)
+            {
+                return Json(new ReturnResult()
+                {
+                    success = false,
+#if DEBUG
+                    msg = e.ToString(),
+
+#else
+                    msg = "内部错误 请联系管理员",
+#endif
+
+                    status = 500,
+                });
+            }
+
+
+        }
+
+        [HttpPost]
+        public IHttpActionResult CalcMessageAndWordCount(CalcModel model)
+        {
+            try
+            {
+                if (model.TemplateID<=0)
+                {
+                    return Json(new ReturnResult()
+                    {
+                        success = false,
+                        msg = "请选择模板"
+                    });
+                }
+
+
+                TemplateService service = new TemplateService(helper);
+
+                var template = service.GetTemplate(model.TemplateID);
+
+                var replacedContent = service.TemplateReplace(template.TemplateContent, new Dictionary<string, string>()
+            {
+                {"姓名","姓名星" },
+                { "通知内容",model.Content},
+                {"日期", DateTime.Now.ToString("yyyy年MM月dd日")},
+
+            });
+
+                var count = GsmModem.CalcMsgLong(replacedContent, "11111111111");
+
+                return Json(new ReturnResult()
+                {
+                    data = new { calcedSMSCount=count, calcedContentCount = replacedContent.Length },success = true
+                });
+
+            }
+            catch (Exception e)
+            {
+                return Json(new ReturnResult()
+                {
+                  success = false,
+                  msg=e.ToString()
+                });
+            }
+
+
+
+        }
+
+        public class CalcModel
+        {
+            public string Content { get; set; }
+            public int TemplateID { get; set; }
         }
 
 

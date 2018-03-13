@@ -12,11 +12,16 @@ namespace SMSPlatform.Services
     {
         private SqlHelper helper;
 
+        private IEnumerable<DepartmentModel> datas;
+
+        
+
         public static readonly int rootID = 656;
 
         public DepartmentService(SqlHelper helper)
         {
             this.helper = helper;
+            datas =  helper.SelectDataTable("select * from Department").Select().Select(x=>new DepartmentModel().SetData(x) as DepartmentModel);
         }
         //获取所有部门递归结果，包括学校(根节点)
         public List<DepModel> GetAll()
@@ -26,7 +31,7 @@ namespace SMSPlatform.Services
             {
                 new DepModel()
                 {
-                    Dep = helper.SelectDataTable($"select * from Department where id = {rootID}").Select().Select(x=>(DepartmentModel)new DepartmentModel().SetData(x)).SingleOrDefault(),
+                    Dep = datas.SingleOrDefault(x => x.ID == rootID),
                     children=returnDepList(rootID)
                 }
             };
@@ -55,8 +60,7 @@ namespace SMSPlatform.Services
         private List<DepModel> returnDepList(int parentID)
         {
             List<DepModel> list = new List<DepModel>();
-            List<DepartmentModel> tempList = helper.SelectDataTable($"select * from Department where PDID = {parentID}")
-                .Select().Select(x => (DepartmentModel) new DepartmentModel().SetData(x)).ToList();
+            List<DepartmentModel> tempList = datas.Where(x=>x.PDID == parentID).ToList();
 
 
             DepModel depModel;
@@ -64,7 +68,7 @@ namespace SMSPlatform.Services
             {
                 depModel = new DepModel();
                 depModel.Dep = item;
-                if (helper.SelectScalar<int>("select count(1) from Department where PDID = " + item.ID) > 0)
+                if (datas.Count(x=>x.PDID == item.ID) > 0)
                 {
                     depModel.children = returnDepList(item.ID.Value);
                 }

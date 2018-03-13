@@ -37,7 +37,7 @@ namespace SMSPlatform.Services
 
         public SMSSendQueueModel GetNextData(string phone)
         {
-            var container = helper.SelectDataTable($"select * from RecordContainer where ID = (select Min(ID) from RecordContainer where SIMsPhone like '%{phone}%' and (status = 0 or status = 1)) and (status = 0 or status = 1)").Select().Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
+            var container = helper.SelectDataTable($"select * from RecordContainer where ID = (select Min(ID) from RecordContainer where SIMsPhone like '%{phone}%' and (status = 5 or status =1))").Select().Select(x => new RecordContainerModel().SetData(x) as RecordContainerModel).SingleOrDefault();
             if (container == null)
             {
                 return null;
@@ -48,6 +48,8 @@ namespace SMSPlatform.Services
                     $"select * from SMSSendQueue where ID = (select Min(ID) from SMSSendQueue where ContainerID = {container.ID}) and (status = 0)").Select().Select(x => new SMSSendQueueModel().SetData(x) as SMSSendQueueModel).SingleOrDefault();
                 if (model == null)
                 {
+                    helper.Update("RecordContainer", new Dictionary<string, object>() {{"Status", 2}},
+                        $"ID = {container.ID}",new List<SqlParameter>());
                     return model;
                 }
                 model.Status = 1;
@@ -62,7 +64,7 @@ namespace SMSPlatform.Services
 
         }
 
-        public void CompleteSMS(int smsID, bool success)
+        public void CompleteSMS(int smsID,string phone, bool success,int actSendCount)
         {
             var conn = helper.GetOpendSqlConnection();
             var tran = conn.BeginTransaction();
@@ -75,12 +77,66 @@ namespace SMSPlatform.Services
 
                 var dic = new Dictionary<string, object>();
                 model.Status = success ? 2 : 3;
+                model.SendTime = DateTime.Now;
+
                 model.GetValues(dic);
                 dic.Remove("ID");
-
-
+                dic["SIMPhone"]=phone;
                 helper.Delete("SMSSendQueue", $" ID = {model.ID}");
                 helper.Insert("SMSSendRecord", dic);
+
+                lock (this)
+                {
+                    var year = model.SendTime.Value.Year;
+                    var month = model.SendTime.Value.Month;
+                    var monthlyFeeRecord = helper.SelectDataTable($"select * from MonthlyFeeRecord where PhoneNumber = '{phone}' and Year = {year} and Month = '{month}'")
+                        .Select().Select(x=>new MonthlyFeeRecordModel().SetData(x) as MonthlyFeeRecordModel).SingleOrDefault();
+                    int monthlyID = -1;
+                    if (monthlyFeeRecord == null)
+                    {
+                        var limitRow = helper.SelectDataTable($"select * from SystemSettings where PhoneNumber = '{phone}'").Select().SingleOrDefault();
+                      
+
+                        monthlyFeeRecord = new MonthlyFeeRecordModel();
+                        monthlyFeeRecord.Month = month;
+                        monthlyFeeRecord.Year = year;
+                        monthlyFeeRecord.MonthLimitRecord =
+                            (int?) limitRow?["MonthTotalCountLimit"] ?? 0;
+                        monthlyFeeRecord.SendCount = actSendCount;
+                        monthlyFeeRecord.PhoneNumber = phone;
+                        var feeDic = new Dictionary<string,object>();
+                        monthlyFeeRecord.GetValues(feeDic);
+                        monthlyID = (int)helper.Insert("MonthlyFeeRecord", feeDic,"OUTPUT inserted.ID");
+                    }
+                    else
+                    {
+                        monthlyID = monthlyFeeRecord.ID.Value;
+                        helper.ExecuteNoneQuery(
+                            $"update MonthlyFeeRecord set SendCount = SendCount+{actSendCount} where ID = {monthlyFeeRecord.ID}");
+                    }
+
+                    var DailyFeeRecord =
+                        helper.SelectDataTable(
+                            $"select * from DailyFeeRecord where PhoneNumber='{phone}' and Date = '{model.SendTime.Value.Date:yyyy-MM-dd}'").Select().Select(x=>new DailyFeeRecordModel().SetData(x) as DailyFeeRecordModel).SingleOrDefault();
+                    if (DailyFeeRecord == null)
+                    {
+                        DailyFeeRecord = new DailyFeeRecordModel();
+                        DailyFeeRecord.Date = model.SendTime.Value;
+                        DailyFeeRecord.MonthlyID = monthlyID;
+                        DailyFeeRecord.PhoneNumber = phone;
+                        DailyFeeRecord.SendCount = actSendCount;
+
+                        var dailyDic = new Dictionary<string,object>();
+                        DailyFeeRecord.GetValues(dailyDic);
+                        helper.Insert("DailyFeeRecord", dailyDic);
+                    }
+                    else
+                    {
+                        helper.ExecuteNoneQuery(
+                            $"update DailyFeeRecord set SendCount = SendCount+{actSendCount} where ID = {DailyFeeRecord.ID}");
+                    }
+
+                }
 
 
                 tran.Commit();

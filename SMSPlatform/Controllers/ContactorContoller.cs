@@ -29,7 +29,7 @@ namespace SMSPlatform.Controllers
         }
 
         [HttpGet]
-        public IHttpActionResult Getcontactor(string name, string phone, [FromUri]string[] tagIds, [FromUri]string[] selectedDeps, int? pageIndex = null, int? pageSize = null)
+        public IHttpActionResult Getcontactor(string name, string phone, [FromUri]string[] tagIds, [FromUri]string[] selectedDeps, int? pageIndex = null, int? pageSize = null,[FromUri]int[] ids = null)
         {
             try
             {
@@ -70,8 +70,16 @@ namespace SMSPlatform.Controllers
                     IEnumerable<int> contactorIds;
                     if (depTagIds.Any())
                     {
-                        contactorIds = helper.SelectDataTable($"select * from ContactorDepartmentTag where DepartmentTagID in {string.Join(",", depTagIds)}").Select().Select(x => (int)x["ContactorID"]);
-                        whereStr += $" and ID in ({string.Join(",", contactorIds.Select(x => x + ""))})";
+                        contactorIds = helper.SelectDataTable($"select * from ContactorDepartmentTag where DepartmentTagID in ({string.Join(",", depTagIds)})").Select().Select(x => (int)x["ContactorID"]);
+
+                        var connectionWord = " and ";
+                        if (tagIds != null && tagIds.Length != 0)
+                        {
+                            connectionWord = "or";
+
+                        }
+
+                        whereStr += $" {connectionWord} ID in ({string.Join(",", contactorIds.Select(x => x + ""))})";
 
                     }
                     else
@@ -80,6 +88,11 @@ namespace SMSPlatform.Controllers
                     }
 
                    
+                }
+
+                if (ids!=null&&ids.Any())
+                {
+                    whereStr += $" and ID in ({string.Join(",", ids)})";
                 }
 
                 var datas = helper.SelectDataTable("select * from contactor " + whereStr, new List<IDataParameter>()).Select().Select(x => new { ContactorName = x["ContactorName"] + "", PhoneNumber = x["PhoneNumber"] + "", ID = x["ID"] + "" });
@@ -121,8 +134,7 @@ namespace SMSPlatform.Controllers
 
                 var results = datas.Select(x => new
                 {
-                    contactor = x
-                    ,
+                    contactor = x,
                     depTags =  depTagRows.Where(y => conDepTagRows.Where(z => z["ContactorID"] + "" == x.ID).Select(z=>z["DepartmentTagID"]+"").Contains(y["ID"] + ""))
                     .Select(y => new
                     {
@@ -175,9 +187,9 @@ namespace SMSPlatform.Controllers
                         {"PhoneNumber", phone},
                         {"Remark", remark}
                     }, "OUTPUT inserted.ID");
-                var nvs = Request.RequestUri.ParseQueryString();
-                var depTagIds = string.IsNullOrWhiteSpace(nvs["depTagIds"]) ? new string[0] : nvs["depTagIds"].Split(',');
-
+//                var nvs = Request.RequestUri.ParseQueryString();
+//                var depTagIds = string.IsNullOrWhiteSpace(nvs["depTagIds"]) ? new string[0] : nvs["depTagIds"].Split(',');
+                var depTagIds = selectedDepTagIds;
                 var existsDepTagIDs = helper.SelectDataTable($"select * from ContactorDepartmentTag where ContactorID = {id}").Select().Select(x=>x["DepartmentTagID"]+"");
 
 
@@ -224,9 +236,11 @@ namespace SMSPlatform.Controllers
             helper.SetTransaction(tran);
             try
             {
+
+
                 helper.Delete("contactor", $" ID = {id}", new List<SqlParameter>());
-                helper.Delete("Tagcontactor", $" contactorID = {id}", new List<SqlParameter>());
-                helper.Delete("DepartmentContractor", $"contactorID={id}", new List<SqlParameter>());
+                helper.Delete("ContactorDepartmentTag", $"ContactorID = {id}", new List<SqlParameter>());
+
 
                 tran.Commit();
                 return Json(new ReturnResult()
@@ -242,7 +256,7 @@ namespace SMSPlatform.Controllers
                 tran.Rollback();
                 return Json(new ReturnResult()
                 {
-                    msg = "删除失败",
+                    msg = ex.ToString(),
                     success = false,
                     status = 500,
                 });
@@ -266,10 +280,10 @@ namespace SMSPlatform.Controllers
                 var nvs = Request.RequestUri.ParseQueryString();
 //                var tagIds = string.IsNullOrWhiteSpace(nvs["tagIds"]) ? new string[0] : nvs["tagIds"].Split(',');
                 var selectedDepTags = string.IsNullOrWhiteSpace(nvs["selectedDepTagIds"]) ? new string[0] : nvs["selectedDepTagIds"].Split(',');
-                helper.Update("contactor",
+                helper.Update("Contactor",
                     new Dictionary<string, object>()
                     {
-                        {"contactorName", name},
+                        {"ContactorName", name},
                         {"PhoneNumber", phone},
                         {"Remark", remark}
                     }, $" ID = {id}", new List<SqlParameter>());
@@ -305,7 +319,7 @@ namespace SMSPlatform.Controllers
                 }
                 if (deletedDepIds.Any())
                 {
-                    helper.Delete("ContactorDepartmentTag", $" DepartmentTagID in ({string.Join(",", deletedDepIds)})");
+                    helper.Delete("ContactorDepartmentTag", $" DepartmentTagID in ({string.Join(",", deletedDepIds)}) and ContactorID = {id}");
                     
                 }
 
@@ -413,6 +427,10 @@ namespace SMSPlatform.Controllers
                 whereStr = contactors == null || contactors.Count() == 0
                     ? " 1=0 "
                     : $" ContactorID in ({string.Join(",", contactors.Select(x => x.ID))})";
+
+
+
+
 
 
                 var tagIds = helper.SelectDataTable("select * from TagContactor where " + whereStr).Select();

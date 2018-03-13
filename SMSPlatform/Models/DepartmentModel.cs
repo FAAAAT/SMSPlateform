@@ -22,7 +22,7 @@ namespace SMSPlatform.Models
 
         public int? PDID
         {
-            get { return dataPool["PDID"] == DBNull.Value ? null : new int?((int)dataPool["PDID"]); }
+            get { return dataPool["PDID"] == DBNull.Value||string.IsNullOrWhiteSpace(dataPool["PDID"]+"") ? null : new int?((int)dataPool["PDID"]); }
             set { dataPool["PDID"] = value; }
         }
 

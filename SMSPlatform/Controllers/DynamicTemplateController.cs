@@ -30,13 +30,6 @@ namespace SMSPlatform.Controllers
                         new MenuItem(){name = "部门标签管理",href = "/pages/departmenttag.html"}
                     },
                 });
-                model.menus.Add(new MenuItem() { name = "联系人", href = "/pages/contactors.html", });
-          
-                model.menus.Add(new MenuItem()
-                {
-                    name = "资费设置",
-                    href = "/pages/MonthlyLimitSettings.html"
-                });
 
                 model.menus.Add(new MenuItem()
                 {
@@ -44,11 +37,21 @@ namespace SMSPlatform.Controllers
                     href = "/pages/tag.html"
                 });
 
+                model.menus.Add(new MenuItem() { name = "联系人", href = "/pages/contactors.html", });
+
+
                 model.menus.Add(new MenuItem()
                 {
                     name = "模板管理",
                     href = "/pages/template.html"
                 });
+
+
+               
+
+               
+
+                
 
                 model.menus.Add(new MenuItem()
                 {
@@ -75,11 +78,27 @@ namespace SMSPlatform.Controllers
                 });
 
                
+              
+
+                model.menus.Add(new MenuItem()
+                {
+                    name="收件箱",
+                    href="/pages/Receiver.html"
+                });
+
                 model.menus.Add(new MenuItem()
                 {
                     name = "资费列表",
                     href = "/pages/MonthlyFeeRecord.html",
                 });
+
+                model.menus.Add(new MenuItem()
+                {
+                    name = "资费设置",
+                    href = "/pages/MonthlyLimitSettings.html"
+                });
+
+
                 model.menus.Add(new MenuItem()
                 {
                     name = "SIM卡设置",

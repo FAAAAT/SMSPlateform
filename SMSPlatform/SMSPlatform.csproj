@@ -120,6 +120,7 @@
     <Compile Include="Controllers\MessageHandler.cs" />
     <Compile Include="Controllers\MessageHub.cs" />
     <Compile Include="Controllers\MonthlyFeeRecordController.cs" />
+    <Compile Include="Controllers\ReceivedController.cs" />
     <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Controllers\SMSManagementController.cs" />
     <Compile Include="Controllers\TagController.cs" />
@@ -134,6 +135,7 @@
     <Compile Include="Models\DepartmentModel.cs" />
     <Compile Include="Models\menuTemplate.cs" />
     <Compile Include="Models\MonthlyFeeRecordModel.cs" />
+    <Compile Include="Models\ReceivedSMSRecordModel.cs" />
     <Compile Include="Models\RecordContainerModel.cs" />
     <Compile Include="Models\ReturnResult.cs" />
     <Compile Include="Models\Selecg2Model.cs" />
@@ -155,6 +157,7 @@
     <Compile Include="Services\DepartmentService.cs" />
     <Compile Include="Services\GSMTaskService.cs" />
     <Compile Include="Services\MonthlyFeeService.cs" />
+    <Compile Include="Services\ReceivedSMSService.cs" />
     <Compile Include="Services\SMSRecord.cs" />
     <Compile Include="Services\SPService.cs" />
     <Compile Include="Services\SystemSettingsService.cs" />
@@ -165,10 +168,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="fonts\glyphicons-halflings-regular.eot" />
-    <None Include="fonts\glyphicons-halflings-regular.ttf" />
-    <None Include="fonts\glyphicons-halflings-regular.woff" />
-    <None Include="fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="fonts\glyphicons-halflings-regular.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="fonts\glyphicons-halflings-regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="fonts\glyphicons-halflings-regular.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="fonts\glyphicons-halflings-regular.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="download\导入模板.xls" />
     <None Include="packages.config" />
     <None Include="Scripts\bootstrapTreeview\css\bootstrap-theme.css.map" />
     <None Include="Scripts\bootstrapTreeview\css\bootstrap.css.map" />
@@ -176,9 +188,9 @@
     <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.ttf" />
     <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.woff" />
     <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.woff2" />
-    <None Include="Scripts\jquery-1.10.2.min.map">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <Content Include="Scripts\jquery-1.10.2.min.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\AsyncUsageAnalyzers.1.0.0-alpha003\analyzers\dotnet\AsyncUsageAnalyzers.dll" />
@@ -190,25 +202,56 @@
     <Content Include="Content\select2.min.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\bootstrap-select2-compatible.css" />
-    <Content Include="fonts\glyphicons-halflings-regular.svg" />
-    <Content Include="Pages\DepartmentTag.html" />
-    <Content Include="Pages\SIMCardManagement.html" />
-    <Content Include="Pages\MonthlyFeeRecord.html" />
-    <Content Include="Pages\SendRecord.html" />
-    <Content Include="Pages\SendQueue.html" />
-    <Content Include="Pages\Department.html" />
-    <Content Include="Pages\Wizard.html" />
-    <Content Include="Pages\MonthlyLimitSettings.html" />
-    <Content Include="Pages\Template.html" />
-    <Content Include="Pages\Contactors.html" />
-    <Content Include="Pages\Login.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="fonts\glyphicons-halflings-regular.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pages\SMSManagement.html" />
-    <Content Include="Pages\Tag.html" />
-    <Content Include="Scripts\bootstrap-notify.js" />
+    <Content Include="Pages\DepartmentTag.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\SIMCardManagement.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\MonthlyFeeRecord.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\SendRecord.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\SendQueue.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\Department.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\Receiver.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\Wizard.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\MonthlyLimitSettings.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\Template.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\Contactors.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\Login.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\SMSManagement.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Pages\Tag.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\bootstrap-notify.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Scripts\bootstrap.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Scripts\bootstrapTreeview\css\bootstrap-theme.css" />
     <Content Include="Scripts\bootstrapTreeview\css\bootstrap-theme.min.css" />
@@ -225,20 +268,40 @@
     <Content Include="Scripts\DateRangePicker\daterangepicker.js" />
     <Content Include="Scripts\DateRangePicker\moment.js" />
     <Content Include="Scripts\jquery-1.10.2.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Scripts\jquery-1.6.4-vsdoc.js" />
-    <Content Include="Scripts\jquery-1.6.4.js" />
-    <Content Include="Scripts\jquery-1.6.4.min.js" />
-    <Content Include="Scripts\jquery.signalR-2.2.2.js" />
-    <Content Include="Scripts\jquery.signalR-2.2.2.min.js" />
-    <Content Include="Scripts\JSHelper.js" />
-    <Content Include="Scripts\main.js" />
-    <Content Include="Scripts\select2.full.min.js" />
-    <Content Include="Scripts\TableSelector.js" />
+    <Content Include="Scripts\jquery-1.6.4-vsdoc.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\jquery-1.6.4.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\jquery-1.6.4.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\jquery.signalR-2.2.2.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\jquery.signalR-2.2.2.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\JSHelper.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\main.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\select2.full.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\TableSelector.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Scripts\uploadifive\Huploadify.css" />
     <Content Include="Scripts\uploadifive\jquery.Huploadify.js" />
-    <Content Include="Scripts\uploadifyLoader.js" />
+    <Content Include="Scripts\uploadifyLoader.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Scripts\uploadify\css\uploadify.css" />
     <Content Include="Scripts\uploadify\img\uploadify-cancel.png" />
     <Content Include="Scripts\uploadify\jquery.uploadify.js" />
@@ -246,14 +309,16 @@
     <Content Include="Scripts\uploadify\swfobject.js" />
     <Content Include="Scripts\uploadify\uploadify.swf" />
     <Content Include="Scripts\URI.min.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Scripts\validator.min.js" />
+    <Content Include="Scripts\validator.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Scripts\vue.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Scripts\vue.min.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>

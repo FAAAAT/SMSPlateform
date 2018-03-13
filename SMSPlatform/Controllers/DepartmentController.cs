@@ -142,8 +142,17 @@ namespace SMSPlatform.Controllers
         {
             try
             {
+                if (!model.PDID.HasValue||string.IsNullOrWhiteSpace(model.DName))
+                {
+                    return Json(new ReturnResult()
+                    {
+                        success = false,
+                        msg="请输入部门信息",
 
-                var pmodel = helper.SelectDataTable($"select * from Department where ID = {model.PDID.Value}").Select().Select(x => new DepartmentModel().SetData(x) as DepartmentModel).SingleOrDefault();
+                    });
+                }
+
+                var pmodel = helper.SelectDataTable($"select * from Department where ID = "+(model.PDID==null?"":model.PDID.Value+"")).Select().Select(x => new DepartmentModel().SetData(x) as DepartmentModel).SingleOrDefault();
                 if (pmodel != null)
                 {
                     model.LevelIndex = pmodel.LevelIndex + 1;

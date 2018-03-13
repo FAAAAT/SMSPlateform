@@ -59,6 +59,7 @@
                     return func.apply(object, args);
                 }
             }
+            ,AbsoluteEarliestDataTime: new Date('2018-03-09')
         };
     }
 } else {

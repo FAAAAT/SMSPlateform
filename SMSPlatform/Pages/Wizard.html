@@ -28,8 +28,13 @@
             window.vue$ = new Vue({
                 el: '#app',
                 data: {
-                    tagName: '', headerAndFooter: {}, datacollections: {}, name: '', phone: '', remark: '',
-                    queryData: { name: '', phone: '', tagIds: [], selectedDeps: [] },
+                    tagName: '',
+                    headerAndFooter: {},
+                    datacollections: {},
+                    name: '',
+                    phone: '',
+                    remark: '',
+                    queryData: { name: '', phone: '', tagIds: [], selectedDeps: [], ids: [] },
                     querySelectedDeps: [],
                     modalData: { selectedDeps: [] },
                     contactorId: '',
@@ -46,12 +51,19 @@
                         containerData: { containerName: '', simPhones: [] }
                     },
                     selectedContactorsDetail: [],
+                    justListSelected: false,
+                    calcedSMSCount: 0,
+                    calcedContentCount: 0,
                 },
                 methods: {
                     //                    onRowDelete: rowDelete, on_edit: on_edit, on_delete: on_delete
                     pageChangeClick: function (diff) {
                         pageChange(null, this.pagerData.currentIndex + 1 + diff);
-                    }
+                    },
+                    on_edit: on_edit,
+                    on_delete: on_delete,
+
+
                 },
 
                 computed: {
@@ -84,6 +96,7 @@
                         this.updateData.actualContent = this.innerTemplateContent;
                         return temp;
                     }
+                  
                 }
 
 
@@ -98,21 +111,41 @@
 
             });
             vue$.$watch('updateData.selectedContactors', function (newv, oldv) {
-                $.ajax({
-                    url: '/api/contactor/GetContactorDetails',
-                    type: 'get',
-                    data: { ids: newv }
-                    , success: function (d) {
-                        if (d.success) {
-                            console.log('selectedContactors changed');
-                            console.log(newv);
-                            console.log(d);
-                            vue$.selectedContactorsDetail = d.data;
-                        } else {
-                            $.notifyError(d.msg);
+                if (newv && newv.length) {
+                    $.ajax({
+                        url: '/api/contactor/GetContactor',
+                        type: 'get',
+                        traditional: true,
+                        data: { name: '', phone: '', tagIds: [], selectedDeps: [], ids: newv }
+                        , success: function (d) {
+                            if (d.success) {
+                                console.log(newv);
+
+                                vue$.selectedContactorsDetail = d.data;
+
+                            } else {
+                                $.notifyError(d.msg);
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    vue$.selectedContactorsDetail = [];
+
+                }
+
+
+
+            });
+
+            vue$.$watch('justListSelected', function (nv, ov) {
+                if (nv) {
+                    vue$.queryData.ids = vue$.updateData.selectedContactors;
+
+
+                } else {
+                    vue$.queryData.ids = [];
+                }
+
             });
 
 
@@ -128,16 +161,19 @@
                             vue$.$data.datacollections = data.data;
                             vue$.$data.pagerData.total = data.total;
                             if (!window.tableSelector) {
-                                window.tableSelector = InitTableSelectable($('table')[0], {
-                                    dataHidden: '#tableSelectorData'
-                                    , AllData: data.allIds
-                                    , lazyCallback: vue$.$nextTick
-                                    , onchange: function () {
-                                        vue$.updateData.selectedContactors = window.tableSelector.GetIDs();
-                                    }
-                                });
-                                vue$.pagerData.totalPageNum = data.allIds.length;
+                                window.tableSelector = InitTableSelectable($('table')[0],
+                                    {
+                                        dataHidden: '#tableSelectorData',
+                                        AllData: data.allIds,
+                                        lazyCallback: vue$.$nextTick,
+                                        onchange: function () {
+                                            vue$.updateData.selectedContactors = window.tableSelector.GetIDs();
+                                        }
+                                    });
+                            } else {
+                                window.tableSelector.SetAllData(data.allIds);
                             }
+                            vue$.pagerData.totalPageNum = data.allIds.length;
 
 
                             vue$.$nextTick(function () {
@@ -152,6 +188,10 @@
                         }
                     }
                 });
+
+
+
+
             }
             window.getData = getData;
             pageChange();
@@ -200,7 +240,7 @@
                     vue$.templates = data.data;
                 }
             });
-          
+
             var uri = URI(window.location.href);
             var querys = uri.search(true);
             if (querys["containerId"]) {
@@ -213,18 +253,27 @@
                     , success: function (data) {
                         console.log(data);
                         if (data.success) {
-                            if (window.tableSelector) {
-                                window.tableSelector.SetSelectedIDs(data.data.sendQueues.map((e, i) => e.ToContactorID));
-                                vue$.updateData.containerData.containerName = data.data.container.ContainerName;
-                                vue$.updateData.templateID = data.data.sendQueues[0]
-                                    ? data.data.sendQueues[0].TemplateID
-                                    : '';
-                                vue$.innerTemplateContent = data.data.sendQueues[0]
-                                    ? data.data.sendQueues[0].InnerTemplateContent
-                                    : '';
-                                $('#sel_simSelectorContainer').val(data.data.container.SIMsPhone);
 
-                            }
+                            var handle = setInterval(() => {
+                                if (window.tableSelector) {
+                                    console.log('msg print');
+                                    console.log(data.data.sendQueues);
+                                    console.log(data.data.containerName);
+
+                                    window.tableSelector.SetSelectedIDs(data.data.sendQueues.map((e, i) => e.ToContactorID));
+                                    vue$.updateData.containerData.containerName = data.data.container.ContainerName;
+                                    vue$.updateData.templateID = data.data.sendQueues[0]
+                                        ? data.data.sendQueues[0].TemplateID
+                                        : '';
+                                    vue$.innerTemplateContent = data.data.sendQueues[0]
+                                        ? data.data.sendQueues[0].InnerTemplateContent
+                                        : '';
+                                    $('#sel_simSelectorContainer').val(data.data.container.SIMsPhone);
+                                    clearInterval(handle);
+                                }
+                            }, 1000);
+
+
 
                         } else {
                             $.notifyError(data.msg);
@@ -243,8 +292,6 @@
 
         });
     </script>
-
-
 
 </head>
 <body>
@@ -268,7 +315,6 @@
                                     <a v-bind:href="menuChild.href">{{menuChild.name}}</a>
                                 </li>
                             </ul>
-
                         </li>
                         <li v-else>
                             <a runat="server" v-bind:href="menu.href">{{menu.name}}</a>
@@ -308,11 +354,6 @@
                             <input class="form-control" id="queryPhone" name="queryName" v-model="queryData.phone" type="text" />
                         </div>
 
-                        <div id="fuckStupidS2" class="form-group">
-                            <label class="control-label" for="queryTagSelect">标签</label>
-                            <select multiple="multiple" id="queryTagSelect"></select>
-                        </div>
-
 
                         <div class="form-group">
                             <label class="control-label">
@@ -321,11 +362,20 @@
                             <input type="text" v-model="queryDNames" onclick="openQueryDepModal(event)" readonly="readonly" class="form-control" />
                         </div>
 
+                        <div id="fuckStupidS2" class="form-group">
+                            <label class="control-label" for="queryTagSelect">标签</label>
+                            <select multiple="multiple" id="queryTagSelect"></select>
+                        </div>
+
+
+
+
 
                     </div>
 
                     <button class="btn btn-primary" onclick="on_add(event)">添加</button>
-                    <button Class="btn btn-primary" onclick="vue$.pagerData.currentIndex = 0;getData(true);">查询</button>
+                    <button Class="btn btn-primary" onclick="vue$.pagerData.currentIndex = 0;pageChange();">查询</button>
+                    <input type="checkbox" value="1" v-model="justListSelected" id="chk_justListSelected" /><label for="chk_justListSelected">只显示已选择的</label>
                     <div style="min-height: 44vh">
                         <table class="table table-striped table-hover table-bordered">
                             <thead>
@@ -333,22 +383,19 @@
                                     <th><input type="checkbox" data-id="all" v-bind:onchange="'tableSelector.OnSelectChange(event, { pageIndex:'+pagerData.currentIndex+'})'" />全选</th>
                                     <th>联系人名称</th>
                                     <th>联系人电话</th>
-                                    <th>标签</th>
-                                    <th>部门</th>
+                                    <th>部门->标签</th>
                                     <th>操作</th>
                                 </tr>
-
                             </thead>
                             <tbody>
                                 <tr v-for="row in datacollections">
                                     <td><input type="checkbox" v-bind:data-id="row.contactor.ID" v-bind:onchange="'tableSelector.OnSelectChange(event, { pageIndex:'+pagerData.currentIndex+'})'" /></td>
                                     <td>{{row.contactor.ContactorName}}</td>
                                     <td>{{row.contactor.PhoneNumber}}</td>
-                                    <td>{{row.tags.map((e,i)=>e.TagName).join()}}</td>
-                                    <td>{{row.departments.map((e,i)=>e.DName).join()}}</td>
+                                    <td>{{row.depTags?row.depTags.map((e,i)=>e.department.parent.DName+'->'+e.department.child.DName+'->'+e.tag.TagName).join():''}}</td>
                                     <td>
-                                        <button class="btn btn-danger" v-bind:onclick="'on_delete('+row.contactor.ID+')'">删除</button>
-                                        <button class="btn btn-danger" v-bind:onclick="'on_edit('+row.contactor.ID+')'">编辑</button>
+                                        <button class="btn btn-danger" v-on:click="on_delete(row.contactor.ID)">删除</button>
+                                        <button class="btn btn-primary" v-on:click="on_edit(row.contactor.ID)">编辑</button>
 
                                     </td>
                                 </tr>
@@ -406,7 +453,7 @@
 
                             <div class="form-group">
                                 <label for="sel_template">选择模板</label>
-                                <select required v-model="updateData.templateID" id="sel_template" class="form-control">
+                                <select onchange="templateOnChange()" required v-model="updateData.templateID" id="sel_template" class="form-control">
                                     <option disabled>请选择</option>
                                     <option v-for="template in templates" v-bind:value="template.ID">{{template.TemplateName}}</option>
                                 </select>
@@ -416,7 +463,8 @@
 
                             <div class="form-group">
                                 <label for="txt_templateContent">模板内容</label>
-                                <textarea required id="txt_templateContent" class="form-control" v-model="innerTemplateContent"></textarea>
+                                <textarea onchange="templateOnChange()"  required id="txt_templateContent" class="form-control" v-model="innerTemplateContent"></textarea>
+                                <span>已使用字数(含模板){{calcedContentCount}},合{{calcedSMSCount}}条</span>
                                 <div class="hid help-block with-errors"></div>
 
                             </div>
@@ -428,6 +476,7 @@
                 <div role="tabpanel" class="tab-pane fade" id="confirm">
                     <h1>最后确认一下</h1>
                     <h3></h3>
+                    <p>选择的联系人数量:{{selectedContactorsDetail.length}}</p>
                     <div style="min-height: 65vh">
                         <div style="min-height:50vh; max-height: 50vh; overflow: auto;">
                             <table class="table table-striped table-hover table-bordered">
@@ -435,8 +484,8 @@
                                     <tr>
                                         <th>联系人名称</th>
                                         <th>联系人电话</th>
-                                        <th>部门</th>
-                                        <th>标签</th>
+                                        <th>部门->标签</th>
+
                                     </tr>
 
                                 </thead>
@@ -444,8 +493,8 @@
                                     <tr v-for="row in selectedContactorsDetail">
                                         <td>{{row.contactor.ContactorName}}</td>
                                         <td>{{row.contactor.PhoneNumber}}</td>
-                                        <td>{{row.departments.map((e,i)=>e.DName).join(',')}}</td>
-                                        <td>{{row.tags.map((e,i)=>e.TagName).join(',')}}</td>
+                                        <td>{{row.depTags?row.depTags.map((e,i)=>e.department.parent.DName+'->'+e.department.child.DName+'->'+e.tag.TagName).join():''}}</td>
+
                                     </tr>
                                 </tbody>
                             </table>
@@ -519,26 +568,17 @@
                                 <label for="remark" class="control-label">备注</label>
                                 <textarea class="form-control" v-model="remark" id="remark"></textarea>
                             </div>
+                            <!--                            用于选择已确定的对应关系-->
                             <div class="form-group">
-                                <label for="tagSelect" class="control-label">标签</label>
-                                <select class="form-control" style="width: 100%" id="tagSelect" multiple="multiple" name="tagSelect"></select>
-                            </div>
-
-
-                            <div class="form-group">
-                                <h3 class="treetitle">选择部门</h3>
-                                <input type="text" class="form-control" onchange="modalTreeView.treeOnSearch(event)" onkeydown="modalTreeView.searchOnKeypress(event)" />
-                                <div id="modalDepartmentTreeView" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll;"></div>
-                                <div style="text-align: center; height: 60px; margin-top: 10px;" class="loadimg-div">
-                                    <img src="/Content/Images/loading.gif" style="width: 30px;" class="loadimg" />
-                                </div>
+                                <label for="depTagSelect" class="control-label">标签</label>
+                                <select class="form-control" style="width: 100%" id="depTagSelect" multiple name="tagSelect"></select>
                             </div>
 
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" onclick="$('#addcontactor').submit()" class="btn btn-primary">Send message</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" onclick="$('#addcontactor').submit()" class="btn btn-primary">提交</button>
                     </div>
                 </div>
             </div>
@@ -597,7 +637,7 @@
                                     remark: vue$.remark,
                                     tagIds: $('#tagSelect').val(),
                                     selectedDeps: vue$.modalData.selectedDeps.map((me, mi) => me.MID),
-
+                                    selectedDepTagIds: $('#depTagSelect').val(),
                                 },
                                 success: function (data) {
                                     if (data.success) {
@@ -620,7 +660,7 @@
                                     remark: vue$.remark,
                                     tagIds: $('#tagSelect').val(),
                                     selectedDeps: vue$.modalData.selectedDeps.map((me, mi) => me.MID),
-
+                                    selectedDepTagIds: $('#depTagSelect').val(),
                                 },
                                 success: function (data) {
                                     if (data.success) {
@@ -653,6 +693,7 @@
                             success: function (data) {
                                 if (data.success) {
                                     $.notifySuccess(data.msg, '');
+                                    window.location.href = '/pages/SendQueue.html';
                                 } else {
                                     $.notifyError(data.msg, '');
                                 }
@@ -668,6 +709,7 @@
                             success: function (data) {
                                 if (data.success) {
                                     $.notifySuccess(data.msg, '');
+                                    window.location.href = '/pages/SendQueue.html';
                                 } else {
                                     $.notifyError(data.msg, '');
                                 }
@@ -685,10 +727,13 @@
             });
         });
 
-
-
         function on_add(event) {
             vue$.contactorId = '';
+
+            vue$.name = '';
+            vue$.phone = '';
+            vue$.remark = '';
+
 
             initTagSelect2('');
 
@@ -729,7 +774,6 @@
 
         }
 
-
         function on_delete(contactorId) {
             $.ajax({
                 traditional: true,
@@ -747,30 +791,29 @@
             });
         }
 
-
-
         function submit() {
             $('#form_task').submit();
         }
 
-
         function initTagSelect2(contactorId, callback) {
             $.ajax({
                 traditional: true,
-                url: '/api/tag/Select2GetTags',
+                url: '/api/tag/Select2GetDepartmentTags',
                 method: 'get',
                 data: { id: contactorId },
                 success: function (data) {
                     $('tagSelect').val(null);
                     if (data.success) {
-                        $('#tagSelect').select2({ data: data.data.results });
+                        $('#depTagSelect').select2({
+                            data: data.data.results,
+                        });
                         setTimeout(function () {
                             //                            console.log($('#tagSelect').hasClass("select2-hidden-accessible"));
                             var selecteds = data.data.results.filter((e, i) => { return e.selected; });
                             var selectedIds = selecteds.map((e, i) => e.id);
                             //                            console.log('set values:' + selectedIds);
-                            $('#tagSelect').val(selectedIds);
-                            $('#tagSelect').trigger('change');
+                            $('#depTagSelect').val(selectedIds);
+                            $('#depTagSelect').trigger('change');
                         }, 300);
                         if (callback) {
                             callback();
@@ -782,6 +825,36 @@
                 }
             });
         }
+
+        function templateOnChange() {
+
+            vue$.$nextTick(function() {
+                $.ajax({
+                    url: '/api/message/CalcMessageAndWordCount', type: 'post', contentType: 'application/json', data: JSON.stringify({
+                        Content: vue$.updateData.actualContent,
+                        TemplateID: vue$.updateData.templateID,
+
+                    }),
+                    success: (data) => {
+                        if (data.success) {
+                            vue$.calcedSMSCount = data.data.calcedSMSCount;
+                            vue$.calcedContentCount = data.data.calcedContentCount;
+                            return data.data;
+
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
+
+                    },
+                    error: (data) => {
+                        $.notifyError(data, '');
+                    },
+                });
+                
+            });
+
+        }
+
 
         function pageChange(event, pageIndex, pageSize) {
             pageIndex = pageIndex ? pageIndex - 1 : 0;
@@ -797,15 +870,14 @@
 
         }
 
-
         function openQueryDepModal() {
             $('#departemntModal').modal('show');
         }
 
         var modalTreeView = $.lymiTreeSelector({
             treeviewID: 'modalDepartmentTreeView',
-            treeviewOptions: { multiSelect: true,color: '#4280cd' },
-         
+            treeviewOptions: { multiSelect: true, color: '#4280cd' },
+
             requestUrl: '/api/Department/GetDepartmentTreeData',
             onClientSelected: function (data) {
                 vue$.modalData.selectedDeps = data;
@@ -816,9 +888,10 @@
             treeviewID: 'queryDepartmentTreeView',
             treeviewOptions: { multiSelect: true, color: '#4280cd' },
             requestUrl: '/api/Department/GetDepartmentTreeData',
-         
-            onClientSelected: function (data) {
 
+            onClientSelected: function (data) {
+                console.log(data);
+                vue$.queryData.selectedDeps = data.map((e, i) => e.MID);
                 vue$.querySelectedDeps = data;
             }
         });
@@ -841,7 +914,6 @@
             $('a[data-Index=' + vue$.tabNav.currentIndex + ']').tab('show');
 
         }
-
 
     </script>
 

@@ -63,23 +63,27 @@
 
 
             function rowDelete(id) {
-                $.ajax({
-                    url: '/api/tag/DeleteTag', method: 'get', data: { tagID: id }, success: function (data) {
-                        if (data.success) {
-                            if (data.status == 200) {
-                                $.notifySuccess(data.msg, '');
-                            } else if (data.status == 500) {
 
-                            } else if (data.status == 302) {
-                                window.location.href = data.data;
+                if (confirm('您的删除操作将会影响所有关联的部门标签,以及部门标签对应的用户。请在删除前仔细确认部门标签的状态')) {
+                    $.ajax({
+                        url: '/api/tag/DeleteTag', method: 'get', data: { tagID: id }, success: function (data) {
+                            if (data.success) {
+                                if (data.status == 200) {
+                                    $.notifySuccess(data.msg, '');
+                                } else if (data.status == 500) {
+
+                                } else if (data.status == 302) {
+                                    window.location.href = data.data;
+                                }
+
+                                getData();
+                            } else {
+                                $.notifyError(data.msg, '');
                             }
-
-                            getData();
-                        } else {
-                            $.notifyError(data.msg, '');
                         }
-                    }
-                });
+                    });
+                }
+                
             }
 
         });
@@ -191,8 +195,8 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" onclick="$('#addcontactor').submit()" class="btn btn-primary">Send message</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" onclick="$('#addcontactor').submit()" class="btn btn-primary">提交</button>
                     </div>
                 </div>
             </div>

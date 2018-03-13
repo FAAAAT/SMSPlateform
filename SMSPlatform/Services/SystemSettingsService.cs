@@ -30,6 +30,9 @@ namespace SMSPlatform.Services
 
             model.GetValues(dic);
             dic.Remove("ID");
+            helper.Update("MonthlyFeeRecord",
+                new Dictionary<string, object>() {{"MonthLimitRecord", model.MonthTotalCountLimit}},
+                $"PhoneNumber = '{model.PhoneNumber}' and MonthLimitRecord = 0",new List<SqlParameter>());
             return (int)helper.Insert("SystemSettings", dic, "OUTPUT inserted.ID");
 
         }

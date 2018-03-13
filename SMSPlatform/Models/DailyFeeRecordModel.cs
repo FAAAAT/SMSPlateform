@@ -32,5 +32,11 @@ namespace SMSPlatform.Models
             set { dataPool["Date"] = value; }
         }
 
+        public int? MonthlyID
+        {
+            get { return dataPool["MonthlyID"] == DBNull.Value ? null : new int?((int)dataPool["MonthlyID"]); }
+            set { dataPool["MonthlyID"] = value; }
+        }
+
     }
 }
