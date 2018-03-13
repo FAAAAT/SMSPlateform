@@ -80,6 +80,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.FileSystem.Primitives.4.0.1\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
     </Reference>
@@ -149,6 +150,11 @@
     <Compile Include="OpenXMLHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Services\AuthenticationService.cs" />
     <Compile Include="Services\AuthorizeAttributeOverride.cs" />
     <Compile Include="Services\ContractorService.cs" />
@@ -168,6 +174,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Content Include="Content\DataRangePicker\daterangepicker.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Images\loading.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="fonts\glyphicons-halflings-regular.eot">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -180,14 +192,30 @@
     <Content Include="fonts\glyphicons-halflings-regular.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="download\导入模板.xls" />
+    <None Include="download\导入模板.xls">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
-    <None Include="Scripts\bootstrapTreeview\css\bootstrap-theme.css.map" />
-    <None Include="Scripts\bootstrapTreeview\css\bootstrap.css.map" />
-    <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.eot" />
-    <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.ttf" />
-    <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.woff" />
-    <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.woff2" />
+    <None Include="Scripts\bootstrapTreeview\css\bootstrap-theme.css.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\bootstrapTreeview\css\bootstrap.css.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Resources\图标.ico" />
+    <None Include="Resources\n18.png" />
     <Content Include="Scripts\jquery-1.10.2.min.map">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -197,11 +225,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.css">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\select2.min.css" />
-    <Content Include="Content\Site.css" />
-    <Content Include="Content\bootstrap-select2-compatible.css" />
+    <Content Include="Content\select2.min.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Site.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="fonts\glyphicons-halflings-regular.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -253,20 +284,48 @@
     <Content Include="Scripts\bootstrap.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Scripts\bootstrapTreeview\css\bootstrap-theme.css" />
-    <Content Include="Scripts\bootstrapTreeview\css\bootstrap-theme.min.css" />
-    <Content Include="Scripts\bootstrapTreeview\css\bootstrap-treeview.css" />
-    <Content Include="Scripts\bootstrapTreeview\css\bootstrap.css" />
-    <Content Include="Scripts\bootstrapTreeview\css\bootstrap.min.css" />
-    <Content Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.svg" />
-    <Content Include="Scripts\bootstrapTreeview\js\bootstrap-treeview.js" />
-    <Content Include="Scripts\bootstrapTreeview\js\bootstrap-treeview.min.js" />
-    <Content Include="Scripts\bootstrapTreeview\js\bootstrap.js" />
-    <Content Include="Scripts\bootstrapTreeview\js\bootstrap.min.js" />
-    <Content Include="Scripts\bootstrapTreeview\js\npm.js" />
-    <Content Include="Scripts\bootstrapTreeview\lymiTreeView_jquery.js" />
-    <Content Include="Scripts\DateRangePicker\daterangepicker.js" />
-    <Content Include="Scripts\DateRangePicker\moment.js" />
+    <Content Include="Scripts\bootstrapTreeview\css\bootstrap-theme.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\bootstrapTreeview\css\bootstrap-theme.min.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\bootstrapTreeview\css\bootstrap-treeview.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\bootstrapTreeview\css\bootstrap.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\bootstrapTreeview\css\bootstrap.min.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\bootstrapTreeview\js\bootstrap-treeview.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\bootstrapTreeview\js\bootstrap-treeview.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\bootstrapTreeview\js\bootstrap.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\bootstrapTreeview\js\bootstrap.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\bootstrapTreeview\js\npm.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\bootstrapTreeview\lymiTreeView_jquery.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\DateRangePicker\daterangepicker.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\DateRangePicker\moment.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Scripts\jquery-1.10.2.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -297,17 +356,33 @@
     <Content Include="Scripts\TableSelector.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Scripts\uploadifive\Huploadify.css" />
-    <Content Include="Scripts\uploadifive\jquery.Huploadify.js" />
+    <Content Include="Scripts\uploadifive\Huploadify.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\uploadifive\jquery.Huploadify.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Scripts\uploadifyLoader.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Scripts\uploadify\css\uploadify.css" />
-    <Content Include="Scripts\uploadify\img\uploadify-cancel.png" />
-    <Content Include="Scripts\uploadify\jquery.uploadify.js" />
-    <Content Include="Scripts\uploadify\jquery.uploadify.min.js" />
-    <Content Include="Scripts\uploadify\swfobject.js" />
-    <Content Include="Scripts\uploadify\uploadify.swf" />
+    <Content Include="Scripts\uploadify\css\uploadify.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\uploadify\img\uploadify-cancel.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\uploadify\jquery.uploadify.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\uploadify\jquery.uploadify.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\uploadify\swfobject.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\uploadify\uploadify.swf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Scripts\URI.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -336,8 +411,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Content\Images\" />
     <Folder Include="Upload\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

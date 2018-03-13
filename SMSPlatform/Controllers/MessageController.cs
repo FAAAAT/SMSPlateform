@@ -195,7 +195,7 @@ namespace SMSPlatform.Controllers
 #if DEBUG
                     msg = ex.ToString(),
 #else 
-                    msg = ex.toString(),
+                    msg = ex.ToString(),
 #endif
                     success = false,
                     status = 500
@@ -235,7 +235,7 @@ namespace SMSPlatform.Controllers
 #if DEBUG
                     msg = ex.ToString(),
 #else 
-                    msg = ex.toString(),
+                    msg = ex.ToString(),
 #endif
                     success = false,
                     status = 500

@@ -57,7 +57,7 @@ namespace GSMMODEM
 
             _com.PortName = comPort;          //
             _com.BaudRate = baudRate;
-            _com.ReadTimeout = 5000;         //读超时时间 发送短信时间的需要
+            _com.ReadTimeout = 10000;         //读超时时间 发送短信时间的需要
             _com.RtsEnable = true;            //必须为true 这样串口才能接收到数据
 
             _com.DataReceived += new EventHandler(sp_DataReceived);
@@ -205,7 +205,7 @@ namespace GSMMODEM
             }
             if (temp.Length > 8)
             {
-                if (temp.Substring(0, 6) == "+CMTI:")
+                if (temp.Trim().Substring(0, 6).Contains("+CMTI:"))
                 {
                     newMsgIndexQueue.Enqueue(Convert.ToInt32(temp.Split(',')[1]));  //存储新信息序号
                     OnSmsRecieved(e);                                //触发事件
@@ -462,6 +462,18 @@ namespace GSMMODEM
                 Status = GSMModemStatus.StandBy;
             }
 
+        }
+
+        /// <summary>
+        /// 预先计算短信条数
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="phone"></param>
+        /// <returns></returns>
+        public static int CalcMsgLong(string msg,string phone)
+        {
+            PDUEncoding encoding = new PDUEncoding();
+            return encoding.PDUEncoder(phone, msg).Count;
         }
 
         #endregion 发送短信

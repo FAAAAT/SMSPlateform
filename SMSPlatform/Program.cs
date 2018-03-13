@@ -179,10 +179,17 @@ namespace SMSPlatform
         }
         public static string GetFilePath(string relPath)
         {
+#if DEBUG
             return Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory
                 , "..\\..\\"
                 , relPath.TrimStart('/').Replace('/', '\\'));
+#else
+            return Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory
+                , relPath.TrimStart('/').Replace('/', '\\'));
+#endif
+
         }
 
         public Task SetResponse(IOwinContext context, string path)

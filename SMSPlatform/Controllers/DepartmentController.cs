@@ -193,6 +193,15 @@ namespace SMSPlatform.Controllers
             helper.SetTransaction(tran);
             try
             {
+                var children = helper.SelectDataTable($"select * from Department where PDID = {id}").Select();
+                if (children.Any())
+                {
+                    return Json(new ReturnResult(){
+                        success = false,
+                        msg="该部门拥有下属部门，请先删除下属部门",
+                        status = 500,
+                    } );
+                }
 
                 var rowDeps = helper.SelectDataTable($"select * from DepartmentTag where DepartmentID = {id}").Select();
 
