@@ -34,11 +34,7 @@
                 },
 
 //                methods: { onRowDelete: rowDelete,on_edit:on_edit },
-                methods: {
-                    formatDate: function(date) {
-                        return moment(date).format('YYYY-MM-DD hh:mm:ss');
-                    }
-                }
+
             });
 
             vue$.$watch('updateData.ID', function (nv, ov) {
@@ -166,7 +162,7 @@
         
 
         <div class="container body-content">
-            <h1>收件箱</h1>
+            <h1>标签管理</h1>
             <h3></h3>
             <div class="form-inline">
                 <div class="form-group">
@@ -197,7 +193,7 @@
                     </thead>
                     <tbody v-for="row in datacollections">
                         <tr>
-                            <td>{{formatDate(row.ReceiveDate)}}</td>
+                            <td>{{row.ReceiveDate}}</td>
                             <td>{{row.SMSContent}}</td>
                             <td>{{row.PhoneNumber}}</td>
                             <td>{{row.ContactorName}}</td>
