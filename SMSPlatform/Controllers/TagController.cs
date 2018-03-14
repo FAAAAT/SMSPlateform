@@ -481,6 +481,16 @@ namespace SMSPlatform.Controllers
             try
             {
 
+                var exists = helper.SelectDataTable($"select * from DepartmentTag where TagID = {tagId} and DepartmentID = {depId} and ID <> {depTagId}").Select();
+                if (exists.Any())
+                {
+                    return Json(new ReturnResult()
+                    {
+                        success = false,
+                        msg="已存在该标签",
+                    });
+                }
+
                 helper.Update("DepartmentTag", new Dictionary<string, object>() { { "DepartmentID", depId }, { "TagID", tagId } }, $" ID = {depTagId}", new List<SqlParameter>());
 
 

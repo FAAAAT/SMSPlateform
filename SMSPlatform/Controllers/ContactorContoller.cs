@@ -73,11 +73,11 @@ namespace SMSPlatform.Controllers
                         contactorIds = helper.SelectDataTable($"select * from ContactorDepartmentTag where DepartmentTagID in ({string.Join(",", depTagIds)})").Select().Select(x => (int)x["ContactorID"]);
 
                         var connectionWord = " and ";
-                        if (tagIds != null && tagIds.Length != 0)
-                        {
-                            connectionWord = "or";
-
-                        }
+//                        if (tagIds != null && tagIds.Length != 0)
+//                        {
+//                            connectionWord = "or";
+//
+//                        }
 
                         whereStr += $" {connectionWord} ID in ({string.Join(",", contactorIds.Select(x => x + ""))})";
 

@@ -379,10 +379,10 @@
                                 },
                                 success: function (data) {
                                     if (data.success) {
-                                        $.notifySuccess(data.msg);
+                                        $.notifySuccess(data.msg,'');
                                         getData();
                                     } else {
-                                        $.notifyError(data.msg);
+                                        $.notifyError(data.msg,'');
                                     }
                                 }
                             });
@@ -402,10 +402,10 @@
                                 },
                                 success: function (data) {
                                     if (data.success) {
-                                        $.notifySuccess(data.msg);
+                                        $.notifySuccess(data.msg,'');
                                         getData();
                                     } else {
-                                        $.notifyError(data.msg);
+                                        $.notifyError(data.msg,'');
                                     }
                                 }
                             });
@@ -473,10 +473,10 @@
                     traditional: true,
                     url: '/api/contactor/deletecontactor', method: 'get', data: { id: contactorId }, success: function (data) {
                         if (data.success) {
-                            $.notifySuccess(data.msg);
+                            $.notifySuccess(data.msg,'');
                             getData(true);
                         } else {
-                            $.notifyError(data.msg);
+                            $.notifyError(data.msg,'');
                         }
                     }
                 });
@@ -517,7 +517,7 @@
                         //                        console.log(data);
 
                     } else {
-                        $.notifyError(data.msg);
+                        $.notifyError(data.msg,'');
                     }
                 }
             });
