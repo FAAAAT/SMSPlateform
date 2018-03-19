@@ -10,11 +10,7 @@ namespace SMSPlatform.Models
  
     public class contactorModel : DataRowModel
     {
-        public int? ID
-        {
-            get { return (int?)dataPool["ID"]; }
-            set { dataPool["ID"] = value; }
-        }
+        
 
         public string ContactorName
         {

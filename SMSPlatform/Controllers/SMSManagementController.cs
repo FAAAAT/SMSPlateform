@@ -32,7 +32,7 @@ namespace SMSPlatform.Controllers
 
 
         [HttpGet]
-        [Authorize(Users = "admin")]
+        [LymiAuthorize(Roles = "admin")]
         public IHttpActionResult SendSMS(string phone, string msg, string selectedCom)
         {
             GsmModem gsm = new GsmModem(selectedCom, SPService.BandRate);
@@ -44,7 +44,9 @@ namespace SMSPlatform.Controllers
 
                 var result = new ReturnResult();
 
-                if (!gsm.SendMsg(phone, msg, out string error, out int count))
+                if (!gsm.SendMsg(phone, msg, out string
+                error, out
+                int count))
                 {
                     result.msg = error;
                     result.success = false;
@@ -70,7 +72,7 @@ namespace SMSPlatform.Controllers
 
 
         [HttpGet]
-        [Authorize(Users = "admin")]
+        [LymiAuthorize(Roles = "admin")]
         public IHttpActionResult StartContainer(int containerId)
         {
             SqlConnection connection = new SqlConnection(ConnectionStringUtility.DefaultConnectionStrings);
@@ -81,7 +83,7 @@ namespace SMSPlatform.Controllers
             {
                 helper.Update("RecordContainer", new Dictionary<string, object>()
                     {
-                        {"Status",5}
+                        {"Status", 5}
                     }, $" ID ={containerId}",
                     new List<SqlParameter>());
                 GSMTaskService taskService = AppDomain.CurrentDomain.GetData("TaskService") as GSMTaskService;
@@ -109,6 +111,51 @@ namespace SMSPlatform.Controllers
 
         }
 
+
+
+        [HttpGet]
+        [LymiAuthorize(Roles = "admin")]
+        public IHttpActionResult PauseContainer(int containerId)
+        {
+
+            SqlConnection connection = new SqlConnection(ConnectionStringUtility.DefaultConnectionStrings);
+            connection.Open();
+            SqlHelper helper = new SqlHelper();
+            helper.SetConnection(connection);
+            try
+            {
+                helper.Update("RecordContainer", new Dictionary<string, object>()
+                    {
+                        {"Status", 6}
+                    }, $" ID ={containerId}",
+                    new List<SqlParameter>());
+                GSMTaskService taskService = AppDomain.CurrentDomain.GetData("TaskService") as GSMTaskService;
+                taskService.Start();
+                return Json(new ReturnResult()
+                {
+                    success = true,
+                    status = 200,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new ReturnResult()
+                {
+                    success = false,
+                    msg = ex.ToString(),
+                    status = 500,
+                });
+            }
+            finally
+            {
+                helper.Dispose();
+            }
+
+
+
+        }
+
+
         [HttpGet]
         public IHttpActionResult GetStatus()
         {
@@ -131,7 +178,7 @@ namespace SMSPlatform.Controllers
                     status = 500,
                 });
             }
-         
+
         }
 
 

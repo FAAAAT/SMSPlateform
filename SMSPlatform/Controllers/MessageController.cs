@@ -282,7 +282,7 @@ namespace SMSPlatform.Controllers
                         {
                             com = x.Key,
                             text = x.Value + "  资费情况:" + (model == null
-                                       ? setting == null ? "暂无数据" : "0/" + setting["MonthLimitRecord"]
+                                       ? setting == null ? "暂无数据" : "0/" + setting["MonthTotalCountLimit"]
                                        : (model.SendCount + "/" +
                                           model.MonthLimitRecord)),
                             id = x.Value,

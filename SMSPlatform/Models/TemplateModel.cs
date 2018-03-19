@@ -8,14 +8,7 @@ namespace SMSPlatform.Models
 {
     public class TemplateModel : DataRowModel
     {
-        public int? ID
-        {
-            get
-            {
-                return (int?)dataPool["ID"];
-            }
-            set { dataPool["ID"] = value; }
-        }
+        
 
         public string TemplateName
         {

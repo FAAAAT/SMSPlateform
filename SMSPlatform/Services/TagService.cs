@@ -101,7 +101,7 @@ namespace SMSPlatform.Services
 
             var tagIds = helper.SelectDataTable($"select * from Tagcontactor where contactorID = {id}").Select().Select(x => (int)x["TagID"]);
             //TODO:Searh .ToDictinoary how to work out
-            var tags = this.GetTags("").Select(x => new Select2Item() { id = x.ID, text = x.TagName }).ToDictionary(x => x.id, x => x);
+            var tags = this.GetTags("").Select(x => new Select2Item() { id = x.ID??0, text = x.TagName }).ToDictionary(x => x.id, x => x);
 
             foreach (var tagId in tagIds)
             {

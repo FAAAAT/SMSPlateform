@@ -12,7 +12,7 @@ using SMSPlatform.Services;
 
 namespace SMSPlatform.Controllers
 {
-    [LymiAuthorize(Users = "admin")]
+    [LymiAuthorize(Roles = "admin")]
     public class TemplateController : ApiController
     {
         private SqlHelper helper;

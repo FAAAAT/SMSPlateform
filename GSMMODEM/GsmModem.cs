@@ -337,17 +337,30 @@ namespace GSMMODEM
         /// <returns>成功返回真，否则返回假</returns>
         public bool isConnect()
         {
-            string temp = "";
-            try
+            if (this.Status == GSMModemStatus.StandBy)
             {
-                temp = this.SendAT("AT");
-                if (temp.Substring(temp.Length - 4, 3).Trim() != "OK")
+                string temp = "";
+                try
                 {
-                    return false;
+                    temp = this.SendAT("AT");
+                    if (temp.Substring(temp.Length - 4, 3).Trim() != "OK")
+                    {
+                        return false;
+                    }
                 }
+                catch { return false; }
+                return true;
             }
-            catch { return false; }
-            return true;
+            else if (this.Status == GSMModemStatus.Unknown)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+
+
         }
 
         #endregion 获取和设置设备有关信息
@@ -362,43 +375,59 @@ namespace GSMMODEM
         /// <returns>发送指令后返回的字符串</returns>
         public string SendAT(string ATCom)
         {
-            string result = string.Empty;
-            //忽略接收缓冲区内容，准备发送
-            _com.DiscardInBuffer();
-
-            //注销事件关联，为发送做准备
-            _com.DataReceived -= sp_DataReceived;
-
-            //发送AT指令
-            try
+            lock (this)
             {
-                _com.Write(ATCom + "\r");
-            }
-            catch (Exception ex)
-            {
-                _com.DataReceived += sp_DataReceived;
-                throw ex;
-            }
-
-            //接收数据 循环读取数据 直至收到“OK”或“ERROR”
-            try
-            {
-                string temp = string.Empty;
-                while (temp.Trim() != "OK" && temp.Trim() != "ERROR")
+                this.Status = GSMModemStatus.Busy;
+                string result = string.Empty;
+                try
                 {
-                    temp = _com.ReadLine();
-                    result += temp;
+                    //忽略接收缓冲区内容，准备发送
+                    _com.DiscardInBuffer();
+
+                    //注销事件关联，为发送做准备
+                    _com.DataReceived -= sp_DataReceived;
+
+                    //发送AT指令
+                    try
+                    {
+                        _com.Write(ATCom + "\r");
+                    }
+                    catch (Exception ex)
+                    {
+                        _com.DataReceived += sp_DataReceived;
+                        throw ex;
+                    }
+
+                    //接收数据 循环读取数据 直至收到“OK”或“ERROR”
+                    try
+                    {
+                        string temp = string.Empty;
+                        while (temp.Trim() != "OK" && temp.Trim() != "ERROR")
+                        {
+                            temp = _com.ReadLine();
+                            result += temp;
+                        }
+                        return result;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                    finally
+                    {
+                        //事件重新绑定 正常监视串口数据
+                        _com.DataReceived += sp_DataReceived;
+                    }
                 }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            finally
-            {
-                //事件重新绑定 正常监视串口数据
-                _com.DataReceived += sp_DataReceived;
+                catch (Exception)
+                {
+
+                    throw;
+                }
+                finally
+                {
+                    this.Status = GSMModemStatus.StandBy;
+                }
             }
         }
 

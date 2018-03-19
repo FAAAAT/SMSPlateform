@@ -1,0 +1,284 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script type="text/javascript" src="/Scripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="/Scripts/bootstrap.js"></script>
+    <link href="/Content/bootstrap.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/vue.js"></script>
+    <link href="/Content/Site.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/bootstrap-notify.js"></script>
+    <script type="text/javascript" src="/Scripts/main.js"></script>
+    <script type="text/javascript" src="/Scripts/validator.min.js"></script>
+    <link rel="stylesheet" href="/Content/select2.min.css" />
+    <script type="text/javascript" src="/Scripts/select2.full.min.js"></script>
+    <script type="text/javascript" src="/scripts/bootstrapTreeview/js/bootstrap-treeview.js"></script>
+    <script type="text/javascript" src="/scripts/bootstrapTreeview/lymiTreeView_jquery.js"></script>
+    <script type="text/javascript" src="/scripts/uploadifyloader.js"></script>
+
+    <script>
+        $(function () {
+            window.vue$ = new Vue({
+                el: '#app',
+                data: {
+
+                    headerAndFooter: {}
+                    , datacollections: {}
+                    , updateData: { UserName: '', Name: '', ID: '', Password: '' }
+                    , queryData: { userName: '', roleIDs:[],id :null}
+                },
+                method: {
+                    on_delete: on_delete,
+                    on_edit: on_edit,
+                }
+
+            });
+
+
+            $.ajax({
+                url: '/api/DynamicTemplate/HeaderAndFooter',
+                method: 'get',
+                success: function (data) {
+                    vue$.$data.headerAndFooter = Object.assign({}, vue$.$data.headerAndFooter, data.data);
+                }
+            });
+
+            function getData(query) {
+                $.ajax({
+                    url: '/api/User/GetUsers',
+                    type: 'get',
+                    data: query ? vue$.queryData : {},
+                    success: (data) => {
+                        if (data.success) {
+                            vue$.datacollections = data.data;
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
+                    },
+                    error: (data) => {
+                        $.notifyError(data);
+                    }
+                });
+            };
+
+            getData(true);
+            window.getData = getData;
+
+        }
+        );
+
+
+    </script>
+</head>
+<body>
+    <div id="app">
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" runat="server" href="~/">{{headerAndFooter.applicationName}}</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown" v-for="menu in headerAndFooter.menus" v-if="menu.children">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-sexpanded="true" aria-expanded="false">{{menu.name}}<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li v-for="menuChild in menu.children">
+                                    <a v-bind:href="menuChild.href">{{menuChild.name}}</a>
+                                </li>
+                            </ul>
+
+                        </li>
+                        <li v-else>
+                            <a runat="server" v-bind:href="menu.href">{{menu.name}}</a>
+                        </li>
+
+
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="body-content container">
+            <h1>用户管理</h1>
+            <h3></h3>
+
+            <button class="btn btn-primary" onclick="on_add()">添加</button>
+            <div style="min-height: 65vh">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead>
+                        <tr>
+
+                            <th>用户名</th>
+                            <th>角色</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="row in datacollections">
+                            <td>{{row.User.UserName}}</td>
+                            <td>{{row.Roles.map((e,i)=>e.RoleName).join(",")}}</td>
+                            <td>
+                                <button class="btn btn-primary" :onclick="'on_edit('+row.User.ID+')'">编辑</button>
+                                <button class="btn btn-danger" :onclick="'on_delete('+row.User.ID+')'">删除</button>
+
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <hr />
+            <footer>
+                <p>{{headerAndFooter.footer}}</p>
+            </footer>
+
+        </div>
+
+
+
+
+        <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="">{{updateData.ID?"编辑":"添加"}}用户</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/" id="userForm" method="post">
+
+
+                            <div class="form-group">
+                                <label for="userName" class="control-label">姓名</label>
+                                <input type="text" v-model="updateData.UserName" class="form-control" required id="userName">
+                                <!-- <span class="glyphicon form-control-feedback" aria-hidden="true"></span>-->
+                                <div class="hid help-block with-errors"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password" class="control-label">密码</label>
+                                <input type="password" v-model="updateData.Password" class="form-control" required id="password">
+                                <!-- <span class="glyphicon form-control-feedback" aria-hidden="true"></span>-->
+                                <div class="hid help-block with-errors"></div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label for="name" class="control-label">姓名</label>
+                                <input type="text" class="form-control" v-model="updateData.Name" required id="name" />
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" onclick="on_submit(event)" class="btn btn-success">提交</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <script>
+        $(() => {
+            var validator = $('#userForm').validator().on('submit', (e) => {
+               
+                if (!e.isDefaultPrevented()) {
+                    var url = '';
+                    if (vue$.updateData.ID) {
+                        url = '/api/user/updateUser';
+                    } else {
+                        url = '/api/user/addUser';
+                    }
+                    $.ajax({
+                        url: url,
+                        data: JSON.stringify(vue$.updateData),
+                        type: 'post',
+                        contentType: 'application/json',
+                        success: (data) => {
+                            if (data.success) {
+                                $.notifySuccess('操作成功', '');
+                                getData(true);
+                            }
+                            else {
+                                $.notifyError(data.msg, '');
+                            }
+                        },
+                        error: (data) => {
+                            $.notifyError(data, '');
+                        }
+                    });
+                }
+                e.preventDefault();
+            });
+        });
+
+
+        function on_edit(id) {
+            vue$.updateData.ID = id;
+
+            $.ajax({
+                url: '/api/user/getusers',
+                traditional:true,
+                data: { userName: '', roleIDs: [], id: id }, type: 'get', success: (data) => {
+                    if (data.success) {
+                        vue$.updateData = data.data[0].User;
+                        $('#userModal').modal('show');
+
+                    } else {
+                        $.notifyError(data, msg, '');
+                    }
+                },
+                error: (data) => {
+                    $.notifyError(data,'');
+                }});
+
+
+        }
+
+        function on_delete(id) {
+            $.ajax({
+                url: '/api/user/deleteuser', type: 'get', data: { id: id },
+                success: (data) => {
+                    if (data.success) {
+                        $.notifySuccess('删除成功', '');
+                        getData(true);
+                    } else {
+                        $.notifyError(data.msg, '');
+                    }
+                },
+                error: (data) => {
+                    $.notifyError(data);
+                }
+            });
+
+
+        }
+
+        function on_add() {
+            vue$.updateData.ID = '';
+            vue$.updateData.UserName = '';
+            vue$.updateData.Name = '';
+            vue$.updateData.roleIDs = [];
+            $('#userModal').modal('show');
+
+        }
+
+        function on_submit() {
+            $('#userForm').submit();
+        }
+
+    </script>
+
+
+</body>
+</html>

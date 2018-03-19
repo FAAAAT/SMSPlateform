@@ -159,7 +159,7 @@ function InitTableSelectable(table, options) {
 
     function render() {
 
-
+       
         if (table && selectedIDs) {
             $(table).find(':checkbox[data-id!=all]').each(function (index, element) {
                 var searchResult = selectedIDs.indexOf(parseInt(element.getAttribute('data-id')));

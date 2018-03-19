@@ -8,10 +8,7 @@ namespace SMSPlatform.Models
 {
     public class TagModel:DataRowModel
     {
-        public int ID {
-            get { return  (int)dataPool["ID"]; }
-            set { dataPool["ID"] = value; }
-        }
+        
 
         public string TagName
         {

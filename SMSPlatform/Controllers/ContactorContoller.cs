@@ -29,6 +29,7 @@ namespace SMSPlatform.Controllers
         }
 
         [HttpGet]
+        [LymiAuthorize(Roles = "admin")]
         public IHttpActionResult Getcontactor(string name, string phone, [FromUri]string[] tagIds, [FromUri]string[] selectedDeps, int? pageIndex = null, int? pageSize = null,[FromUri]int[] ids = null)
         {
             try

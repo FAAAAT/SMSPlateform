@@ -184,7 +184,7 @@ namespace SMSPlatform.Controllers
                 {
                     result = new Select2Model()
                     {
-                        results = service.GetTags("").Select(x => new Select2Item() { id = x.ID, text = x.TagName })
+                        results = service.GetTags("").Select(x => new Select2Item() { id = x.ID ?? 0, text = x.TagName })
                     };
 
 

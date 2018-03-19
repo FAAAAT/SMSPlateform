@@ -8,11 +8,7 @@ namespace SMSPlatform.Models
 {
     class ReceivedSMSRecordModel:DataRowModel
     {
-        public int? ID
-        {
-            get { return dataPool["ID"] == null ? null : new int?((int)dataPool["ID"]); }
-            set { dataPool["ID"] = value; }
-        }
+        
 
         public string ContactorName
         {

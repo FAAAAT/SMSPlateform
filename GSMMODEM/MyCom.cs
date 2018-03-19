@@ -161,7 +161,7 @@ namespace GSMMODEM
 
         public void DiscardInBuffer()
         {
-            sp.DiscardInBuffer();
+//            sp.DiscardInBuffer();
         }
 
         public void Open()

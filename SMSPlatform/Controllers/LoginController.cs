@@ -97,7 +97,7 @@ namespace SMSPlatform.Controllers
 
         [HttpGet]
         [HttpPost]
-        [LymiAuthorize(Users = "admin")]
+        [LymiAuthorize(Roles = "admin")]
         public IHttpActionResult GetUserInfo()
         {
             return Json(ActionContext.GetAuthModel());

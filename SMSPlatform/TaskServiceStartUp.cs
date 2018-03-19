@@ -114,7 +114,7 @@ namespace SMSPlatform
                 if (e.Value != null)
                 {
                     GlobalHost.ConnectionManager.GetHubContext<MessageHub>().Clients.All.QueueStart(e.Value.ID.Value, 1, e.Value.ContainerID.Value, 1);
-
+                    logger.Debug("next data got");
                 }
 
             }

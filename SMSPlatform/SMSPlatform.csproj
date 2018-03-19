@@ -118,7 +118,6 @@
     <Compile Include="Controllers\DynamicTemplateController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\MessageController.cs" />
-    <Compile Include="Controllers\MessageHandler.cs" />
     <Compile Include="Controllers\MessageHub.cs" />
     <Compile Include="Controllers\MonthlyFeeRecordController.cs" />
     <Compile Include="Controllers\ReceivedController.cs" />
@@ -127,6 +126,7 @@
     <Compile Include="Controllers\TagController.cs" />
     <Compile Include="Controllers\TaskServiceController.cs" />
     <Compile Include="Controllers\TemplateController.cs" />
+    <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Filters\AuthenticationFilter.cs" />
     <Compile Include="Models\BaseModelcs.cs" />
     <Compile Include="Models\ContectorModel.cs" />
@@ -214,6 +214,7 @@
     <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Content Include="Pages\UserPage.html" />
     <Content Include="Scripts\jquery-1.10.2.min.map">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

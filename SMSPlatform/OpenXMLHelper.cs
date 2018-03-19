@@ -35,8 +35,14 @@ namespace SMSPlatform
                     if (row.RowIndex == 1)
                     {//Excel第一行动列名
                         dt.Columns.AddRange(row.GetDataColumn(stringTable, dt).ToArray());
+                        continue;
                     }
-                    dt.Rows.Add(row.GetDataRow(stringTable, dt));//Excel第二行同时为DataTable的第一行数据
+                    var dtRow = row.GetDataRow(stringTable, dt);
+                    if (dtRow == null)
+                    {
+                        continue;
+                    }
+                    dt.Rows.Add(dtRow);//Excel第二行同时为DataTable的第一行数据
                 }
                 return dt;
             }

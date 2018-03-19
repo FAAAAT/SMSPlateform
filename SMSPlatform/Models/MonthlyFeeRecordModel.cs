@@ -8,15 +8,7 @@ namespace SMSPlatform.Models
 {
     public class MonthlyFeeRecordModel:DataRowModel
     {
-        public int? ID
-        {
-            get
-            {
-                return dataPool["ID"] == DBNull.Value ? null : new int?((int) dataPool["ID"]);
-                
-            }
-            set { dataPool["ID"] = value; }
-        }
+        
 
         public int MonthLimitRecord
         {

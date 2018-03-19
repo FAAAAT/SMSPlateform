@@ -36,10 +36,19 @@
                     , smsQueueID: ''
                     , detailPage: false
                     , pagerData: { currentIndex: 0, pagerRange: 5, pageSize: 8, total: 30 }
-                    , hubData: { status: 0, }
+                    , queuePagerData: {
+                        currentIndex: 0, pagerRange: 5, pageSize: 8, total: 30
+                    }, hubData: { status: 0, }
 
                 },
                 methods: {
+                    pageChangeClick: function (diff) {
+                        pageChange(null, this.pagerData.currentIndex + 1 + diff);
+                    },
+                    queuePageChangeClick: function(diff) {
+                        queuePageChange(null, this.queuePagerData.currentIndex + 1 + diff);
+                        
+                    },
                     on_delete: on_delete,
                     deleteContainer: deleteContainer,
                     on_edit: function (id) {
@@ -70,6 +79,23 @@
                         var currentIndex = this.$data.pagerData.currentIndex;
                         var range = this.$data.pagerData.pagerRange;
                         var pageNumber = Math.ceil(this.$data.pagerData.total / this.$data.pagerData.pageSize);
+                        range = pageNumber > range ? range : pageNumber;
+                        console.log(range);
+                        var genebefore = Math.ceil((range - 1) / 2);
+
+                        var start = currentIndex > genebefore ? currentIndex + 1 - genebefore : 1;
+                        start = start >= pageNumber - range + 1 ? pageNumber - range + 1 : start;
+
+                        return [...Array(range)].map((e, i, a) => i + start);
+                    }
+                    , queueTotalPageNum: function () {
+                        var pageNumber = Math.ceil(this.$data.queuePagerData.total / this.$data.queuePagerData.pageSize);
+                        return pageNumber;
+                    }
+                    , queueIndexes: function () {
+                        var currentIndex = this.$data.queuePagerData.currentIndex;
+                        var range = this.$data.queuePagerData.pagerRange;
+                        var pageNumber = Math.ceil(this.$data.queuePagerData.total / this.$data.queuePagerData.pageSize);
                         range = pageNumber > range ? range : pageNumber;
                         console.log(range);
                         var genebefore = Math.ceil((range - 1) / 2);
@@ -162,7 +188,7 @@
                     url: '/api/message/getsmsqueue', data: vue$.queryData, type: 'get', success: function (data) {
                         if (data.success) {
                             vue$.$data.datacollections = data.data;
-                            //                            vue$.pagerData.total = data.total;
+                                                        vue$.queuePagerData.total = data.total;
 
                         } else {
                             $.notifyError(data.msg, '');
@@ -228,6 +254,23 @@
 
             }
 
+            function stopContainer(id) {
+                $.ajax({
+                    url: '/api/smsmanagement/pauseContainer', data: { id: id }, type: 'get',
+                    success: (data) => {
+                        if (data.success) {
+//                            stopService();
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
+                    },
+                    error: (data) => {
+                        $.notifyError(data, '');
+                    },
+                });
+            }
+
+            window.stopContainer = stopContainer;
 
             window.startContainer = startContainer;
 
@@ -282,6 +325,7 @@
             if (queue) {
                 queue.Status = queueStatus;
                 getData();
+                getContainerData();
             }
         }
 
@@ -292,13 +336,13 @@
             }
         }
 
-        function stopService() {
-            if (vue$.hubData.status) {
-
-                $.connection.messageHub.server.stop().done(function (status) { vue$.sendContext.status = status; });
-
-            }
-        }
+//        function stopService() {
+//            if (vue$.hubData.status) {
+//
+//                $.connection.messageHub.server.stop().done(function (status) { vue$.sendContext.status = status; });
+//
+//            }
+//        }
     </script>
 
 
@@ -356,7 +400,7 @@
                 <button Class="btn btn-primary" onclick="getContainerData()">查询</button>
                 <!--                <button Class="btn btn-primary" v-bind:onclick="sendContext.status==2?'startService()':'stopService()'">{{sendContext.status==2?'开始':'暂停'}}</button>-->
                 <div style="min-height: 65vh">
-                    in
+                   
                     <table class="table table-striped table-hover table-bordered">
                         <thead>
                             <tr>
@@ -373,12 +417,12 @@
                                 <td>{{row.ContainerName}}</td>
                                 <td>{{formatDate(row.CreateTime)}}</td>
                                 <td>{{row.SIMsPhone}}</td>
-                                <td>{{row.Status==0?'等待发送':row.Status==1?'发送中':row.Status==2?'发送完成':row.Status==3?'出现错误':row.Status==5?'准备发送':'已删除'}}</td>
+                                <td>{{row.Status==0?'等待发送':row.Status==1?'发送中':row.Status==2?'发送完成':row.Status==3?'出现错误':row.Status==5?'准备发送':row.Status ==6?'暂停':'已删除'}}</td>
                                 <td>
                                     <button v-if="row.Status!==1&&row.Status!==4&&row.Status!==5" v-on:click="deleteContainer(row.ID)" class="btn btn-danger">删除</button>
                                     <button v-if="row.Status==0" v-on:click="on_edit(row.ID)" class="btn btn-primary">编辑</button>
                                     <button v-on:click="showDetail(row.ID)" class="btn btn-warning">查看</button>
-                                    <button Class="btn btn-primary" v-bind:onclick="[0,1,5,3].find((e,i)=>e==row.Status)!=undefined&&sendContext.status==2?'startContainer('+row.ID+')':'stopService()'">{{[0,1,5,3].find((e,i)=>e==row.Status)!=undefined&&sendContext.status==2?'开始':'暂停'}}</button>
+                                    <button Class="btn btn-primary" v-bind:onclick="[0,1,5,3,6].find((e,i)=>e==row.Status)!=undefined&&sendContext.status==2?'startContainer('+row.ID+')':'stopContainer('+row.ID+')'">{{[0,1,5,3,6].find((e,i)=>e==row.Status)!=undefined&&sendContext.status==2?'开始':'暂停'}}</button>
 
                                 </td>
 
@@ -417,12 +461,12 @@
             <div v-bind:style="detailPage?'':'display:none'" id="container-children">
                 <div class="form-inline">
                     <div class="form-group">
-                        <label for="txt_queryPhone">电话</label>
+                        <label for="txt_queryPhone">姓名</label>
                         <input id="txt_queryPhone" v-model="queryData.toName" name="txt_queryPhone" type="text" class="form-control" />
 
                     </div>
                     <div class="form-group">
-                        <label for="txt_queryRecName">姓名</label>
+                        <label for="txt_queryRecName">电话</label>
                         <input id="txt_queryRecName" v-model="queryData.toPhone" name="txt_queryRecName" type="text" class="form-control" />
 
                     </div>
@@ -441,6 +485,7 @@
                 <!--            <button Class="btn btn-success" onclick="on_add(event)">添加</button>-->
                 <button Class="btn btn-primary" onclick="getData()">查询</button>
                 <button class="btn btn-warning" v-on:click="returnContainer()">返回</button>
+                <span>共{{queuePagerData.total}}条</span>
                 <div style="min-height: 65vh">
                     <table class="table table-striped table-hover table-bordered">
                         <thead>
@@ -464,6 +509,31 @@
                         </tbody>
                     </table>
                 </div>
+
+                <nav aria-label="Page navigation">
+
+                    <ul class="pagination">
+                        <li v-if="queuePagerData.currentIndex>0">
+                            <a v-on:click="queuePageChangeClick(-1)" href="#" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        <li v-for="index in queueIndexes">
+                            <a v-if="index-1==queuePagerData.currentIndex" style="color: red" v-bind:href="'javascript:pageChange(event,'+index+')'">{{index}}</a>
+                            <a v-else v-bind:href="'javascript:queuePageChange(event,'+index+')'">{{index}}</a>
+                        </li>
+
+
+                        <li v-if="queuePagerData.currentIndex<queueTotalPageNum-1">
+                            <a v-on:click="queuePageChangeClick(1)" href="#" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+
+
+                </nav>
             </div>
 
 
@@ -564,6 +634,18 @@
 
 
 
+        }
+
+
+        function queuePageChange(event, pageIndex, pageSize) {
+            pageIndex = pageIndex ? pageIndex - 1 : 0;
+            pageSize = pageSize ? pageSize : vue$.queuePagerData.pageSize;
+            vue$.queryData.pageIndex = pageIndex;
+            vue$.queuePagerData.currentIndex = pageIndex;
+            vue$.queryData.pageSize = pageSize;
+            vue$.queuePagerData.pageSize = pageSize;
+
+            getData();
         }
 
         function queryDateChange(e) {

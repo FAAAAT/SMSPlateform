@@ -8,11 +8,7 @@ namespace SMSPlatform.Models
 {
     public class DailyFeeRecordModel:DataRowModel
     {
-        public int? ID
-        {
-            get { return dataPool["ID"] == DBNull.Value ? null : new int?((int) dataPool["ID"]); }
-            set { dataPool["ID"] = value; }
-        }
+       
 
         public string PhoneNumber
         {

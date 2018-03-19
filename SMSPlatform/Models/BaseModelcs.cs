@@ -15,6 +15,12 @@ namespace SMSPlatform.Models
 
     public abstract class DataRowModel : IDataRowModel
     {
+        public virtual int? ID
+        {
+            get { return dataPool["ID"] == null || dataPool["ID"] == DBNull.Value ? null : new int?((int)dataPool["ID"]); }
+            set { dataPool["ID"] = value; }
+        }
+
         protected Dictionary<string, object> dataPool = new Dictionary<string, object>();
 
         public IDataRowModel SetData(DataRow row)
