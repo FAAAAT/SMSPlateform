@@ -158,8 +158,7 @@ function InitTableSelectable(table, options) {
 
 
     function render() {
-
-       
+        
         if (table && selectedIDs) {
             $(table).find(':checkbox[data-id!=all]').each(function (index, element) {
                 var searchResult = selectedIDs.indexOf(parseInt(element.getAttribute('data-id')));
@@ -198,10 +197,12 @@ function InitTableSelectable(table, options) {
     function setAllData(data) {
         allDatas = data;
         if (isAll)
+        
             selectedIDs = selectedIDs.filter((e, i) => {
-                return data.find((ee, ii) => ee === e) !== undefined;
+                return data.find((ee, ii) => parseInt(ee) === e) !== undefined;
             });
-
+       
+//        render();
     }
 
     return {

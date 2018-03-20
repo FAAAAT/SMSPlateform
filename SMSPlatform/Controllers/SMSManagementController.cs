@@ -75,18 +75,28 @@ namespace SMSPlatform.Controllers
         [LymiAuthorize(Roles = "admin")]
         public IHttpActionResult StartContainer(int containerId)
         {
+            GSMTaskService taskService = AppDomain.CurrentDomain.GetData("TaskService") as GSMTaskService;
+
             SqlConnection connection = new SqlConnection(ConnectionStringUtility.DefaultConnectionStrings);
             connection.Open();
             SqlHelper helper = new SqlHelper();
             helper.SetConnection(connection);
             try
             {
+                if (!taskService.CanStart(out var errMsg))
+                {
+                    return Json(new ReturnResult()
+                    {
+                        msg = errMsg,
+                        success = false,
+                    });
+                }
+                
                 helper.Update("RecordContainer", new Dictionary<string, object>()
                     {
                         {"Status", 5}
                     }, $" ID ={containerId}",
                     new List<SqlParameter>());
-                GSMTaskService taskService = AppDomain.CurrentDomain.GetData("TaskService") as GSMTaskService;
                 taskService.Start();
                 return Json(new ReturnResult()
                 {
@@ -115,7 +125,7 @@ namespace SMSPlatform.Controllers
 
         [HttpGet]
         [LymiAuthorize(Roles = "admin")]
-        public IHttpActionResult PauseContainer(int containerId)
+        public IHttpActionResult PauseContainer(int id)
         {
 
             SqlConnection connection = new SqlConnection(ConnectionStringUtility.DefaultConnectionStrings);
@@ -127,7 +137,7 @@ namespace SMSPlatform.Controllers
                 helper.Update("RecordContainer", new Dictionary<string, object>()
                     {
                         {"Status", 6}
-                    }, $" ID ={containerId}",
+                    }, $" ID ={id}",
                     new List<SqlParameter>());
                 GSMTaskService taskService = AppDomain.CurrentDomain.GetData("TaskService") as GSMTaskService;
                 taskService.Start();

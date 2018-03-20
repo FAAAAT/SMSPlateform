@@ -774,19 +774,28 @@ namespace SMSPlatform.Controllers
             helper.SetTransaction(tran);
             try
             {
-                helper.Delete("smssendrecord", $"containerID = {containerId}");
+//                helper.Delete("smssendrecord", $"containerID = {containerId}");
+               
+                var containerDic = new Dictionary<string, object>();
+                container.GetValues(containerDic);
+                containerDic.Remove("ID");
+                containerDic["Status"] = 0;
+
+//                helper.Update("recordContainer", new Dictionary<string, object>() { { "status", 0 } },
+//                    $" ID = {container.ID}", new List<SqlParameter>());
+                
+                var newContainerID = helper.Insert("recordContainer", containerDic, "OUTPUT inserted.ID");
+
                 foreach (var item in errorSMSs)
                 {
                     var dic = new Dictionary<string, object>();
                     item.Status = 0;
                     item.GetValues(dic);
+                    
                     dic.Remove("ID");
+                    dic["ContainerID"] = newContainerID;
                     helper.Insert("SMSSendQueue", dic);
                 }
-
-
-                helper.Update("recordContainer", new Dictionary<string, object>() { { "status", 0 } },
-                    $" ID = {container.ID}", new List<SqlParameter>());
 
                 tran.Commit();
 

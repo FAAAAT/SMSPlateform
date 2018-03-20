@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,6 +32,43 @@ namespace SMSPlatform.Services
             {
                 base.HandleUnauthorizedRequest(actionContext);
             }
+        }
+
+        protected override bool IsAuthorized(HttpActionContext actionContext)
+        {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException("actionContext");
+            }
+
+            IPrincipal user = actionContext.ControllerContext.RequestContext.Principal;
+            if (user == null || user.Identity == null || !user.Identity.IsAuthenticated)
+            {
+                return false;
+            }
+          
+
+            if (!string.IsNullOrWhiteSpace(Users)&&Users.Split(',').Length > 0 
+                && !Users.Split(',').Any(x=>(user.Identity as ClaimsIdentity).Claims.Where(y=>y.Type == "UserName").Select(y=>y.Value).Contains(x, StringComparer.OrdinalIgnoreCase)))
+            {
+                if (Users.Split(',').Contains("*"))
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(Roles) &&Roles.Split(',').Length > 0 
+                && !Roles.Split(',').Any(x => (user.Identity as ClaimsIdentity).Claims.Where(y => y.Type == "RoleName").Select(y => y.Value).Contains(x, StringComparer.OrdinalIgnoreCase)))
+            {
+                if (Roles.Split(',').Contains("*"))
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            return true;
         }
     }
 }

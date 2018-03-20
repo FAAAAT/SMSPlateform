@@ -171,8 +171,21 @@ namespace SMSPlatform.Services
 
         public event EventHandler<List<Dictionary<string, object>>> OnSMSReceived;
 
-
-
+        /// <summary>
+        /// 询问是否可以开启处理循环
+        /// </summary>
+        /// <param name="errorMsg"></param>
+        /// <returns></returns>
+        public bool CanStart(out string errorMsg)
+        {
+            if (!pool.Any())
+            {
+                errorMsg = "未找到任何可用SIM卡链接。任务无法开启";
+                return false;
+            }
+            errorMsg = "";
+            return true;
+        }
 
         public void Start()
         {

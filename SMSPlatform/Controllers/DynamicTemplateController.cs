@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -38,20 +39,12 @@ namespace SMSPlatform.Controllers
                 });
 
                 model.menus.Add(new MenuItem() { name = "联系人", href = "/pages/contactors.html", });
-
-
+                
                 model.menus.Add(new MenuItem()
                 {
                     name = "模板管理",
                     href = "/pages/template.html"
                 });
-
-
-               
-
-               
-
-                
 
                 model.menus.Add(new MenuItem()
                 {
@@ -76,14 +69,11 @@ namespace SMSPlatform.Controllers
 
                     }
                 });
-
-               
-              
-
+                
                 model.menus.Add(new MenuItem()
                 {
-                    name="收件箱",
-                    href="/pages/Receiver.html"
+                    name = "收件箱",
+                    href = "/pages/Receiver.html"
                 });
 
                 model.menus.Add(new MenuItem()
@@ -92,20 +82,63 @@ namespace SMSPlatform.Controllers
                     href = "/pages/MonthlyFeeRecord.html",
                 });
 
-                model.menus.Add(new MenuItem()
+                var identity = (this.RequestContext.Principal.Identity as ClaimsIdentity);
+                
+                if (identity.Claims.SingleOrDefault(x => x.Type == "UserID")?.Value == "1")
                 {
-                    name = "资费设置",
-                    href = "/pages/MonthlyLimitSettings.html"
-                });
+                    model.menus.Add(new MenuItem()
+                    {
+                        name = "系统设置",
+                        children = new List<MenuItem>()
+                        {
+                            new MenuItem()
+                            {
+                                name = "SIM卡设置",
+                                href = "/pages/SIMCardManagement.html",
+                            },
+                            new MenuItem()
+                            {
+                                name = "资费设置",
+                                href = "/pages/MonthlyLimitSettings.html"
+                            },
+                            new MenuItem()
+                            {
+                                name = "用户设置",
+                                href = "/pages/userpage.html",
+                            }
+                        }
+                    });
 
-
-                model.menus.Add(new MenuItem()
+                }
+                else
                 {
-                    name = "SIM卡设置",
-                    href = "/pages/SIMCardManagement.html",
-                });
+                    model.menus.Add(new MenuItem()
+                    {
+                        name = "系统设置",
+                        children = new List<MenuItem>()
+                        {
+                            new MenuItem()
+                            {
+                                name = "SIM卡设置",
+                                href = "/pages/SIMCardManagement.html",
+                            },
+                            new MenuItem()
+                            {
+                                name = "资费设置",
+                                href = "/pages/MonthlyLimitSettings.html"
+                            },
+                            new MenuItem()
+                            {
+                                name = "个人设置",
+                                href = "/pages/userpage_normal.html",
+                            }
+                        }
+                    });
+                }
+
 
                 model.applicationName = "天津商业大学短信平台";
+                model.applicationUrl = "/pages/Login.html";
                 return Json(new ReturnResult()
                 {
                     success = true,

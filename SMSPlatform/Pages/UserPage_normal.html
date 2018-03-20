@@ -25,15 +25,11 @@
                 data: {
 
                     headerAndFooter: {}
-                    , datacollections: {}
+                
                     , updateData: { UserName: '', Name: '', ID: '', Password: '' }
                     , queryData: { userName: '', roleIDs:[],id :null}
                 },
-                method: {
-                    on_delete: on_delete,
-                    on_edit: on_edit,
-                }
-
+             
             });
 
 
@@ -47,12 +43,12 @@
 
             function getData(query) {
                 $.ajax({
-                    url: '/api/User/GetUsers',
+                    url: '/api/User/GetUserDetail',
                     type: 'get',
                     data: query ? vue$.queryData : {},
                     success: (data) => {
                         if (data.success) {
-                            vue$.datacollections = data.data;
+                            vue$.updateData = data.data;
                         } else {
                             $.notifyError(data.msg, '');
                         }
@@ -108,32 +104,39 @@
 
 
         <div class="body-content container">
-            <h1>用户管理</h1>
+            <h1>个人设置</h1>
             <h3></h3>
 
-            <button class="btn btn-primary" onclick="on_add()">添加</button>
+<!--            <button class="btn btn-primary" onclick="on_add()">添加</button>-->
             <div style="min-height: 65vh">
-                <table class="table table-bordered table-striped table-hover">
-                    <thead>
-                        <tr>
+                <form action="/" id="userForm" method="post">
 
-                            <th>用户名</th>
-                            <th>角色</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="row in datacollections">
-                            <td>{{row.User.UserName}}</td>
-                            <td>{{row.Roles.map((e,i)=>e.RoleName).join(",")}}</td>
-                            <td>
-                                <button class="btn btn-primary" :onclick="'on_edit('+row.User.ID+')'">编辑</button>
-                                <button class="btn btn-danger" :onclick="'on_delete('+row.User.ID+')'">删除</button>
 
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+<!--                    <div class="form-group">-->
+<!--                        <label for="userName" class="control-label">姓名</label>-->
+<!--                        <input type="text" v-model="updateData.UserName" class="form-control" required id="userName">-->
+<!--                        $1$ <span class="glyphicon form-control-feedback" aria-hidden="true"></span>#1#-->
+<!--                        <div class="hid help-block with-errors"></div>-->
+<!--                    </div>-->
+
+                    <div class="form-group">
+                        <label for="password" class="control-label">密码</label>
+                        <input type="password" v-model="updateData.Password" class="form-control" required id="password">
+                        <!-- <span class="glyphicon form-control-feedback" aria-hidden="true"></span>-->
+                        <div class="hid help-block with-errors"></div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="name" class="control-label">真实姓名</label>
+                        <input type="text" class="form-control" v-model="updateData.Name" required id="name" />
+                    </div>
+                    
+
+                </form>
+                
+                <button type="button" onclick="on_submit(event)" class="btn btn-success">提交</button>
+
             </div>
 
             <hr />
@@ -143,50 +146,6 @@
 
         </div>
 
-
-
-
-        <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" id="">{{updateData.ID?"编辑":"添加"}}用户</h4>
-                    </div>
-                    <div class="modal-body">
-                        <form action="/" id="userForm" method="post">
-
-
-                            <div class="form-group">
-                                <label for="userName" class="control-label">姓名</label>
-                                <input type="text" v-model="updateData.UserName" class="form-control" required id="userName">
-                                <!-- <span class="glyphicon form-control-feedback" aria-hidden="true"></span>-->
-                                <div class="hid help-block with-errors"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="password" class="control-label">密码</label>
-                                <input type="password" v-model="updateData.Password" class="form-control" required id="password">
-                                <!-- <span class="glyphicon form-control-feedback" aria-hidden="true"></span>-->
-                                <div class="hid help-block with-errors"></div>
-                            </div>
-
-
-                            <div class="form-group">
-                                <label for="name" class="control-label">姓名</label>
-                                <input type="text" class="form-control" v-model="updateData.Name" required id="name" />
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                        <button type="button" onclick="on_submit(event)" class="btn btn-success">提交</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
     </div>
     <script>
         $(() => {
@@ -195,7 +154,7 @@
                 if (!e.isDefaultPrevented()) {
                     var url = '';
                     if (vue$.updateData.ID) {
-                        url = '/api/user/updateUser';
+                        url = '/api/user/updateUser_normal';
                     } else {
                         url = '/api/user/addUser';
                     }
@@ -245,33 +204,8 @@
 
         }
 
-        function on_delete(id) {
-            $.ajax({
-                url: '/api/user/deleteuser', type: 'get', data: { id: id },
-                success: (data) => {
-                    if (data.success) {
-                        $.notifySuccess('删除成功', '');
-                        getData(true);
-                    } else {
-                        $.notifyError(data.msg, '');
-                    }
-                },
-                error: (data) => {
-                    $.notifyError(data);
-                }
-            });
 
 
-        }
-
-        function on_add() {
-            vue$.updateData.ID = '';
-            vue$.updateData.UserName = '';
-            vue$.updateData.Name = '';
-            vue$.updateData.roleIDs = [];
-            $('#userModal').modal('show');
-
-        }
 
         function on_submit() {
             $('#userForm').submit();

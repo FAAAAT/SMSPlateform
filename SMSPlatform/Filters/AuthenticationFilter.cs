@@ -59,7 +59,13 @@ namespace SMSPlatform.Filters
                 }
                 else
                 {
-                    actionContext.ActionDescriptor.Properties.TryAdd("AuthenModel", authModel);
+                    var claims = new List<Claim>() { new Claim("UserName", authModel.UserName) };
+                    claims.Add(new Claim("UserID", authModel.UserID));
+                    var roles = authModel.RoleName;
+                    claims.AddRange(roles.Select(x => new Claim("RoleName", x)));
+                    var identity = new ClaimsIdentity(claims, "SMSAuthentication", "SMSUser", "SMSRole");
+
+                    actionContext.RequestContext.Principal = new GenericPrincipal(identity, roles.ToArray()); 
                 }
 
             }
@@ -74,21 +80,24 @@ namespace SMSPlatform.Filters
             var authModel = context.Request.Headers.GetCookies(AuthenticationServiceExtensions.HeaderName).SingleOrDefault()?.GetAuthenticationCookieModel(AuthenticationServiceExtensions.HeaderName);
             if (authModel != null)
             {
-                context.ActionContext.ActionDescriptor.Properties.TryAdd("AuthenModel",authModel);
+                
                 var claims = new List<Claim>() { new Claim("UserName", authModel.UserName) };
+                claims.Add(new Claim("UserID",authModel.UserID));
                 var roles = authModel.RoleName;
                 claims.AddRange(roles.Select(x => new Claim("RoleName", x)));
-                var identity = new ClaimsIdentity(claims, "SMSAuthentication", "UserName", "RoleName");
-                context.Principal = new GenericPrincipal(identity,roles.ToArray());
+                var identity = new ClaimsIdentity(claims,"SMSAuthentication", "SMSUser", "SMSRole");
+             
+
+                context.Principal = new GenericPrincipal(identity, roles.ToArray());
                 context.ActionContext.RequestContext.Principal = context.Principal;
                 foreach (LymiAuthorizeAttribute authorizeAttribute in authAttrs)
                 {
                     authorizeAttribute.OnAuthorization(context.ActionContext);
                 }
             }
-            
-            
-                        
+
+
+
             return Task.CompletedTask;
 
         }
@@ -98,7 +107,7 @@ namespace SMSPlatform.Filters
             var authAttrs = context.ActionContext.ActionDescriptor.GetCustomAttributes<LymiAuthorizeAttribute>();
             var principal = context.ActionContext.RequestContext.Principal;
             //            context.ActionContext.RequestContext.Principal.Identity.IsAuthenticated
-            if ((principal==null||!principal.Identity.IsAuthenticated) && authAttrs.Any())
+            if ((principal == null || !principal.Identity.IsAuthenticated) && authAttrs.Any())
             {
                 context.Result = new JsonResult<ReturnResult>(new ReturnResult()
                 {
@@ -107,9 +116,9 @@ namespace SMSPlatform.Filters
                 }, new JsonSerializerSettings(), Encoding.UTF8, context.Request);
             }
 
-           
 
-//            return context.Result.ExecuteAsync(cancellationToken);
+
+            //            return context.Result.ExecuteAsync(cancellationToken);
             return Task.CompletedTask;
         }
 

@@ -214,6 +214,7 @@
     <None Include="Scripts\bootstrapTreeview\fonts\glyphicons-halflings-regular.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Content Include="Pages\UserPage_normal.html" />
     <Content Include="Pages\UserPage.html" />
     <Content Include="Scripts\jquery-1.10.2.min.map">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

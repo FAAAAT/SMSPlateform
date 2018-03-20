@@ -30,8 +30,35 @@
                     , headerAndFooter: {}
                     , datacollections: {}
                     , updateData: { TagName: '', ID: '' }
-                    , queryData:{phone:'',date:''}
+                    , queryData: { phone: '', date: '',pageIndex:0,pageSize:8 }
+                    , pagerData: { currentIndex: 0, pagerRange: 5, pageSize: 8, total: 30 }
                 },
+                computed: {
+                    totalPageNum: function () {
+                        var pageNumber = Math.ceil(this.$data.pagerData.total / this.$data.pagerData.pageSize);
+                        return pageNumber;
+                    }
+                    , indexes: function () {
+                        var currentIndex = this.$data.pagerData.currentIndex;
+                        var range = this.$data.pagerData.pagerRange;
+                        var pageNumber = Math.ceil(this.$data.pagerData.total / this.$data.pagerData.pageSize);
+                        range = pageNumber > range ? range : pageNumber;
+                        console.log(range);
+                        var genebefore = Math.ceil((range - 1) / 2);
+
+                        var start = currentIndex > genebefore ? currentIndex + 1 - genebefore : 1;
+                        start = start >= pageNumber - range + 1 ? pageNumber - range + 1 : start;
+
+                        return [...Array(range)].map((e, i, a) => i + start);
+                    }
+                },
+                methods: {
+                    formatDate: function(date) {
+                        return moment(date).format('YYYY-MM-DD HH:mm:ss');
+                    }
+                }
+
+
 
 //                methods: { onRowDelete: rowDelete,on_edit:on_edit },
 
@@ -77,7 +104,7 @@
                     , success: function (data) {
                         if (data.success) {
                             vue$.$data.datacollections = data.data;
-                            
+                            vue$.pagerData.total = data.total;
                         }
                         else {
                             $.notifyError(data.msg,'');
@@ -136,7 +163,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" runat="server" href="~/">{{headerAndFooter.applicationName}}</a>
+                    <a class="navbar-brand" runat="server" :href="headerAndFooter.applicationUrl">{{headerAndFooter.applicationName}}</a>
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
@@ -193,7 +220,7 @@
                     </thead>
                     <tbody v-for="row in datacollections">
                         <tr>
-                            <td>{{row.ReceiveDate}}</td>
+                            <td>{{formatDate(row.ReceiveDate)}}</td>
                             <td>{{row.SMSContent}}</td>
                             <td>{{row.PhoneNumber}}</td>
                             <td>{{row.ContactorName}}</td>
@@ -208,7 +235,30 @@
 
             </div>
 
+            <nav aria-label="Page navigation">
 
+                <ul class="pagination">
+                    <li v-if="pagerData.currentIndex>0">
+                        <a v-on:click="pageChangeClick(-1)" href="#" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+
+                    <li v-for="index in indexes">
+                        <a v-if="index-1==pagerData.currentIndex" style="color: red" v-bind:href="'javascript:pageChange(event,'+index+')'">{{index}}</a>
+                        <a v-else v-bind:href="'javascript:pageChange(event,'+index+')'">{{index}}</a>
+                    </li>
+
+
+                    <li v-if="pagerData.currentIndex<totalPageNum-1">
+                        <a v-on:click="pageChangeClick(1)" href="#" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+
+
+            </nav>
 
             <hr />
             <footer>
@@ -234,6 +284,21 @@
                 vue$.queryData.date = target.value;
              
             }
+        }
+
+
+        function pageChange(event, pageIndex, pageSize) {
+            pageIndex = pageIndex ? pageIndex - 1 : 0;
+            pageSize = pageSize ? pageSize : vue$.pagerData.pageSize;
+            vue$.queryData.pageIndex = pageIndex;
+            vue$.pagerData.currentIndex = pageIndex;
+            vue$.queryData.pageSize = pageSize;
+            vue$.pagerData.pageSize = pageSize;
+
+            getData(true);
+
+
+
         }
 
     </script>

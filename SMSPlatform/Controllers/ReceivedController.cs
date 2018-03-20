@@ -14,7 +14,7 @@ namespace SMSPlatform.Controllers
     public class ReceivedController:ApiController
     {
         [HttpGet]
-        public IHttpActionResult GetReceivedSMS(string phone,string date)
+        public IHttpActionResult GetReceivedSMS(string phone,string date,int? pageSize = null,int? pageIndex = null)
         {
             SqlHelper helper = new SqlHelper();
             SqlConnection conn = new SqlConnection(ConnectionStringUtility.DefaultConnectionStrings);
@@ -51,11 +51,21 @@ namespace SMSPlatform.Controllers
 
                 var smss = helper.SelectDataTable("select * from ReceivedSMSRecord "+whereStr).Select()
                     .Select(x => new ReceivedSMSRecordModel().SetData(x) as ReceivedSMSRecordModel);
+                var totalCount = smss.Count();
+                if (pageSize.HasValue&&pageIndex.HasValue)
+                {
+                    smss = smss.Skip(pageIndex.Value * pageSize.Value).Take(pageSize.Value);
+
+                }
+
                 return Json(new ReturnResult()
                 {
                     success = true,
                     status = 200,
-                    data = smss
+                    data = smss,
+
+                    total = totalCount,
+
                 });
 
             }

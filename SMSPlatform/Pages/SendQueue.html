@@ -29,7 +29,7 @@
                 data: {
                     tagName: '', headerAndFooter: {}, datacollections: {}
                     , dataContainers: {}
-                    , containerQueryData: { containerName: '', beginTime: null, endTime: null, status: [0, 1, 5], queryStatus: [], pageIndex: 0, pageSize: 8 }
+                    , containerQueryData: { containerName: '', beginTime: null, endTime: null, status: [0, 1, 5,6], queryStatus: [], pageIndex: 0, pageSize: 8 }
                     , queryData: { containerID: null, toName: '', toPhone: '', beginTime: null, endTime: null, smsContent: '', pageIndex: 0, pageSize: 8 }
                     , sendContext: { status: 0 }
                     , updateData: {}
@@ -221,6 +221,7 @@
                             var innerSubmit = () => $.ajax({
                                 url: '/api/SMSManagement/StartContainer', type: 'get', data: { containerId: id }, success: (data) => {
                                     if (data.success) {
+                                        getContainerData();
                                         $.notifySuccess('任务开始', '');
 
                                     } else {
@@ -259,7 +260,7 @@
                     url: '/api/smsmanagement/pauseContainer', data: { id: id }, type: 'get',
                     success: (data) => {
                         if (data.success) {
-//                            stopService();
+                            getContainerData();
                         } else {
                             $.notifyError(data.msg, '');
                         }
@@ -357,7 +358,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" runat="server" href="~/">{{headerAndFooter.applicationName}}</a>
+                    <a class="navbar-brand" runat="server" :href="headerAndFooter.applicationUrl">{{headerAndFooter.applicationName}}</a>
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">

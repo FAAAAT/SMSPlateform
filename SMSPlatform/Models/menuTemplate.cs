@@ -13,6 +13,8 @@ namespace SMSPlatform.Models
         public List<MenuItem> menus { get; set; } = new List<MenuItem>();
 
         public string applicationName { get; set; }
+
+        public string applicationUrl { get; set; }
     }
 
     public class MenuItem
