@@ -49,7 +49,7 @@ namespace SMSPlatform.Controllers
                 }
 
 
-                var smss = helper.SelectDataTable("select * from ReceivedSMSRecord "+whereStr).Select()
+                var smss = helper.SelectDataTable("select * from ReceivedSMSRecord "+whereStr + " order by ReceiveDate desc").Select()
                     .Select(x => new ReceivedSMSRecordModel().SetData(x) as ReceivedSMSRecordModel);
                 var totalCount = smss.Count();
                 if (pageSize.HasValue&&pageIndex.HasValue)

@@ -67,6 +67,16 @@ namespace SMSPlatform.Controllers
             SqlHelper helper = new SqlHelper();
             try
             {
+                if (string.IsNullOrWhiteSpace(tagName))
+                {
+                    return Json(new ReturnResult()
+                    {
+                        success = false,
+                        msg = "请输入标签名称",
+                    });
+                }
+
+
                 var conno = new SqlConnection(ConnectionStringUtility.DefaultConnectionStrings);
                 conno.Open();
                 helper.SetConnection(conno);

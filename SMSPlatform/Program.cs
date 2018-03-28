@@ -43,7 +43,7 @@ namespace SMSPlatform
 
         static void Main(string[] args)
         {
-
+            
             SMSPlatformLogger logger = new SMSPlatformLogger();
 
             GSMTaskService taskService = null;

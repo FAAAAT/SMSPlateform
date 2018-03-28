@@ -19,7 +19,8 @@ namespace Logger
 #if DEBUG
             FileInfo configFile = new FileInfo(Path.Combine(Environment.CurrentDirectory, "../../app.config"));
 #else
-            FileInfo configFile = new FileInfo(Path.Combine(Environment.CurrentDirectory, "app.config"));
+            
+            FileInfo configFile = new FileInfo(Path.Combine(Environment.CurrentDirectory, "SMSPlatform.exe.config"));
 #endif
             XmlConfigurator.ConfigureAndWatch(configFile);
 

@@ -30,7 +30,7 @@ namespace SMSPlatform.Controllers
 
         [HttpGet]
         [LymiAuthorize(Roles = "admin")]
-        public IHttpActionResult Getcontactor(string name, string phone, [FromUri]string[] tagIds, [FromUri]string[] selectedDeps, int? pageIndex = null, int? pageSize = null,[FromUri]int[] ids = null)
+        public IHttpActionResult Getcontactor(string name, string phone, [FromUri]string[] tagIds, [FromUri]string[] selectedDeps, int? pageIndex = null, int? pageSize = null, [FromUri]int[] ids = null)
         {
             try
             {
@@ -41,21 +41,21 @@ namespace SMSPlatform.Controllers
                 string whereStr = " where 1=1";
                 if (!string.IsNullOrWhiteSpace(name))
                 {
-                    whereStr += $" and contactorName like '%{name}%' ";
+                    whereStr += $" and contactor.contactorName like '%{name}%' ";
                 }
                 if (!string.IsNullOrWhiteSpace(phone))
                 {
-                    whereStr += $" and PhoneNumber like '%{phone}%' ";
+                    whereStr += $" and contactor.PhoneNumber like '%{phone}%' ";
                 }
                 if (tagIds != null && tagIds.Length != 0)
                 {
                     var depTagIds =
-                        helper.SelectDataTable($"select * from DepartmentTag where TagID in ({string.Join(",",tagIds)})").Select().Select(x=>(int)x["ID"]);
+                        helper.SelectDataTable($"select * from DepartmentTag where TagID in ({string.Join(",", tagIds)})").Select().Select(x => (int)x["ID"]);
                     IEnumerable<int> contactorIds;
                     if (depTagIds.Any())
                     {
-                        contactorIds = helper.SelectDataTable($"select * from ContactorDepartmentTag where DepartmentTagID in ({string.Join(",", depTagIds)})").Select().Select(x=>(int)x["ContactorID"]);
-                        whereStr += $" and ID in ({string.Join(",",contactorIds.Select(x=>x+""))})";
+                        contactorIds = helper.SelectDataTable($"select * from ContactorDepartmentTag where DepartmentTagID in ({string.Join(",", depTagIds)})").Select().Select(x => (int)x["ContactorID"]);
+                        whereStr += $" and contactor.ID in ({string.Join(",", contactorIds.Select(x => x + ""))})";
 
                     }
                     else
@@ -66,7 +66,7 @@ namespace SMSPlatform.Controllers
 
                 if (selectedDeps != null && selectedDeps.Length != 0)
                 {
-                    var depTagIds = helper.SelectDataTable($"select * from DepartmentTag where DepartmentID in ({string.Join(",", selectedDeps)})").Select().Select(x=>(int)x["ID"]);
+                    var depTagIds = helper.SelectDataTable($"select * from DepartmentTag where DepartmentID in ({string.Join(",", selectedDeps)})").Select().Select(x => (int)x["ID"]);
 
                     IEnumerable<int> contactorIds;
                     if (depTagIds.Any())
@@ -74,13 +74,13 @@ namespace SMSPlatform.Controllers
                         contactorIds = helper.SelectDataTable($"select * from ContactorDepartmentTag where DepartmentTagID in ({string.Join(",", depTagIds)})").Select().Select(x => (int)x["ContactorID"]);
 
                         var connectionWord = " and ";
-//                        if (tagIds != null && tagIds.Length != 0)
-//                        {
-//                            connectionWord = "or";
-//
-//                        }
+                        //                        if (tagIds != null && tagIds.Length != 0)
+                        //                        {
+                        //                            connectionWord = "or";
+                        //
+                        //                        }
 
-                        whereStr += $" {connectionWord} ID in ({string.Join(",", contactorIds.Select(x => x + ""))})";
+                        whereStr += $" {connectionWord} contactor.ID in ({string.Join(",", contactorIds.Select(x => x + ""))})";
 
                     }
                     else
@@ -88,15 +88,35 @@ namespace SMSPlatform.Controllers
                         whereStr += $" and 1=0";
                     }
 
-                   
+
                 }
 
-                if (ids!=null&&ids.Any())
+                if (ids != null && ids.Any())
                 {
-                    whereStr += $" and ID in ({string.Join(",", ids)})";
+                    whereStr += $" and contactor.ID in ({string.Join(",", ids)})";
                 }
 
-                var datas = helper.SelectDataTable("select * from contactor " + whereStr, new List<IDataParameter>()).Select().Select(x => new { ContactorName = x["ContactorName"] + "", PhoneNumber = x["PhoneNumber"] + "", ID = x["ID"] + "" });
+                var datas = helper.SelectDataTable($@"
+
+select *,ROW_NUMBER() over(order by department.DName) as rowID into #tempTable from Department where LevelIndex = 2 order by department.DName 
+
+select * into #tempTable2 from (select department.*,#tempTable.rowID as pindex,ROW_NUMBER() over(order by department.DName) as sindex from Department inner join #tempTable on department.pdid = #tempTable.id where department.levelindex = 3) as t order by t.pindex,t.sindex
+
+select contactor.* into #tempTable3 from contactor left join 
+contactordepartmenttag on contactor.id = contactordepartmenttag.contactorid
+left join departmenttag on departmenttag.id = contactordepartmenttag.DepartmentTagID
+left join #tempTable2 on #tempTable2.id = departmenttag.DepartmentID {whereStr }
+order by #tempTable2.pindex,#tempTable2.sindex
+
+select * from #tempTable3 group by ID,ContactorName,PhoneNumber,Remark
+if exists(select * from tempdb..sysobjects where id=object_id('tempdb..#tempTable'))
+drop table #tempTable
+if exists(select * from tempdb..sysobjects where id=object_id('tempdb..#tempTable2'))
+drop table #tempTable2
+if exists(select * from tempdb..sysobjects where id=object_id('tempdb..#tempTable3'))
+drop table #tempTable3
+
+", new List<IDataParameter>()).Select().Select(x => new { ContactorName = x["ContactorName"] + "", PhoneNumber = x["PhoneNumber"] + "", ID = x["ID"] + "" });
                 var total = datas.Count();
                 var allIds = datas.Select(x => x.ID);
                 if (pageSize.HasValue && pageIndex.HasValue)
@@ -111,7 +131,7 @@ namespace SMSPlatform.Controllers
 
                 var conDepTagRows = helper.SelectDataTable("select * from ContactorDepartmentTag where " + whereStr).Select();
 
-                var depTagRows = helper.SelectDataTable(conDepTagRows.Any()?$"select * from DepartmentTag where ID in ({string.Join(",",conDepTagRows.Select(x=>x["DepartmentTagID"]))})": "select * from DepartmentTag where 1=0").Select();
+                var depTagRows = helper.SelectDataTable(conDepTagRows.Any() ? $"select * from DepartmentTag where ID in ({string.Join(",", conDepTagRows.Select(x => x["DepartmentTagID"]))})" : "select * from DepartmentTag where 1=0").Select();
 
 
                 whereStr = depTagRows == null || depTagRows.Count() == 0
@@ -136,11 +156,11 @@ namespace SMSPlatform.Controllers
                 var results = datas.Select(x => new
                 {
                     contactor = x,
-                    depTags =  depTagRows.Where(y => conDepTagRows.Where(z => z["ContactorID"] + "" == x.ID).Select(z=>z["DepartmentTagID"]+"").Contains(y["ID"] + ""))
+                    depTags = depTagRows.Where(y => conDepTagRows.Where(z => z["ContactorID"] + "" == x.ID).Select(z => z["DepartmentTagID"] + "").Contains(y["ID"] + ""))
                     .Select(y => new
                     {
-                        department = new {child = departments.SingleOrDefault(z=>z.ID == (int)y["DepartmentID"]),parent = allDepartments.SingleOrDefault(z=>z.ID == departments.SingleOrDefault(l => l.ID == (int)y["DepartmentID"])?.PDID) },
-                        tag =ttags.SingleOrDefault(z=>z.ID == (int)y["TagID"])
+                        department = new { child = departments.SingleOrDefault(z => z.ID == (int)y["DepartmentID"]), parent = allDepartments.SingleOrDefault(z => z.ID == departments.SingleOrDefault(l => l.ID == (int)y["DepartmentID"])?.PDID) },
+                        tag = ttags.SingleOrDefault(z => z.ID == (int)y["TagID"])
                     })
                 });
 
@@ -188,19 +208,19 @@ namespace SMSPlatform.Controllers
                         {"PhoneNumber", phone},
                         {"Remark", remark}
                     }, "OUTPUT inserted.ID");
-//                var nvs = Request.RequestUri.ParseQueryString();
-//                var depTagIds = string.IsNullOrWhiteSpace(nvs["depTagIds"]) ? new string[0] : nvs["depTagIds"].Split(',');
+                //                var nvs = Request.RequestUri.ParseQueryString();
+                //                var depTagIds = string.IsNullOrWhiteSpace(nvs["depTagIds"]) ? new string[0] : nvs["depTagIds"].Split(',');
                 var depTagIds = selectedDepTagIds;
-                var existsDepTagIDs = helper.SelectDataTable($"select * from ContactorDepartmentTag where ContactorID = {id}").Select().Select(x=>x["DepartmentTagID"]+"");
+                var existsDepTagIDs = helper.SelectDataTable($"select * from ContactorDepartmentTag where ContactorID = {id}").Select().Select(x => x["DepartmentTagID"] + "");
 
 
-                foreach (var VARIABLE in depTagIds.Where(x=> !existsDepTagIDs.Contains(x+"")))
+                foreach (var VARIABLE in depTagIds.Where(x => !existsDepTagIDs.Contains(x + "")))
                 {
 
-                    helper.Insert("ContactorDepartmentTag", new Dictionary<string, object>(){{"ContactorID",id},{"DepartmentTagID",VARIABLE}});
+                    helper.Insert("ContactorDepartmentTag", new Dictionary<string, object>() { { "ContactorID", id }, { "DepartmentTagID", VARIABLE } });
 
                 }
-                
+
                 helper.ClearTransaction();
                 tran.Commit();
                 return Json(new ReturnResult()
@@ -279,33 +299,33 @@ namespace SMSPlatform.Controllers
             {
 
                 var nvs = Request.RequestUri.ParseQueryString();
-//                var tagIds = string.IsNullOrWhiteSpace(nvs["tagIds"]) ? new string[0] : nvs["tagIds"].Split(',');
+                //                var tagIds = string.IsNullOrWhiteSpace(nvs["tagIds"]) ? new string[0] : nvs["tagIds"].Split(',');
                 var selectedDepTags = string.IsNullOrWhiteSpace(nvs["selectedDepTagIds"]) ? new string[0] : nvs["selectedDepTagIds"].Split(',');
                 helper.Update("Contactor",
                     new Dictionary<string, object>()
                     {
                         {"ContactorName", name},
                         {"PhoneNumber", phone},
-                        {"Remark", remark}
+                        {"Remark", string.IsNullOrWhiteSpace(remark)?(object)DBNull.Value:(object)remark}
                     }, $" ID = {id}", new List<SqlParameter>());
 
 
-                
-//                var existsDepTagIds = helper.SelectList<int>("ContactorDepartmentTag","DepartmentTagID", $" ContactorID = {id}",
-//                    new List<SqlParameter>());
-//
-//
-//                var deletedTagIds = existsDepTagIds.Except(selectedDepTags.Select(int.Parse));
-//                var addedTagIds = selectedDepTags.Select(int.Parse).Except(existsDepTagIds);
-//                foreach (var addedTagId in addedTagIds)
-//                {
-//                    helper.Insert("TagContactor",
-//                        new Dictionary<string, object>() { { "ContactorID", id }, { "TagID", addedTagId } });
-//                }
-//                if (deletedTagIds.Any())
-//                {
-//                    helper.Delete("Tagcontactor", $" TagID in ({string.Join(",", deletedTagIds)})");
-//                }
+
+                //                var existsDepTagIds = helper.SelectList<int>("ContactorDepartmentTag","DepartmentTagID", $" ContactorID = {id}",
+                //                    new List<SqlParameter>());
+                //
+                //
+                //                var deletedTagIds = existsDepTagIds.Except(selectedDepTags.Select(int.Parse));
+                //                var addedTagIds = selectedDepTags.Select(int.Parse).Except(existsDepTagIds);
+                //                foreach (var addedTagId in addedTagIds)
+                //                {
+                //                    helper.Insert("TagContactor",
+                //                        new Dictionary<string, object>() { { "ContactorID", id }, { "TagID", addedTagId } });
+                //                }
+                //                if (deletedTagIds.Any())
+                //                {
+                //                    helper.Delete("Tagcontactor", $" TagID in ({string.Join(",", deletedTagIds)})");
+                //                }
 
                 var existsDepIds = helper.SelectList<int>("ContactorDepartmentTag", "DepartmentTagID", $"ContactorID = {id}");
                 var deletedDepIds = existsDepIds.Except(selectedDepTags.Select(int.Parse));
@@ -321,7 +341,7 @@ namespace SMSPlatform.Controllers
                 if (deletedDepIds.Any())
                 {
                     helper.Delete("ContactorDepartmentTag", $" DepartmentTagID in ({string.Join(",", deletedDepIds)}) and ContactorID = {id}");
-                    
+
                 }
 
 
@@ -353,25 +373,25 @@ namespace SMSPlatform.Controllers
                         .SingleOrDefault();
                 var cDepTags = helper.SelectDataTable($"select * from ContactorDepartmentTag where ContactorID = {contactor.ID}").Select();
                 var depTags =
-                    cDepTags.Length==0?helper.SelectDataTable("select * from DepartmentTag where 1=0").Select():
+                    cDepTags.Length == 0 ? helper.SelectDataTable("select * from DepartmentTag where 1=0").Select() :
                     helper.SelectDataTable(
                         $"select * from DepartmentTag where ID in ({string.Join(",", cDepTags.Select(x => (int)x["DepartmentTagID"]))})").Select();
                 //获取 一级 二级 department 和tag
 
-                var departmentIds = depTags.Select(x => (int) x["DepartmentID"]);
-                var allDeps = helper.SelectDataTable($"select * from Department").Select().Select(x=>new DepartmentModel().SetData(x) as DepartmentModel);
+                var departmentIds = depTags.Select(x => (int)x["DepartmentID"]);
+                var allDeps = helper.SelectDataTable($"select * from Department").Select().Select(x => new DepartmentModel().SetData(x) as DepartmentModel);
 
-                var deps = allDeps.Where(x=>departmentIds.Contains(x.ID.Value)).Select(x => new
+                var deps = allDeps.Where(x => departmentIds.Contains(x.ID.Value)).Select(x => new
                 {
                     parent = x.PDID.HasValue ? allDeps.SingleOrDefault(y => y.ID == x.PDID) : null,
                     child = x
                 });
 
 
-                var tagIds = depTags.Select(x => (int) x["TagID"]);
-                var tags = 
-                    tagIds.Any()?
-                    helper.SelectDataTable($"select * from Tag where ID in ({string.Join(",",tagIds.Select(x=>x+""))})"):
+                var tagIds = depTags.Select(x => (int)x["TagID"]);
+                var tags =
+                    tagIds.Any() ?
+                    helper.SelectDataTable($"select * from Tag where ID in ({string.Join(",", tagIds.Select(x => x + ""))})") :
                     helper.SelectDataTable($"select * from Tag where 1=0");
 
 
@@ -382,7 +402,7 @@ namespace SMSPlatform.Controllers
                     {
                         contactor = contactor,
                         tags = tags,
-//                        deps = deps,
+                        //                        deps = deps,
                         depIds = departmentIds
                     },
                     success = true,
@@ -523,12 +543,11 @@ namespace SMSPlatform.Controllers
                 foreach (HttpContent httpContent in provider.Contents)
                 {
                     var s = httpContent.ReadAsStreamAsync().GetAwaiter().GetResult();
-                    OpenXMLHelp help = new OpenXMLHelp();
-                    DataTable table = help.ReadExcel("Sheet1", s);
+                    var table = NPOIHelper.XlsxToDataTable("Sheet1", s);
                     var infoDiffer = false;
 
 
-                    foreach (var row in table.Select().Skip(1))
+                    foreach (var row in table.Select())
                     {
                         var phone = (row["电话"] + "").Trim();
                         var name = (row["姓名"] + "").Trim();
@@ -608,7 +627,7 @@ namespace SMSPlatform.Controllers
                             {
                                 {"DepartmentID",level3Dep.ID},
                                 { "TagID",tag.ID}
-                            },"OUTPUT inserted.ID");
+                            }, "OUTPUT inserted.ID");
                         }
                         else
                         {
@@ -616,12 +635,12 @@ namespace SMSPlatform.Controllers
                         }
 
                         var contactorDepTag = helper.SelectDataTable($"select * from ContactorDepartmentTag where DepartmentTagID = {departmentTagID} and ContactorID = {contactor.ID}").Select().SingleOrDefault();
-                        if (contactorDepTag == null&&infoDiffer)
+                        if (contactorDepTag == null && infoDiffer)
                         {
-                            helper.Insert("ContactorDepartmentTag", new Dictionary<string, object>(){{"DepartmentTagID",departmentTagID},{"ContactorID",contactor.ID}});
+                            helper.Insert("ContactorDepartmentTag", new Dictionary<string, object>() { { "DepartmentTagID", departmentTagID }, { "ContactorID", contactor.ID } });
                         }
 
-                        
+
                     }
                 }
 
@@ -638,6 +657,7 @@ namespace SMSPlatform.Controllers
             }
             catch (Exception ex)
             {
+
                 return Json(new ReturnResult()
                 {
                     msg = ex.ToString(),
@@ -659,5 +679,5 @@ namespace SMSPlatform.Controllers
 
 
 
-  
+
 }

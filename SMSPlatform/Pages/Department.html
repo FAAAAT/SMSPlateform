@@ -301,27 +301,30 @@
         }
 
         function on_del() {
-            $.ajax({
-                url: '/api/department/del',
-                type: 'get',
-                data: vue$.updateData,
-                success: function(data) {
-                    if (data.success) {
-                        $.notifySuccess(data.msg, '');
-                    } else {
-                        $.notifyError(data.msg, '');
+            if (confirm('即将删除一个部门 删除部门会删除所有该部门关联的部门标签 删除前请仔细确认部门状态')) {
+                $.ajax({
+                    url: '/api/department/del',
+                    type: 'get',
+                    data: vue$.updateData,
+                    success: function (data) {
+                        if (data.success) {
+                            $.notifySuccess(data.msg, '');
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
+                        vue$.updateData.PDID = null;
+                        vue$.displayData.PDName = '',
+                            vue$.updateData.DName = '',
+                            reInitTree();
+                    },
+                    error: function (data) {
+                        $.notifyError(data, '');
                     }
-                    vue$.updateData.PDID = null;
-                    vue$.displayData.PDName = '',
-                    vue$.updateData.DName = '',
-                    reInitTree();
-                },
-                error: function(data) {
-                    $.notifyError(data,'');
-                }
 
 
-            });
+                });
+            }
+            
         }
 
 

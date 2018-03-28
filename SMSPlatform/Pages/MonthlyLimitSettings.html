@@ -251,6 +251,7 @@
         }
 
         function on_delete(templateid) {
+            if(confirm('是否删除'))
             $.ajax({
                 traditional: true,
                 url: '/api/settings/deletesettings', method: 'get', data: { id: templateid }, success: function (data) {

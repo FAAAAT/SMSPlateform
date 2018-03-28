@@ -15,7 +15,7 @@ using SMSPlatform.Services;
 
 namespace SMSPlatform.Controllers
 {
-    [Authorize(Users = "admin")]
+    [LymiAuthorize(Roles = "admin")]
     public class DepartmentController : ApiController
     {
         private SqlHelper helper;

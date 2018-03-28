@@ -103,7 +103,6 @@ namespace SMSPlatform.Controllers
 
         [HttpPost]
         [LymiAuthorize(Users = "admin")]
-
         public IHttpActionResult AddUser(UserModel model)
         {
             SqlConnection conn = new SqlConnection(ConnectionStringUtility.DefaultConnectionStrings);
@@ -192,11 +191,24 @@ namespace SMSPlatform.Controllers
                         msg = "未检测到可用提交数据"
                     });
                 }
+                if (model.ID == 1)
+                {
+                    var dic = new Dictionary<string, object>();
+                    model.GetValues(dic);
+                    dic.Remove("ID");
+                    dic.Remove("UserName");
 
-                var dic = new Dictionary<string, object>();
-                model.GetValues(dic);
-                dic.Remove("ID");
-                helper.Update("[User]", dic, $" ID = {model.ID}", new List<SqlParameter>());
+                    helper.Update("[User]", dic, $" ID = {model.ID}", new List<SqlParameter>());
+                }
+                else
+                {
+                    var dic = new Dictionary<string, object>();
+                    model.GetValues(dic);
+                    dic.Remove("ID");
+                    helper.Update("[User]", dic, $" ID = {model.ID}", new List<SqlParameter>());
+                }
+
+               
                 return Json(new ReturnResult() { success = true });
             }
             catch (Exception ex)
@@ -341,16 +353,31 @@ namespace SMSPlatform.Controllers
                         msg = "未检测到可用提交数据"
                     });
                 }
-
-
-                model.ID = int.Parse((this.RequestContext.Principal.Identity as ClaimsIdentity).Claims.SingleOrDefault(x => x.Type == "UserID")?.Value);
-
                 var dic = new Dictionary<string, object>();
-                model.GetValues(dic);
-                dic.Remove("ID");
-                dic.Remove("Password");
-                dic.Remove("UserName");
-                helper.Update("[User]", dic, $" ID = {model.ID}", new List<SqlParameter>());
+
+                if (model.ID == 1)
+                {
+                    model.ID = int.Parse((this.RequestContext.Principal.Identity as ClaimsIdentity).Claims.SingleOrDefault(x => x.Type == "UserID")?.Value);
+                    model.GetValues(dic);
+                    dic.Remove("ID");
+                    //                    dic.Remove("Password");
+                    dic.Remove("UserName");
+                    helper.Update("[User]", dic, $" ID = {model.ID}", new List<SqlParameter>());
+
+                }
+                else
+                {
+                    model.ID = int.Parse((this.RequestContext.Principal.Identity as ClaimsIdentity).Claims.SingleOrDefault(x => x.Type == "UserID")?.Value);
+
+                    model.GetValues(dic);
+                    dic.Remove("ID");
+                    //                    dic.Remove("Password");
+                    //                    dic.Remove("UserName");
+                    helper.Update("[User]", dic, $" ID = {model.ID}", new List<SqlParameter>());
+                }
+
+
+
                 return Json(new ReturnResult() { success = true });
             }
             catch (Exception ex)

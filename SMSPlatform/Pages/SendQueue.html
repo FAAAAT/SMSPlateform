@@ -505,7 +505,7 @@
                                 <td>{{row.ToName}}</td>
                                 <td>{{row.SMSContent}}</td>
                                 <td>{{row.Status==0?'等待发送':''}}</td>
-                                <td><button class="btn btn-danger" v-on:click="on_delete(row.id)">删除</button></td>
+                                <td><button class="btn btn-danger" v-on:click="on_delete(row.ID)">删除</button></td>
                             </tr>
                         </tbody>
                     </table>
@@ -599,18 +599,25 @@
         }
 
         function on_delete(id) {
-            $.ajax({
-                url: '/api/message/deletesmsqueue', type: 'get', data: { id: id }, success: function (data) {
-                    if (data.success) {
-                        $.notifySuccess(data.msg, '');
-                    } else {
-                        $.notifyError(data.msg, '');
+            
+            if (confirm('是否删除')) {
+                $.ajax({
+                    url: '/api/message/deletesmsqueue', type: 'get', data: { id: id }, success: function (data) {
+                        if (data.success) {
+                            $.notifySuccess(data.msg, '');
+                            getData(true);
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
                     }
-                }
-            });
+                });
+            }
+
+           
         }
 
         function deleteContainer(id) {
+            if(confirm('是否删除'))
             $.ajax({
                 url: '/api/message/deleterecordcontainer', type: 'get', data: { id: id }, success: function (data) {
                     if (data.success) {

@@ -775,6 +775,7 @@
         }
 
         function on_delete(contactorId) {
+            if(confirm('是否删除'))
             $.ajax({
                 traditional: true,
                 url: '/api/contactor/deletecontactor',

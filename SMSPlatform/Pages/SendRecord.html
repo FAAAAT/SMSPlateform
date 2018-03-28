@@ -518,29 +518,36 @@
         }
 
         function on_delete(id) {
-            $.ajax({
-                url: '/api/message/deletesmsqueue', type: 'get', data: { id: id }, success: function (data) {
-                    if (data.success) {
-                        getData();
-                        $.notifySuccess(data.msg, '');
-                    } else {
-                        $.notifyError(data.msg, '');
+
+            if (confirm('是否删除?')) {
+                $.ajax({
+                    url: '/api/message/deletesmsqueue', type: 'get', data: { id: id }, success: function (data) {
+                        if (data.success) {
+                            getData();
+                            $.notifySuccess(data.msg, '');
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
                     }
-                }
-            });
+                });
+            }
+           
         }
 
         function deleteContainer(id) {
-            $.ajax({
-                url: '/api/message/deleterecordcontainer', type: 'get', data: { id: id }, success: function (data) {
-                    if (data.success) {
-                        $.notifySuccess(data.msg, '');
-                        getContainerData();
-                    } else {
-                        $.notifyError(data.msg, '');
+            if (confirm('是否删除')) {
+                $.ajax({
+                    url: '/api/message/deleterecordcontainer', type: 'get', data: { id: id }, success: function (data) {
+                        if (data.success) {
+                            $.notifySuccess(data.msg, '');
+                            getContainerData();
+                        } else {
+                            $.notifyError(data.msg, '');
+                        }
                     }
-                }
-            });
+                });
+            }
+           
         }
 
         function pageChange(event, pageIndex, pageSize) {

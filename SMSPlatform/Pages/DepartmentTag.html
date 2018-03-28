@@ -284,6 +284,9 @@
 
             }
             if (confirmed) {
+                if (!count && !confirm('是否删除')) {
+                    return;
+                }
                 $.ajax({
                     url: "/api/tag/DeleteDepartemntTag"
                     , type: "get"
@@ -303,6 +306,7 @@
                     }
                 }
                 );
+                
             }
         }
 

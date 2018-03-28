@@ -44,7 +44,7 @@
                     //}
                     DepTags:[]
                 },
-                methods: { onRowDelete: rowDelete, on_edit: on_edit, on_delete: on_delete },
+                methods: {on_edit: on_edit, on_delete: on_delete },
                 computed: {
                     queryDNames: function () {
                         return this.querySelectedDeps.map(function (e, i) {
@@ -124,25 +124,7 @@
             } });
             
 
-            function rowDelete(id) {
-                $.ajax({
-                    url: '/api/tag/DeleteTag', method: 'get', data: { tagID: id }, success: function (data) {
-                        if (data.success) {
-                            if (data.status == 200) {
-                                $.notifySuccess(data.msg, '');
-                            } else if (data.status == 500) {
 
-                            } else if (data.status == 302) {
-                                window.location.href = data.data;
-                            }
-
-                            getData();
-                        } else {
-                            $.notifyError(data.msg, '');
-                        }
-                    }
-                });
-            }
             
         });
     </script>

@@ -14,12 +14,12 @@
 
     <script type="text/javascript" src="/Scripts/bootstrap-notify.js"></script>
     <script type="text/javascript" src="/Scripts/main.js"></script>
-    
+
     <script src="/scripts/JSHelper.js"></script>
     <link type="text/css" rel="stylesheet" href="/Content/DataRangePicker/daterangepicker.css" />
     <script src="/Scripts/DateRangePicker/moment.js"></script>
     <script src="/Scripts/DateRangePicker/daterangepicker.js"></script>
-    
+
 
     <script>
         $(function () {
@@ -30,7 +30,7 @@
                     , headerAndFooter: {}
                     , datacollections: {}
                     , updateData: { TagName: '', ID: '' }
-                    , queryData: { phone: '', date: '',pageIndex:0,pageSize:8 }
+                    , queryData: { phone: '', date: '', pageIndex: 0, pageSize: 8 }
                     , pagerData: { currentIndex: 0, pagerRange: 5, pageSize: 8, total: 30 }
                 },
                 computed: {
@@ -53,20 +53,20 @@
                     }
                 },
                 methods: {
-                    formatDate: function(date) {
+                    formatDate: function (date) {
                         return moment(date).format('YYYY-MM-DD HH:mm:ss');
                     }
                 }
 
 
 
-//                methods: { onRowDelete: rowDelete,on_edit:on_edit },
+                //                methods: { onRowDelete: rowDelete,on_edit:on_edit },
 
             });
 
             vue$.$watch('updateData.ID', function (nv, ov) {
                 if (nv) {
-              
+
                     var data = vue$.datacollections.find((e, i) => e.id == nv);
                     console.log(data);
                     vue$.$data.updateData.TagName = data.name;
@@ -107,11 +107,11 @@
                             vue$.pagerData.total = data.total;
                         }
                         else {
-                            $.notifyError(data.msg,'');
+                            $.notifyError(data.msg, '');
                         }
-                    
+
                     }
-                    ,error: (data) => {
+                    , error: (data) => {
                         $.notifyError(data, '');
                     }
                 });
@@ -130,25 +130,6 @@
             });
 
 
-            function rowDelete(id) {
-                $.ajax({
-                    url: '/api/tag/DeleteTag', method: 'get', data: { tagID: id }, success: function (data) {
-                        if (data.success) {
-                            if (data.status == 200) {
-                                $.notifySuccess(data.msg, '');
-                            } else if (data.status == 500) {
-
-                            } else if (data.status == 302) {
-                                window.location.href = data.data;
-                            }
-
-                            getData();
-                        } else {
-                            $.notifyError(data.msg, '');
-                        }
-                    }
-                });
-            }
 
         });
     </script>
@@ -186,7 +167,7 @@
                 </div>
             </div>
         </div>
-        
+
 
         <div class="container body-content">
             <h1>标签管理</h1>
@@ -204,8 +185,11 @@
             </div>
             <!--            <asp:Button ID="btn_submit" ClientIDMode="static" OnClick="on_submit" UseSubmitBehavior="False" CssClass="btn btn-primary" Text="添加" runat="server" />-->
             <!--            <asp:Button ID="btn_query" ClientIDMode="static" OnClick="btn_query_OnClick" UseSubmitBehavior="False" CssClass="btn btn-primary" Text="查询" runat="server" />-->
-<!--            <button Class="btn btn-success" onclick="on_add(event)">添加</button>-->
+            <!--            <button Class="btn btn-success" onclick="on_add(event)">添加</button>-->
             <button Class="btn btn-primary" onclick="getData(true)">查询</button>
+            <span>
+                共{{pagerData.total}}条
+            </span>
             <div style="min-height: 65vh">
                 <table class="table table-striped table-hover table-bordered">
                     <thead>
@@ -214,7 +198,7 @@
                             <th>内容</th>
                             <th>电话</th>
                             <th>联系人</th>
-<!--                            <th>操作</th>-->
+                            <!--                            <th>操作</th>-->
                         </tr>
 
                     </thead>
@@ -224,10 +208,10 @@
                             <td>{{row.SMSContent}}</td>
                             <td>{{row.PhoneNumber}}</td>
                             <td>{{row.ContactorName}}</td>
-<!--                            <td>-->
-<!--                                <button class="btn btn-danger" v-on:click="onRowDelete(row.id)">删除</button>-->
-<!--                                <button class="btn btn-primary" v-on:click="on_edit(row.id)">编辑</button>-->
-<!--                            </td>-->
+                            <!--                            <td>-->
+                            <!--                                <button class="btn btn-danger" v-on:click="onRowDelete(row.id)">删除</button>-->
+                            <!--                                <button class="btn btn-primary" v-on:click="on_edit(row.id)">编辑</button>-->
+                            <!--                            </td>-->
 
                         </tr>
                     </tbody>
@@ -239,7 +223,7 @@
 
                 <ul class="pagination">
                     <li v-if="pagerData.currentIndex>0">
-                        <a v-on:click="pageChangeClick(-1)" href="#" aria-label="Previous">
+                        <a href="javascript:pageChangeClick(-1)" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
@@ -251,7 +235,7 @@
 
 
                     <li v-if="pagerData.currentIndex<totalPageNum-1">
-                        <a v-on:click="pageChangeClick(1)" href="#" aria-label="Next">
+                        <a href="javascript:pageChangeClick(1)" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
@@ -268,21 +252,20 @@
 
 
 
-\
+        \
 
 
 
     </div>
     <script>
 
-        function dateOnChange(e)
-        {
+        function dateOnChange(e) {
             var target = e.currentTarget || e.target || e.srcElement;
             if (target) {
-           
-               
+
+
                 vue$.queryData.date = target.value;
-             
+
             }
         }
 
@@ -299,6 +282,10 @@
 
 
 
+        }
+
+        pageChangeClick = function (diff) {
+            pageChange(null, vue$.pagerData.currentIndex + 1 + diff);
         }
 
     </script>

@@ -246,6 +246,7 @@
         }
 
         function on_delete(id) {
+            if(confirm('是否删除'))
             $.ajax({
                 url: '/api/user/deleteuser', type: 'get', data: { id: id },
                 success: (data) => {
